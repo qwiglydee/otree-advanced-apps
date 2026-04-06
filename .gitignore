@@ -1,0 +1,10 @@
+.*
+!.gitignore
+!.editorconfig
+__pycache__/
+/db.sqlite3
+/node_modules/
+/*.otreezip
+
+/package.json
+/package-lock.json
