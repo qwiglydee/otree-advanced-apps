@@ -1,0 +1,23 @@
+/** Horisontal scale 
+ * by qwiglydee@gmail.com
+ * 
+ * Styles for RadioSelectHorizontal to look like a nice scale with "totally not" ... "totally yes" labels
+ */
+
+.form-check-inline {
+    display: inline-flex;
+    flex-flow: column;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 5em;
+}
+
+.form-check-inline .form-check-input {
+    margin: 0;
+}
+
+.form-check-inline .form-check-label {
+    font-size: small;
+    text-align: center;
+}

@@ -1,0 +1,15 @@
+{% block title %}
+    Questions
+{% endblock title %}
+{% block content %}
+    <section class="form">
+        {{ formfields }}
+        {{ next_button }}
+    </section>
+{% endblock content %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ static 'bootstrap-theme.css' }}" />
+    <link rel="stylesheet" href="{{ static 'game-style.css' }}" />
+    <link rel="stylesheet" href="{{ static 'radio-scale.css' }}" />
+{% endblock %}

@@ -1,0 +1,45 @@
+{% block title %}Introduction{% endblock %}
+
+{% block content %}
+    <section class="info">
+        <h3>Instructions</h3>
+
+        <p>...</p>
+
+        <p>Just answer some questions.</p>
+
+        <p>...</p>
+    </section>
+
+    <section class="warn">
+        <p>Please note: the show-up fee and bonus will be given only to participants who complete the study.</p>
+    </section>
+
+    <section class="form">
+        <p>Please fill information below</p>
+
+        {{ formfields }}
+    </section>
+
+    <section class="info">
+        <h3>Consent</h3>
+
+        <p>By clicking the "Next" button, you provide your informed consent to proceed with the experiment.</p>
+
+        {{ next_button }}
+    </section>
+{% endblock content %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ static 'bootstrap-theme.css' }}" />
+    <link rel="stylesheet" href="{{ static 'game-style.css' }}" />
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // setting value of a hidden field
+        window.addEventListener('load', function() {
+            forminputs.localtime.value = new Date().toString();
+        })
+    </script>
+{% endblock scripts %}

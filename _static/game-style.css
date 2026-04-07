@@ -1,0 +1,141 @@
+/** 
+ * Game-like design for sections and form controls
+ * by qwiglydee@gmail.com
+ *
+ * requires bootstrap-theme
+ */
+
+:root {
+    --gm-border-width-sect: 4px;
+    --gm-border-radius-sect: 8px;
+    --gm-border-width-form: 2px;
+    --gm-border-radius-form: 8px;
+}
+
+body {
+    background-color: var(--bs-gray-600);
+    color: #000;
+}
+
+.otree-title {
+    color: var(--bs-white);
+}
+
+.powered-by-otree,
+.powered-by-otree .link-secondary {
+    color: var(--bs-dark);
+}
+
+/**** sections ****/
+
+section {
+    padding: 1rem;
+    margin: 1.5rem 0;
+    color: #212529;
+    box-shadow: var(--bs-box-shadow-sm);
+    border-radius: var(--gm-border-radius-sect);
+    border-width: var(--gm-border-width-sect);
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+section.active {
+    box-shadow: var(--bs-box-shadow);
+}
+
+section p:last-child {
+    margin-bottom: 0;
+}
+
+section.info {
+    background-color: var(--bs-info-bg-subtle);
+}
+
+section.warn {
+    background-color: var(--bs-warning-bg-subtle);
+}
+
+section.form {
+    background-color: var(--bs-primary-bg-subtle);
+}
+
+section.paper {
+    background-color: var(--bs-light-bg-subtle);
+    border-color: rgba(0, 0, 0, 0.25);
+    box-shadow: var(--bs-box-shadow);
+}
+
+p:has(.otree-btn-next) {
+    text-align: right;
+}
+
+/**** stuff ****/
+
+.alert {
+    border-radius: var(--gm-border-radius-sect);
+    border-width: var(--gm-border-width-sect);
+    box-shadow: var(--bs-box-shadow-sm);
+}
+
+/**** form elements ****/
+
+button.btn,
+.form-control,
+.form-select,
+.form-check-input {
+    border-width: var(--gm-border-width-form);
+    border-style: solid;
+    border-color: rgba(var(--bs-dark-rgb), 0.75);
+    border-radius: var(--gm-border-radius-form);
+    transition:
+        background-color 150ms ease-in-out,
+        box-shadow 150ms ease-in-out,
+        border 150ms ease-in-out;
+}
+
+button.btn:enabled:hover:not(:focus),
+.form-control:enabled:hover:not(:focus),
+.form-select:enabled:hover:not(:focus),
+.form-check-input:enabled:hover:not(:focus) {
+    box-shadow: 0 0 0.5rem 0.5rem rgba(255, 255, 255, 0.5);
+}
+
+button.btn:focus,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: rgba(var(--bs-dark-rgb), 0.75);
+    box-shadow: 0 0 0.5rem 0.5rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.form-control,
+.form-select,
+.form-check-input {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.form-range::-webkit-slider-runnable-track {
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.form-range::-moz-range-track {
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+textarea {
+    max-width: 400px;
+}
+
+section.intro.form .form-control,
+section.intro.form .form-select {
+    width: 10em;
+}
+
+._formfield > label {
+    font-weight: bold;
+}
