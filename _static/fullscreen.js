@@ -1,0 +1,13 @@
+/** 
+ * https://css-tricks.com/the-trick-to-viewport-units-on-mobile/  
+ * 
+ * Use in css: 
+ * body { height: var(--vh100, 100vh); }
+ */
+
+function resize() {
+    let vh100 = window.innerHeight;
+    document.documentElement.style.setProperty('--vh100', `${vh100}px`);
+}
+window.addEventListener('resize', resize);
+window.addEventListener('load', resize);
