@@ -1,0 +1,26 @@
+{# Full screen page template
+Stretches page to full height and centers all content
+
+In YourPage.html insert:
+  {% extends "FullPage.html" %}
+  {% block header %} top page section {% endblock %}
+  {% block main %} main content {% endblock %}
+  {% block footer %} bottom page section {% endblock %}
+#}
+{% extends "ExtPage.html" %}
+
+{% block global_styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ static 'fullscreen.css' }}" />
+{% endblock %}
+
+{% block global_scripts %}
+    {{ super() }}
+    <script src="{{ static 'fullscreen.js' }}"></script>
+{% endblock %}
+
+{% block content %}
+    <header>{% block header %}{% endblock %}</header>
+    <main>{% block main %}{% endblock %}</main>
+    <footer>{% block footer %}{% endblock %}</footer>
+{% endblock %}

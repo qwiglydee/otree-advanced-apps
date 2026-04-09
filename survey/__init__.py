@@ -113,39 +113,35 @@ def set_payoff(player: Player):
 
 
 class Intro(Page):
+    page_styles = ["game-style.css"]
+    # the localtimefield.js auto-fills hidden 'localtime' field
+    page_scripts = ["localtimefield.js"]
     form_model = "player"
     form_fields = ["age", "gender", "localtime"]
 
-    @staticmethod
-    def vars_for_template(player):  # pylint: disable=arguments-renamed
-        # for debugging
-        return {
-            "condition": player.condition,
-        }
-
 
 class Questions1(Page):
-    template_name = f"{__name__}/Questions.html"  # common template for form pages
+    template_name = f"{__name__}/Questions.html"
+    # the radio-scale.css applies to RadioSelectHorisontal
+    page_styles = ["game-style.css", "radio-scale.css"]
     form_model = "player"
     form_fields = ["q_range", "q_scale"]
 
 
 class Questions2(Page):
-    """The page with dynamic field names
-    The fields are suffixed with player condition
-    """
-    template_name = f"{__name__}/Questions.html"  # common template for form pages
+    template_name = f"{__name__}/Questions.html"
+    page_styles = ["game-style.css"]
     form_model = "player"
+    # Dynamic form_fields: names are prefixed with player condition
     form_fields = ["q_foo_", "q_bar_"]
 
-    @staticmethod
-    def get_form_fields(player: Player):
-        cond = player.condition.lower()
-        return [f"{fld}{cond}" for fld in Questions2.form_fields]
+    def _get_form_fields(self):
+        cond = self.player.condition.lower()
+        return [f"{fld}{cond}" for fld in self.form_fields]
 
 
 class Results(Page):
-    pass
+    page_styles = ["game-style.css"]
 
 
 page_sequence = [
