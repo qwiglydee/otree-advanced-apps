@@ -2,6 +2,7 @@
 
 Inserts styles and scripts from page class.
 Also adds modern bootstrap variables for colors.
+Also adds otree-front scripts.
 
 In __init__:
   class SomePage(Page):
@@ -17,7 +18,7 @@ In SomePage.html insert at top:
 
 {% block global_styles %}
     <link rel="stylesheet" href="{{ static 'bootstrap-theme.css' }}" />
-{% endblock global_styles %}
+{% endblock %}
 
 {% block app_styles %}
     {% if is_defined('view.page_styles') %}
@@ -25,7 +26,12 @@ In SomePage.html insert at top:
             <link rel="stylesheet" href="{{ static style }}" />
         {% endfor %}
     {% endif %}
-{% endblock app_styles %}
+{% endblock %}
+
+{% block global_scripts %}
+    <script src="{{ static 'otree-front-2.0.b4.js' }}"></script>
+    <script src="{{ static 'otree-front-ext.js' }}"></script>
+{% endblock %}
 
 {% block app_scripts %}
     {% if is_defined('view.page_scripts') %}
@@ -33,4 +39,4 @@ In SomePage.html insert at top:
             <script src="{{ static script }}"></script>
         {% endfor %}
     {% endif %}
-{% endblock app_scripts %}
+{% endblock %}
