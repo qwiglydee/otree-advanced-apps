@@ -136,6 +136,7 @@ section.intro.form .form-select {
     width: 10em;
 }
 
-._formfield > label {
+label.form-label,
+label.col-form-label {
     font-weight: bold;
 }

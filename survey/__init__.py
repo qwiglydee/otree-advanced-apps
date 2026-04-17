@@ -92,6 +92,19 @@ class Player(BasePlayer):
         widget=widgets.RadioSelect,
     )
 
+    q_baz = database.StringField(
+        label="Something something?",
+        choices=[
+            ("Z1", "Baz 1"),
+            ("Z2", "Baz 2"),
+            ("Z3", "Baz 3"),
+            ("Z4", "Baz 4"),
+            ("Z0", "Other"),
+        ],
+    )
+
+    q_baz_other = database.StringField(label="Specify", blank=True)
+
     def setup(self) -> None:
         """Configure some session-based fields and conditions"""
         self.condition = get_session_param(self.session, "condition", choices=C.CONDITIONS, default="random")
@@ -140,6 +153,15 @@ class Questions2(Page):
         return [f"{fld}{cond}" for fld in self.form_fields]
 
 
+class Questions3(Page):
+    template_name = f"{__name__}/Fields.html"
+    page_styles = ["game-style.css"]
+    page_scripts = ["otree-front-inputs.js"]
+    form_model = "player"
+    # Dynamic form_fields: names are prefixed with player condition
+    form_fields = ["q_baz", "q_baz_other"]
+
+
 class Results(Page):
     page_styles = ["game-style.css"]
 
@@ -148,5 +170,6 @@ page_sequence = [
     Intro,
     Questions1,
     Questions2,
+    Questions3,
     Results,
 ]
