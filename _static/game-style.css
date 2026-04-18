@@ -114,6 +114,13 @@ button.btn:focus,
     background-color: rgba(255, 255, 255, 0.5);
 }
 
+.form-control:disabled,
+.form-select:disabled,
+.form-check-input:disabled {
+    border-color: rgba(var(--bs-dark-rgb), 0.5);
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
 .form-control:focus,
 .form-select:focus {
     background-color: rgba(255, 255, 255, 0.75);

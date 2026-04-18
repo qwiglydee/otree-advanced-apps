@@ -10,11 +10,19 @@
             <label class="col-form-label" for="{{ form.q_baz.id }}">{{ form.q_baz.label }}</label>
             {{ form.q_baz }}
         </div>
-        <div class="m-3" id="fld_q_bazother" hidden>
-            <label class="col-form-label" for="{{ form.q_baz_other.id }}">{{ form.q_baz_other.label }}</label>
-            {{ form.q_baz_other }}
+        <div class="m-3" id="fld_q_bazother">
+            <label class="col-form-label" for="id_q_baz_other">{{ form.q_baz_other.label }}</label>
+            <input type="text" class="form-control" id="id_q_baz_other" name="q_baz_other" ot-enable="vars.otherbaz" ot-required="vars.otherbaz" />
         </div>
 
+        <div class="m-3" id="fld_q_qux">
+            <label class="col-form-label" for="{{ form.q_qux.id }}">{{ form.q_qux.label }}</label>
+            {{ form.q_qux }}
+        </div>
+        <div class="m-3" id="fld_q_quxother" ot-display="vars.otherqux">
+            <label class="col-form-label" for="id_q_qux_other">{{ form.q_qux_other.label }}</label>
+            <input type="text" class="form-control" id="id_q_qux_other" name="q_qux_other" ot-required="vars.otherqux" />
+        </div>
         {{ next_button }}
     </section>
 {% endblock content %}
@@ -22,13 +30,10 @@
 {% block scripts %}
     <script>
         onInput("q_baz", function (value) {
-            if (value == "Z0") {
-                ot.showDisplay("fld_q_bazother");
-                forminputs.q_baz_other.required = true;
-            } else {
-                ot.hideDisplay("fld_q_bazother");
-                forminputs.q_baz_other.required = false;
-            }
+            vars.otherbaz = value == "Z0";
+        });
+        onInput("q_qux", function (value) {
+            vars.otherqux = value == "Q0";
         });
     </script>
 {% endblock %}

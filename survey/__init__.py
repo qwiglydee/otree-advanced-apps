@@ -103,7 +103,20 @@ class Player(BasePlayer):
         ],
     )
 
-    q_baz_other = database.StringField(label="Specify", blank=True)
+    q_baz_other = database.StringField(label="Specify baz", blank=True)
+
+    q_qux = database.StringField(
+        label="Something something?",
+        choices=[
+            ("Q1", "Qux 1"),
+            ("Q2", "Qux 2"),
+            ("Q3", "Qux 3"),
+            ("Q4", "Qux 4"),
+            ("Q0", "Other"),
+        ],
+    )
+
+    q_qux_other = database.StringField(label="Specify qux", blank=True)
 
     def setup(self) -> None:
         """Configure some session-based fields and conditions"""
@@ -158,8 +171,7 @@ class Questions3(Page):
     page_styles = ["game-style.css"]
     page_scripts = ["otree-front-inputs.js"]
     form_model = "player"
-    # Dynamic form_fields: names are prefixed with player condition
-    form_fields = ["q_baz", "q_baz_other"]
+    form_fields = ["q_baz", "q_baz_other", "q_qux", "q_qux_other", ]
 
 
 class Results(Page):
@@ -167,9 +179,9 @@ class Results(Page):
 
 
 page_sequence = [
-    Intro,
-    Questions1,
-    Questions2,
+    # Intro,
+    # Questions1,
+    # Questions2,
     Questions3,
-    Results,
+    # Results,
 ]

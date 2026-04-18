@@ -76,3 +76,62 @@ function onUpdate(varname, handler) {
         (e) => handler(e.detail.changes.extract(varname)),
     );
 }
+
+/** switching directives */
+
+class otDisplay extends ot.ContentDirective {
+    params = { val: { attr: "ot-display", default: false } };
+
+    render() {
+        let toggle = ot.isVoid(this.val) || this.val == false;
+        this.elem.toggleAttribute("hidden", toggle);
+        autofocus(this.elem);
+    }
+}
+ot.attachDirective(otDisplay, "[ot-display]");
+
+class otVisible extends ot.ContentDirective {
+    params = { val: { attr: "ot-visible", default: false } };
+
+    render() {
+        let toggle = ot.isVoid(this.val) || this.val == false;
+        this.elem.toggleAttribute("invisible", toggle);
+        this.elem.style.visibility = toggle ? "hidden" : null;
+        autofocus(this.elem);
+    }
+}
+ot.attachDirective(otVisible, "[ot-visible]");
+
+class otEnable extends ot.ContentDirective {
+    params = { val: { attr: "ot-enable", default: false } };
+
+    render() {
+        let toggle = ot.isVoid(this.val) || this.val == false;
+        this.elem.toggleAttribute("disabled", toggle);
+        autofocus(this.elem);
+    }
+}
+ot.attachDirective(otEnable, "[ot-enable]");
+
+class otRequired extends ot.ContentDirective {
+    params = { val: { attr: "ot-required", default: false } };
+
+    render() {
+        let toggle = ot.isVoid(this.val) || this.val == false;
+        this.elem.toggleAttribute("required", !toggle);
+    }
+}
+ot.attachDirective(otRequired, "[ot-required]");
+
+function autofocus(elem) {
+    if (elem.hasAttribute("hidden") || elem.hasAttribute("invisible") || elem.hasAttribute("disabled")) return;
+
+    if (elem.hasAttribute("autofocus")) {
+        // refocus when re-enabled
+        elem.focus();
+    } else {
+        // nested inputs of re-displayed block
+        let nested = elem.querySelector("[autofocus]:not([disabled]):not([hidden]):not([invisible])");
+        if (nested) nested.focus();
+    }
+}
