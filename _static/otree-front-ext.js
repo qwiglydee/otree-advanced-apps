@@ -64,16 +64,18 @@ if (document.querySelector(".otree-timer")) {
  * Helper for built-in oTree update event.
  *
  * @example
- * onUpdate('varname', function updateVar(var_value) { ... })
- * onUpdate('objname.fieldname', function updateField(field_value) { ... })
- * onUpdate('objname.*', function updateObj(obj_value) { ... })
+ * onUpdate('vars.name', function updateVar(var_value) { ... })
+ * onUpdate('vars.objname.fieldname', function updateField(field_value) { ... })
+ * onUpdate('vars.objname.*', function updateObj(obj_value) { ... })
  */
 
 function onUpdate(varname, handler) {
+    if (!varname.startsWith("vars.")) throw Error("onUpdate: invalid var name, expecting `vars.` ");
+    let varref = varname.slice(6);
     ot.onEvent(
         "update",
-        (e) => e.detail.changes.affect(varname),
-        (e) => handler(e.detail.changes.extract(varname)),
+        (e) => e.detail.changes.affect(varref),
+        (e) => handler(e.detail.changes.extract(varref)),
     );
 }
 

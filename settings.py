@@ -7,6 +7,22 @@ SESSION_CONFIGS = [
         app_sequence=['survey'],
         condition="random",
     ),
+    dict(
+        name='trials1',
+        app_sequence=['trials1'],
+        condition="random",
+    ),
+    dict(
+        name='trials2',
+        app_sequence=['trials2'],
+        condition="random",
+    ),
+    dict(
+        name='quiz',
+        app_sequence=['quiz'],
+        condition="random",
+        source="tasks.csv",
+    ),
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs

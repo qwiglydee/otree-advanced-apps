@@ -1,0 +1,136 @@
+{% extends "FullPage.html" %}
+{% block content %}
+    <header>
+        <h2>Practice</h2>
+        <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
+        <div ot-display="vars.final">Score: <b ot-text="vars.final.score"></b></div>
+        <div ot-display="vars.responding" class="alert alert-secondary m-3 p-1">Retries: <span ot-text="vars.progress.retries"></span></div>
+    </header>
+
+    <main ot-visible="vars.trial">
+        <section class="paper fs-4">
+            <p ot-text="vars.trial.task"></p>
+        </section>
+
+        <section class="form">
+            <input
+                ot-input
+                type="number"
+                name="answer"
+                class="form-control"
+                ot-key-input="Enter"
+                autofocus
+                ot-class="vars.validity"
+                ot-enable="vars.responding"
+            />
+        </section>
+    </main>
+
+    <footer>
+        <div ot-display="vars.final">Correct solution: <span ot-text="vars.trial.truth"></span></div>
+        <div class="flex-fill"></div>
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-3" autofocus>Continue</button>
+        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+    </footer>
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+        "use strict";
+
+        const BLINK_DELAY = 200;
+        const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
+        const RETRY_DELAY = 1000 * "{{C.RETRY_DELAY}}";
+
+        onLoad(continueRound);
+        onLive("progress", liveProgress);
+        onLive("trial", startTrial);
+        onLive("update", updateTrial);
+        onInput("answer", inputAnswer);
+        onLive("feedback", liveFeedback);
+        onInput("continue", continueRound);
+        onUpdate("vars.phase", switchPhase);
+
+        function switchPhase(phase) {
+            vars.responding = phase == "responding";
+            vars.completing = phase == "completing";
+            vars.waiting = phase == "waiting";
+            ot.updatePage();
+        }
+
+        async function continueRound() {
+            resetTrial();
+            vars.phase = "waiting";
+            await ot.delay(BLINK_DELAY);
+            sendLive("continue");
+        }
+
+        async function liveProgress(progress) {
+            vars.progress = progress;
+            if (progress.finished) ot.completePage();
+            if (progress.completed) {
+                vars.phase = "waiting";
+                await ot.delay(TRIAL_DELAY);
+                vars.phase = "completing"; // manual
+                // continueRound(); // auto
+            } else if (progress.current) {
+                if (progress.retrying) {
+                    await ot.delay(RETRY_DELAY);
+                    resetResponse();
+                }
+                vars.phase = "responding";
+            }
+        }
+
+        function resetTrial() {
+            vars.trial = null;
+            vars.final = null;
+            resetResponse();
+        }
+
+        function resetResponse() {
+            vars.answer = null;
+            vars.feedback = null;
+            vars.validity = null;
+            ot.resetInputs();
+        }
+
+        function startTrial(trial) {
+            vars.trial = trial;
+            ot.beginTimeMeasurement();
+        }
+
+        function updateTrial(update) {
+            Object.assign(vars.trial, update);
+            if (update.score !== null) {
+                vars.final = {
+                    score: vars.trial.score,
+                    truth: vars.trial.truth,
+                };
+            }
+        }
+
+        function inputAnswer(answer) {
+            vars.answer = answer;
+            vars.responding = false;
+            sendLive("response", {
+                id: vars.trial.id,
+                time: ot.getTimeMeasurement(),
+                answer: String(answer),
+            });
+        }
+
+        async function liveFeedback(feedback) {
+            vars.feedback = feedback;
+        }
+
+        function showValidity(correct) {
+            if (correct == null) {
+                vars.validity = null;
+            } else {
+                vars.validity = correct ? "is-valid" : "is-invalid";
+            }
+            ot.updatePage();
+        }
+    </script>
+{% endblock scripts %}

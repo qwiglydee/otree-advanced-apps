@@ -1,0 +1,23 @@
+{% extends "ExtPage.html" %}
+
+{% block title %}Introduction{% endblock %}
+
+{% block content %}
+    <section class="info">
+        <h3>Instructions</h3>
+
+        <p>...</p>
+    </section>
+
+    <section class="warn">
+        <p>Please note: the show-up fee and bonus will be given only to participants who complete the study.</p>
+    </section>
+
+    <section class="info">
+        <h3>Consent</h3>
+
+        <p>By clicking the "Next" button, you provide your informed consent to proceed with the experiment.</p>
+
+        {{ next_button }}
+    </section>
+{% endblock content %}

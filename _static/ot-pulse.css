@@ -1,0 +1,52 @@
+/**
+ * Styles for directive <ot-pulse> from `ot-pulse.js`
+ * by qwiglydee@gmail.com
+ */
+
+:root {
+    --ot-pulse-size: 0.5rem;
+}
+
+ot-pulse {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+}
+
+ot-pulse i {
+    display: block;
+    width: var(--ot-pulse-size);
+    height: var(--ot-pulse-size);
+    background-color: currentColor;
+    border-radius: 50%;
+    animation: 1000ms ease-in-out infinite ot-pulsating;
+}
+
+@keyframes ot-pulsating {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    50% {
+        opacity: 1;
+        transform: none;
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+
+ot-pulse i:nth-child(1) {
+    animation-delay: 0ms;
+}
+
+ot-pulse i:nth-child(2) {
+    animation-delay: 250ms;
+}
+
+ot-pulse i:nth-child(3) {
+    animation-delay: 500ms;
+}
