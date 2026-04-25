@@ -6,6 +6,22 @@ from .const import C  # noqa
 from .models import Player, Round, Trial, Response
 
 
+def max_trials(iteround: Round):
+    return C.NUM_TRIALS[iteround.pagename]
+
+
+def track_round(iteround: Round):
+    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
+
+
+def max_retries(trial: Trial):
+    return C.NUM_RETRIES.get(trial.iteround.pagename, 1)
+
+
+def track_trial(trial: Trial):
+    trial.progress_retries = Response.count(trial)
+
+
 class Progress(NamedTuple):
     pagename: str
     player: Player
@@ -44,9 +60,10 @@ def advance(current: Progress) -> Progress:
     if iteround.is_pristine:
         iteround.start()
 
-    advancing = advancing_round(iteround)
+    iteround.update()
+    track_round(iteround)
 
-    if not advancing:
+    if iteround.progress_trials >= max_trials(iteround):
         iteround.complete()
 
     if iteround.is_closed:
@@ -58,6 +75,10 @@ def advance(current: Progress) -> Progress:
     if trial.is_pristine:
         trial.start()
 
+    if trial.is_started:
+        trial.update()
+        track_trial(trial)
+
     return Progress(pagename, player, iteround, trial, None)
 
 
@@ -66,31 +87,14 @@ def respond(current: Progress, response_time: int, answer: str) -> Progress:
     assert current.is_valid and response is None
 
     response = Response.respond(trial, player, response_time, answer)
-    advancing = advancing_trial(trial)
 
-    if not advancing:
+    trial.update()
+    track_trial()
+
+    if trial.progress_retries >= max_retries(trial) or trial.success:
         trial.complete()
 
-    advancing_round(iteround)
+    iteround.update()
+    track_round(iteround)
 
     return Progress(pagename, player, iteround, trial, response)
-
-
-def advancing_round(iteround: Round):
-    iteround.update()
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-    return iteround.progress_trials < max_trials(iteround)
-
-
-def max_trials(iteround: Round):
-    return C.NUM_TRIALS[iteround.pagename]
-
-
-def advancing_trial(trial: Trial):
-    trial.update()
-    trial.progress_retries = Response.count(trial)
-    return trial.progress_retries < max_retries(trial) and not trial.success
-
-
-def max_retries(trial: Trial):
-    return C.NUM_RETRIES.get(trial.iteround.pagename, 1)

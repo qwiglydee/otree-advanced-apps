@@ -207,9 +207,3 @@ class BaseResponseModel(ExtraModel):
     @classmethod
     def last(cls, trial: BaseTrialModel, **kwargs) -> Self:
         return cls.objects_filter(trial=trial, **kwargs).order_by(desc("iteration")).first()
-
-
-def track_players(group: BaseGroup, player: BasePlayer, tracking_prop: str, tracking_val) -> bool:
-    setattr(player, tracking_prop, tracking_val)
-    players = group.get_players()
-    return all(p.field_maybe_none(tracking_prop) == tracking_val for p in players)

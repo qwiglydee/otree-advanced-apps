@@ -84,6 +84,8 @@ class Trial(BaseTrialModel):
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
 
+    progress_retries = database.IntegerField(initial=0)
+
 
 class Response(BaseResponseModel):
     trial: Trial = database.Link(Trial)

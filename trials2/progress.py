@@ -1,10 +1,34 @@
 from typing import NamedTuple
 
 from _stuff.participant import current_pagename
-from _stuff.iterating import track_players
 
 from .const import C  # noqa
 from .models import Player, Round, Trial, Response
+
+
+def max_trials(iteround: Round):
+    return C.NUM_TRIALS[iteround.pagename]
+
+
+def track_round(iteround: Round):
+    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
+
+
+def track_trial(trial: Trial):
+    count = Response.count(trial)
+    trial.progress_stage = C.STAGES[count]
+
+
+def track_players_round(player: Player, iteround: Round) -> bool:
+    player.progress_round = iteround.id
+    players = player.group.get_players()
+    return all(p.field_maybe_none('progress_round') == iteround.id for p in players)
+
+
+def track_players_trial(player: Player, trial: Trial) -> bool:
+    player.progress_trial = trial.id
+    players = player.group.get_players()
+    return all(p.field_maybe_none('progress_trial') == trial.id for p in players)
 
 
 class Progress(NamedTuple):
@@ -44,13 +68,14 @@ def advance(current: Progress) -> Progress:
         iteround = Round.advance(pagename, group=group)
         trial = None
 
-    all_around = track_players(group, player, 'progress_round', iteround.id)
+    all_around = track_players_round(player, iteround)
     if iteround.is_pristine and all_around:
         iteround.start()
 
-    advancing = advancing_round(iteround)
+    iteround.update()
+    track_round(iteround)
 
-    if not advancing:
+    if iteround.progress_trials >= max_trials(iteround):
         iteround.complete()
 
     if iteround.is_closed:
@@ -59,9 +84,13 @@ def advance(current: Progress) -> Progress:
     if trial is None:
         trial = Trial.advance_next(iteround)
 
-    all_around = track_players(group, player, 'progress_trial', trial.id)
+    all_around = track_players_trial(player, trial)
     if trial.is_pristine and all_around:
         trial.start()
+
+    if trial.is_started:
+        trial.update()
+        track_trial()
 
     return Progress(pagename, player, iteround, trial, None)
 
@@ -72,29 +101,14 @@ def respond(current: Progress, response_time: int, answer: str) -> Progress:
     assert current.player.role == C.ROLESMAP[current.trial.progress_stage]
 
     response = Response.respond(trial, player, response_time, answer)
-    advancing = advancing_trial(trial)
 
-    if not advancing:
+    trial.update()
+    track_trial()
+
+    if trial.progress_stage == "COMPLETE":
         trial.complete()
 
-    advancing_round(iteround)
+    iteround.update()
+    track_round(iteround)
 
     return Progress(pagename, player, iteround, trial, response)
-
-
-def advancing_round(iteround: Round):
-    iteround.update()
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-    return iteround.progress_trials < max_trials(iteround)
-
-
-def max_trials(iteround: Round):
-    return C.NUM_TRIALS[iteround.pagename]
-
-
-def advancing_trial(trial: Trial):
-    trial.update()
-    nextstage = C.STAGES[C.STAGES.index(trial.progress_stage) + 1]
-    if nextstage is not None:
-        trial.progress_stage = nextstage
-    return nextstage is not None
