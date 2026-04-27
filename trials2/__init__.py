@@ -49,7 +49,7 @@ class LiveMethods:
         current = progress.current(player)
         assert current.trial and current.trial.id == message['id'], "mismatched response"
 
-        current = progress.respond(current, message['time'], message['answer'])
+        current = progress.respond(current, response_time=message['time'], answer=message['answer'])
 
         yield player, "feedback", page.display_feedback(current)
         yield group, "update", page.display_trial(current)
@@ -106,6 +106,11 @@ class Tasks(LiveMethods, Page):
         return {
             "correct": current.response.correct,
         }
+
+    @staticmethod
+    def before_next_page(player: Player, timeout_happened: bool):
+        if not timeout_happened:
+            set_payoff(player)
 
 
 page_sequence = [

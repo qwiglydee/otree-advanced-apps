@@ -90,20 +90,21 @@ def advance(current: Progress) -> Progress:
 
     if trial.is_started:
         trial.update()
-        track_trial()
+        track_trial(trial)
 
     return Progress(pagename, player, iteround, trial, None)
 
 
-def respond(current: Progress, response_time: int, answer: str) -> Progress:
+def respond(current: Progress, **kwargs) -> Progress:
     pagename, player, iteround, trial, response = current
     assert current.is_valid and response is None
     assert current.player.role == C.ROLESMAP[current.trial.progress_stage]
 
-    response = Response.respond(trial, player, response_time, answer)
+    response = Response.create_next(trial, player, stage=trial.progress_stage)
+    response.respond(**kwargs)
 
     trial.update()
-    track_trial()
+    track_trial(trial)
 
     if trial.progress_stage == "COMPLETE":
         trial.complete()

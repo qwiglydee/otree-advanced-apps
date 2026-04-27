@@ -71,7 +71,7 @@ if (document.querySelector(".otree-timer")) {
 
 function onUpdate(varname, handler) {
     if (!varname.startsWith("vars.")) throw Error("onUpdate: invalid var name, expecting `vars.` ");
-    let varref = varname.slice(6);
+    let varref = varname.slice(5);
     ot.onEvent(
         "update",
         (e) => e.detail.changes.affect(varref),

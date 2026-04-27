@@ -1,9 +1,9 @@
 {% extends "FullPage.html" %}
 {% block content %}
     <header>
-        <h2>Practice</h2>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
-        <div ot-display="vars.final">Score: <b ot-text="vars.final.score"></b></div>
+        <div class="alert alert-secondary m-2">Total score: <b ot-text="vars.progress.score"></b></div>
+        <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
     </header>
 
     <main ot-visible="vars.trial">
@@ -59,7 +59,7 @@
     </main>
 
     <footer>
-        <div ot-display="vars.final">Correct solution: <span ot-text="vars.trial.truth"></span></div>
+        <div ot-display="vars.result">Correct solution: <span ot-text="vars.result.truth"></span></div>
         <div class="flex-fill"></div>
         <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-3" autofocus>Continue</button>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
@@ -114,7 +114,7 @@
 
         function resetTrial() {
             vars.trial = null;
-            vars.final = null;
+            vars.result = null;
             resetResponse();
         }
 
@@ -133,7 +133,7 @@
         function updateTrial(update) {
             Object.assign(vars.trial, update);
             if (update.score !== null) {
-                vars.final = {
+                vars.result = {
                     score: vars.trial.score,
                     truth: vars.trial.truth,
                 };

@@ -3,7 +3,13 @@ from otree.models import BaseSubsession, BaseGroup, BasePlayer
 
 from _stuff.iterating import BaseRoundModel, BaseTrialModel, BaseResponseModel
 
-from .const import C
+from .const import C, Points
+
+
+def sample_params(numbers):
+    num1 = numbers.sample()
+    num2 = numbers.sample()
+    return num1, num2
 
 
 class Subsession(BaseSubsession):
@@ -12,7 +18,7 @@ class Subsession(BaseSubsession):
 
 class Group(BaseGroup):
     condition = database.StringField()
-    total_score = database.IntegerField(initial=0)
+    total_score = database.DecimalField(unit=Points, initial=0)
 
 
 class Player(BasePlayer):
@@ -23,11 +29,7 @@ class Player(BasePlayer):
 class Round(BaseRoundModel):
     group: Group = database.Link(Group)
     ispractice = database.BooleanField()
-    total_score = database.IntegerField(initial=0)
-
-    @property
-    def condition(self) -> str:
-        return self.group.condition
+    total_score = database.DecimalField(unit=Points, initial=0)
 
     @property
     def is_practice(self) -> bool:
@@ -46,7 +48,7 @@ class Round(BaseRoundModel):
         if not self.is_practice:
             self.group.total_score = self.total_score
 
-    progress_trials = database.IntegerField(initial=0)
+    progress_trials = database.IntegerField()
 
 
 class Trial(BaseTrialModel):
@@ -55,14 +57,14 @@ class Trial(BaseTrialModel):
     task = database.StringField()
     truth = database.StringField()
     success = database.IntegerField()
-    score = database.IntegerField(initial=0)
+    score = database.DecimalField(unit=Points, initial=0)
+
+    @property
+    def condition(self) -> str:
+        return self.iteround.group.condition
 
     def init(self, **kwargs):
-        condition = self.iteround.condition
-        numbers = C.NUMBERS[condition]
-        num1: int = numbers.sample()
-        num2: int = numbers.sample()
-
+        num1, num2 = sample_params(C.NUMBERS[self.condition])
         self.task = f"{num1} + {num2}"
         self.truth = str(num1 + num2)
 
@@ -76,10 +78,6 @@ class Trial(BaseTrialModel):
 
     progress_stage = database.StringField()
 
-    def start(self):
-        super().start()
-        self.progress_stage = C.STAGES[0]
-
 
 class Response(BaseResponseModel):
     trial: Trial = database.Link(Trial)
@@ -90,13 +88,10 @@ class Response(BaseResponseModel):
     answer = database.StringField()
     correct = database.BooleanField()
 
-    @classmethod
-    def respond(cls, trial: Trial, player: Player, response_time: int, answer: str):
-        response = cls.create_next(trial, player, stage=trial.progress_stage)
-        response.response_time = response_time
-        response.answer = answer
-        response.correct = response.answer == trial.truth
-        return response
+    def respond(self, response_time: int, answer: str):
+        self.response_time = response_time
+        self.answer = answer
+        self.correct = self.answer == self.trial.truth
 
     @classmethod
     def all(cls, trial: Trial):

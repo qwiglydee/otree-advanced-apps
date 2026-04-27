@@ -78,11 +78,12 @@ def advance(current: Progress) -> Progress:
     return Progress(pagename, player, iteround, trial, None)
 
 
-def respond(current: Progress, response_time: int, answer: str) -> Progress:
+def respond(current: Progress, **kwargs) -> Progress:
     pagename, player, iteround, trial, response = current
     assert current.is_valid and response is None
 
-    response = Response.respond(trial, player, response_time, answer)
+    response = Response.create_next(trial, player)
+    response.respond(**kwargs)
 
     trial.update()
     track_trial(trial)

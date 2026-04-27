@@ -3,7 +3,13 @@ from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Partici
 
 from _stuff.iterating import BaseRoundModel, BaseTrialModel, BaseResponseModel
 
-from .const import C
+from .const import C, Points
+
+
+def sample_params(numbers):
+    num1 = numbers.sample()
+    num2 = numbers.sample()
+    return num1, num2
 
 
 class Subsession(BaseSubsession):
@@ -16,17 +22,13 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     condition = database.StringField()
-    total_score = database.IntegerField(initial=0)
+    total_score = database.DecimalField(unit=Points, initial=0)
 
 
 class Round(BaseRoundModel):
     player: Player = database.Link(Player)
     ispractice = database.BooleanField()
-    total_score = database.IntegerField(initial=0)
-
-    @property
-    def condition(self) -> str:
-        return self.player.condition
+    total_score = database.DecimalField(unit=Points, initial=0)
 
     @property
     def is_practice(self) -> bool:
@@ -45,7 +47,7 @@ class Round(BaseRoundModel):
         if not self.is_practice:
             self.player.total_score = self.total_score
 
-    progress_trials = database.IntegerField(initial=0)
+    progress_trials = database.IntegerField()
 
 
 class Trial(BaseTrialModel):
@@ -54,14 +56,14 @@ class Trial(BaseTrialModel):
     task = database.StringField()
     truth = database.StringField()
     success = database.IntegerField()
-    score = database.IntegerField(initial=0)
+    score = database.DecimalField(unit=Points, initial=0)
+
+    @property
+    def condition(self) -> str:
+        return self.iteround.player.condition
 
     def init(self, **kwargs):
-        condition = self.iteround.condition
-        numbers = C.NUMBERS[condition]
-        num1: int = numbers.sample()
-        num2: int = numbers.sample()
-
+        num1, num2 = sample_params(C.NUMBERS[self.condition])
         self.task = f"{num1} + {num2}"
         self.truth = str(num1 + num2)
 
@@ -75,7 +77,7 @@ class Trial(BaseTrialModel):
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
 
-    progress_retries = database.IntegerField(initial=0)
+    progress_retries = database.IntegerField()
 
 
 class Response(BaseResponseModel):
@@ -86,13 +88,11 @@ class Response(BaseResponseModel):
     answer = database.StringField()
     correct = database.BooleanField()
 
-    @classmethod
-    def respond(cls, trial: Trial, player: Player, response_time: int, answer: str):
-        response = cls.create_next(trial, player)
-        response.response_time = response_time
-        response.answer = answer
-        response.correct = response.answer == trial.truth
-        return response
+    def respond(self, response_time: int, answer: str):
+        self.response_time = response_time
+        self.answer = answer
+        self.correct = self.answer == self.trial.truth
+        return self
 
 
 def custom_export_trials(_: list[Player]):
@@ -108,7 +108,7 @@ def custom_export_trials(_: list[Player]):
         "iteround.status",
         "iteround.completion",
         "iteround.processing_time",
-        "iteround.progress_trials",
+        "iteround.total_trials",
         "iteround.total_score",
         #
         "trial.iteration",
@@ -138,14 +138,14 @@ def custom_export_trials(_: list[Player]):
             session.label,
             participant.code,
             participant.label,
+            player.condition,
             #
-            iteround.condition,
             iteround.pagename,
             iteround.is_practice,
             iteround.status,
             iteround.completion,
             f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
-            iteround.progress_trials,
+            Trial.count(iteround),
             iteround.total_score,
             #
             trial.iteration,
