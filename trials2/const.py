@@ -23,7 +23,7 @@ class C(BaseConstants):
         'Tasks': 3,
     }
 
-    STAGES = ['S1', 'S2', 'COMPLETE']
+    STAGES = ['S1', 'S2']
     ROLESMAP = {'S1': 'P1', 'S2': 'P2'}
     STAGEMAP = {'P1': 'S1', 'P2': 'S2'}
 

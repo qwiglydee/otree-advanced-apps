@@ -27,7 +27,6 @@ class Progress(NamedTuple):
     player: Player
     iteround: Round | None
     trial: Trial | None
-    response: Response | None
 
     @property
     def is_valid(self):
@@ -46,12 +45,11 @@ def current(player: Player):
     pagename = current_pagename(player.participant)
     iteround = Round.current(pagename, player=player)
     trial = Trial.current(iteround) if iteround else None
-    return Progress(pagename, player, iteround, trial, None)
+    return Progress(pagename, player, iteround, trial)
 
 
 def advance(current: Progress) -> Progress:
-    pagename, player, iteround, trial, response = current
-    assert response is None
+    pagename, player, iteround, trial = current
 
     if iteround is None:
         iteround = Round.advance(pagename, player=player)
@@ -67,24 +65,22 @@ def advance(current: Progress) -> Progress:
         iteround.complete()
 
     if iteround.is_closed:
-        return Progress(pagename, player, iteround, None, None)
+        return Progress(pagename, player, iteround, None)
 
     if trial is None:
         trial = Trial.advance_next(iteround)
 
     if trial.is_pristine:
         trial.start()
-
-    if trial.is_started:
         trial.update()
         track_trial(trial)
 
-    return Progress(pagename, player, iteround, trial, None)
+    return Progress(pagename, player, iteround, trial)
 
 
-def respond(current: Progress, **kwargs) -> Progress:
-    pagename, player, iteround, trial, response = current
-    assert current.is_valid and response is None
+def respond(current: Progress, **kwargs) -> Response:
+    assert current.is_valid
+    pagename, player, iteround, trial = current
 
     response = Response.create_next(trial, player)
     response.respond(**kwargs)
@@ -98,4 +94,4 @@ def respond(current: Progress, **kwargs) -> Progress:
     iteround.update()
     track_round(iteround)
 
-    return Progress(pagename, player, iteround, trial, response)
+    return response

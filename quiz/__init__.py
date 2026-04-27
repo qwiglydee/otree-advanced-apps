@@ -5,8 +5,8 @@ from _stuff.config import get_session_param
 
 from .const import C
 from .models import Subsession, Group, Player, Round, Trial, Response  # noqa
-from .models import custom_export_trials  # noqa
-from .source import load_source, sample_data
+from .models import generate_trials, custom_export_trials  # noqa
+from .source import load_source
 from .progress import Progress
 from . import progress
 
@@ -19,14 +19,6 @@ def creating_session(subsession: Subsession):
     for player in subsession.get_players():
         player.condition = get_session_param(session, 'condition', choices=C.CONDITIONS, default="random")
         generate_trials(C.NUM_TRIALS['Tasks'], player, 'Tasks', sourcedata, 'Task')
-
-
-def generate_trials(count: int, player: Player, pagename: str, sourcedata: list[dict], section: str):
-    iteround = Round.create_new(pagename, player=player)
-    tasks = sample_data(sourcedata, count, condition=player.condition, section=section)
-    trials = Trial.create_many(iteround, count)
-    for trial, task in zip(trials, tasks, strict=True):
-        trial.init(**task)
 
 
 def set_payoff(player: Player):
@@ -53,15 +45,14 @@ class LiveMethods:
         yield "progress", page.display_progress(current)
 
     @classmethod
-    def live_response(page, player: Player, message: dict):
+    def live_response(page, player: Player, data: dict):
         current = progress.current(player)
-        assert current.trial and current.trial.id == message['id'], "mismatched response"
+        assert current.trial and current.trial.id == data['id'], "mismatched response"
 
-        answer = current.trial.options[message['choice']]
-        current = progress.respond(current, response_time=message['time'], answer=answer)
+        answer = current.trial.options[data['choice']]  # position -> value
+        response = progress.respond(current, response_time=data['time'], answer=answer)
 
-        yield "feedback", page.display_feedback(current)
-        yield "update", page.display_trial(current)
+        yield "feedback", page.display_feedback(current, response)
         yield "progress", page.display_progress(current)
 
 
@@ -72,22 +63,21 @@ class Tasks(LiveMethods, Page):
 
     @staticmethod
     def display_progress(current: Progress):
+        def trialstate():
+            return {
+                "iteration": current.trial.iteration,
+                "running": current.trial.is_started,
+                "completed": current.trial.is_completed,
+            }
+
         assert current.iteround
-        progr = {
+        return {
             "finished": current.iteround.is_completed,
             "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
+            "current": trialstate() if current.trial else None
         }
-
-        if current.trial:
-            progr.update({
-                "current": current.trial.iteration,
-                "started": current.trial.has_started,
-                "completed": current.trial.is_completed,
-            })
-
-        return progr
 
     @staticmethod
     def display_trial(current: Progress):
@@ -96,15 +86,15 @@ class Tasks(LiveMethods, Page):
             "id": current.trial.id,
             "task": current.trial.task,
             "options": current.trial.options,
-            "score": current.trial.score if current.trial.is_completed else None,
-            "truth": current.trial.truth if current.trial.is_completed else None,
         }
 
     @staticmethod
-    def display_feedback(current: Progress):
-        assert current.response
+    def display_feedback(current: Progress, response: Response):
+        assert response
         return {
-            "correct": current.response.correct,
+            "correct": response.correct,
+            "score": current.trial.score if current.trial.is_completed else None,
+            "truth": current.trial.truth if current.trial.is_completed else None,
         }
 
     @staticmethod

@@ -14,11 +14,6 @@ def track_round(iteround: Round):
     iteround.progress_trials = Trial.count(iteround, status='CLOSED')
 
 
-def track_trial(trial: Trial):
-    count = Response.count(trial)
-    trial.progress_stage = C.STAGES[count]
-
-
 def track_players_round(player: Player, iteround: Round) -> bool:
     player.progress_round = iteround.id
     players = player.group.get_players()
@@ -36,7 +31,6 @@ class Progress(NamedTuple):
     player: Player
     iteround: Round | None
     trial: Trial | None
-    response: Response | None
 
     @property
     def is_valid(self):
@@ -50,19 +44,22 @@ class Progress(NamedTuple):
     def is_running(self):
         return self.trial and self.trial.is_started
 
+    @property
+    def stage(self):
+        return self.trial.progress_stage if self.trial else None
+
 
 def current(player: Player):
     group = player.group
     pagename = current_pagename(player.participant)
     iteround = Round.current(pagename, group=group)
     trial = Trial.current(iteround) if iteround else None
-    return Progress(pagename, player, iteround, trial, None)
+    return Progress(pagename, player, iteround, trial)
 
 
 def advance(current: Progress) -> Progress:
-    pagename, player, iteround, trial, response = current
+    pagename, player, iteround, trial = current
     group = player.group
-    assert response is None
 
     if iteround is None:
         iteround = Round.advance(pagename, group=group)
@@ -79,7 +76,7 @@ def advance(current: Progress) -> Progress:
         iteround.complete()
 
     if iteround.is_closed:
-        return Progress(pagename, player, iteround, None, None)
+        return Progress(pagename, player, iteround, None)
 
     if trial is None:
         trial = Trial.advance_next(iteround)
@@ -87,29 +84,30 @@ def advance(current: Progress) -> Progress:
     all_around = track_players_trial(player, trial)
     if trial.is_pristine and all_around:
         trial.start()
-
-    if trial.is_started:
         trial.update()
-        track_trial(trial)
+        trial.progress_stage = C.STAGES[0]
 
-    return Progress(pagename, player, iteround, trial, None)
+    return Progress(pagename, player, iteround, trial)
 
 
-def respond(current: Progress, **kwargs) -> Progress:
-    pagename, player, iteround, trial, response = current
-    assert current.is_valid and response is None
-    assert current.player.role == C.ROLESMAP[current.trial.progress_stage]
+def respond(current: Progress, **kwargs) -> Response:
+    assert current.is_valid
+    pagename, player, iteround, trial = current
+    stage = trial.progress_stage
 
-    response = Response.create_next(trial, player, stage=trial.progress_stage)
+    assert player.role == C.ROLESMAP[stage]
+    response = Response.create_next(trial, player, stage=stage)
     response.respond(**kwargs)
 
     trial.update()
-    track_trial(trial)
 
-    if trial.progress_stage == "COMPLETE":
+    if trial.progress_stage == C.STAGES[-1]:
         trial.complete()
+        trial.progress_stage = None
+    else:
+        trial.progress_stage = C.STAGES[C.STAGES.index(stage) + 1]
 
     iteround.update()
     track_round(iteround)
 
-    return Progress(pagename, player, iteround, trial, response)
+    return response

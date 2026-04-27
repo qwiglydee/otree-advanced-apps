@@ -15,7 +15,7 @@ class C(BaseConstants):
     PLAYERS_PER_GROUP = None
 
     NUM_TRIALS = {
-        'Tasks': 3,
+        'Tasks': 5,
     }
 
     CONDITIONS = ["C0", "C1", "C2"]

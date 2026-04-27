@@ -1,9 +1,8 @@
 {% extends "FullPage.html" %}
 {% block content %}
     <header>
-        <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
+        <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current.iteration"></ot-progress>
         <div class="alert alert-secondary m-2">Total score: <b ot-text="vars.progress.score"></b></div>
-        <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
     </header>
 
     <main ot-visible="vars.trial">
@@ -59,7 +58,8 @@
     </main>
 
     <footer>
-        <div ot-display="vars.result">Correct solution: <span ot-text="vars.result.truth"></span></div>
+        <div ot-display="vars.feedback.truth">Correct solution: <span ot-text="vars.feedback.truth"></span></div>
+        <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
         <div class="flex-fill"></div>
         <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-3" autofocus>Continue</button>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
@@ -76,12 +76,11 @@
         onLoad(continueRound);
         onLive("progress", liveProgress);
         onLive("trial", startTrial);
-        onLive("update", updateTrial);
         onInput("choice", inputChoice);
         onInput("confirm", confirmChoice);
         onLive("feedback", liveFeedback);
         onInput("continue", continueRound);
-        onUpdate("vars.phase", switchPhase);
+        onUpdate("vars.feedback.score", showResult);
         onUpdate("vars.feedback.correct", showValidity);
 
         function switchPhase(phase) {
@@ -93,32 +92,30 @@
         }
 
         async function continueRound() {
+            switchPhase("waiting");
             resetTrial();
-            vars.phase = "waiting";
             await ot.delay(BLINK_DELAY);
             sendLive("continue");
         }
 
         async function liveProgress(progress) {
             vars.progress = progress;
-            if (progress.finished) ot.completePage();
-            if (progress.completed) {
-                vars.phase = "waiting";
-                await ot.delay(TRIAL_DELAY);
-                vars.phase = "completing"; // manual
-                // continueRound(); // auto
+            if (progress.finished) {
+                ot.completePage();
             } else if (progress.current) {
-                vars.phase = "responding";
+                if (progress.current.completed) {
+                    //switchPhase("waiting");
+                    //await ot.delay(TRIAL_DELAY);
+                    //continueRound()
+                    switchPhase("completing");
+                } else if (progress.current.running) {
+                    switchPhase("responding");
+                }
             }
         }
 
         function resetTrial() {
             vars.trial = null;
-            vars.result = null;
-            resetResponse();
-        }
-
-        function resetResponse() {
             vars.choice = null;
             vars.feedback = null;
             vars.validity = {};
@@ -128,16 +125,6 @@
         function startTrial(trial) {
             vars.trial = trial;
             ot.beginTimeMeasurement();
-        }
-
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
-            if (update.score !== null) {
-                vars.result = {
-                    score: vars.trial.score,
-                    truth: vars.trial.truth,
-                };
-            }
         }
 
         function inputChoice(choice) {
@@ -157,6 +144,14 @@
 
         async function liveFeedback(feedback) {
             vars.feedback = feedback;
+        }
+
+        function showResult(score) {
+            if (score != null) {
+                vars.result = { score }; // TODO: format
+            } else {
+                vars.result = null;
+            }
         }
 
         function showValidity(correct) {

@@ -44,10 +44,9 @@ class LiveMethods:
         current = progress.current(player)
         assert current.trial and current.trial.id == message['id'], "mismatched response"
 
-        current = progress.respond(current, response_time=message['time'], answer=message['answer'])
+        response = progress.respond(current, response_time=message['time'], answer=message['answer'])
 
-        yield "feedback", page.display_feedback(current)
-        yield "update", page.display_trial(current)
+        yield "feedback", page.display_feedback(current, response)
         yield "progress", page.display_progress(current)
 
 
@@ -58,24 +57,23 @@ class Tasks(LiveMethods, Page):
 
     @staticmethod
     def display_progress(current: Progress):
+        def trialstate():
+            return {
+                "iteration": current.trial.iteration,
+                "running": current.trial.is_started,
+                "completed": current.trial.is_completed,
+                "retrying": current.trial.progress_retries,
+                "retries": progress.max_retries(current.trial) - current.trial.progress_retries,
+            }
+
         assert current.iteround
-        progr = {
+        return {
             "finished": current.iteround.is_completed,
             "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
+            "current": trialstate() if current.trial else None
         }
-
-        if current.trial:
-            progr.update({
-                "current": current.trial.iteration,
-                "started": current.trial.has_started,
-                "completed": current.trial.is_completed,
-                "retrying": current.trial.progress_retries > 0,
-                "retries": progress.max_retries(current.trial) - current.trial.progress_retries,
-            })
-
-        return progr
 
     @staticmethod
     def display_trial(current: Progress):
@@ -83,15 +81,15 @@ class Tasks(LiveMethods, Page):
         return {
             "id": current.trial.id,
             "task": current.trial.task,
-            "score": current.trial.score if current.trial.is_completed else None,
-            "truth": current.trial.truth if current.trial.is_completed else None,
         }
 
     @staticmethod
-    def display_feedback(current: Progress):
-        assert current.response
+    def display_feedback(current: Progress, response: Response):
+        assert response
         return {
-            "correct": current.response.correct,
+            "correct": response.correct,
+            "score": current.trial.score if current.trial.is_completed else None,
+            "truth": current.trial.truth if current.trial.is_completed else None,
         }
 
     @staticmethod
