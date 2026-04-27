@@ -33,16 +33,16 @@ function onLive(name, handler) {
 }
 
 window.liveSocket.onmessage = function (e) {
-    console.debug("live received:", e.data);
+    console.debug("live:", e.data);
     try {
         let data = JSON.parse(e.data);
-        if (data.otree_success === false) throw Error("Error occurred on the server. See server logs for details.");
+        if (data.otree_success === false) throw Error("Server error");
         data = data.live_method_payload;
-        if (!ot.isObject(data) || !data.type) throw Error("Invalid data received. Not compatible with otree-front-live");
+        if (!ot.isObject(data) || !data.type) throw Error("Bogus data received");
         ot.emitEvent("live", { name: data.type, data });
     } catch (e) {
         console.error(e);
-        window.alert("Communication error occured. The page terminates.");
+        window.alert("Application error occured. The page terminates.");
         ot.submitPage();
     }
 };

@@ -27,10 +27,10 @@ def parse_response(player: BasePlayer, response: LiveResponse) -> dict:
             return {0: {'type': t}}
         case (BaseGroup(), str() as t, dict() as d):
             return {0: {'type': t, **d}}
-        case (BasePlayer(), str() as t):
-            return {player.id_in_group: {'type': t}}
-        case (BasePlayer(), str() as t, dict() as d):
-            return {player.id_in_group: {'type': t, **d}}
+        case (BasePlayer() as p, str() as t):
+            return {p.id_in_group: {'type': t}}
+        case (BasePlayer() as p, str() as t, dict() as d):
+            return {p.id_in_group: {'type': t, **d}}
         case str() as t:
             return {player.id_in_group: {'type': t}}
         case (str() as t, dict() as d):
