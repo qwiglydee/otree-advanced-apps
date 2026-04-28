@@ -18,7 +18,7 @@ def creating_session(subsession: Subsession):
 
     for player in subsession.get_players():
         player.condition = get_session_param(session, 'condition', choices=C.CONDITIONS, default="random")
-        generate_trials(C.NUM_TRIALS['Tasks'], player, 'Tasks', sourcedata, 'Task')
+        generate_trials(C.NUM_TRIALS['Tasks'], player, 'Tasks', sourcedata)
 
 
 def set_payoff(player: Player):
@@ -49,8 +49,9 @@ class LiveMethods:
         current = progress.current(player)
         assert current.trial and current.trial.id == data['id'], "mismatched response"
 
-        answer = current.trial.options[data['choice']]  # position -> value
-        response = progress.respond(current, response_time=data['time'], answer=answer)
+        button = str(data['choice'])
+        answer = current.trial.options[button]
+        response = progress.respond(current, response_time=data['time'], button=button, answer=answer)
 
         yield "progress", page.display_progress(current)
         yield "feedback", page.display_feedback(current, response)
@@ -79,6 +80,7 @@ class Tasks(LiveMethods, Page):
             "id": current.trial.id,
             "task": current.trial.task,
             "options": current.trial.options,
+            "labels": current.trial.labels,
         }
 
     @staticmethod

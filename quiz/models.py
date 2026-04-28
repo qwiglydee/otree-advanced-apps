@@ -57,6 +57,11 @@ class Trial(BaseTrialModel):
     option_3 = database.StringField()
     options = dictproperty('option_', '123')
 
+    label_1 = database.StringField()
+    label_2 = database.StringField()
+    label_3 = database.StringField()
+    labels = dictproperty('label_', '123')
+
     success = database.IntegerField()
     score = database.DecimalField(unit=Points, initial=0)
 
@@ -69,11 +74,16 @@ class Trial(BaseTrialModel):
             # skip auto-init
             return
 
-        self.task = kwargs['task']
-        self.truth = kwargs['truth']
-        self.option_1 = kwargs['option_1']
-        self.option_2 = kwargs['option_2']
-        self.option_3 = kwargs['option_3']
+        datarow = kwargs['datarow']
+
+        self.task = datarow['task']
+        self.truth = datarow['truth']
+        self.option_1 = datarow['option_1']
+        self.option_2 = datarow['option_2']
+        self.option_3 = datarow['option_3']
+        self.label_1 = datarow['label_1']
+        self.label_2 = datarow['label_2']
+        self.label_3 = datarow['label_3']
 
     def update(self):
         """Update something after a response"""
@@ -88,12 +98,12 @@ class Trial(BaseTrialModel):
     progress_retries = database.IntegerField()
 
 
-def generate_trials(count: int, player: Player, pagename: str, sourcedata: list[dict], section: str):
+def generate_trials(count: int, player: Player, pagename: str, sourcedata: list[dict]):
     iteround = Round.create_new(pagename, player=player)
-    tasks = sample_data(sourcedata, count, condition=player.condition, section=section)
+    data = sample_data(sourcedata, count, condition=player.condition, section=pagename)
     trials = Trial.create_many(iteround, count)
-    for trial, task in zip(trials, tasks, strict=True):
-        trial.init(**task)
+    for trial, datum in zip(trials, data, strict=True):
+        trial.init(datarow=datum)
 
 
 class Response(BaseResponseModel):
@@ -101,11 +111,13 @@ class Response(BaseResponseModel):
     player: Player = database.Link(Player)
 
     response_time = database.IntegerField()
+    button = database.StringField()
     answer = database.StringField()
     correct = database.BooleanField()
 
-    def respond(self, response_time: int, answer: str):
+    def respond(self, response_time: int, button: str, answer: str):
         self.response_time = response_time
+        self.button = button
         self.answer = answer
         self.correct = self.answer == self.trial.truth
 
@@ -133,13 +145,17 @@ def custom_export_trials(_: list[Player]):
         "trial.task",
         "trial.truth",
         "trial.option_1",
+        "trial.label_1",
         "trial.option_2",
+        "trial.label_2",
         "trial.option_3",
+        "trial.label_3",
         "trial.success",
         "trial.score",
         #
         "response.iteration",
         "response.time",
+        "response.button",
         "response.answer",
         "response.correct",
 
@@ -173,8 +189,11 @@ def custom_export_trials(_: list[Player]):
             trial.task,
             trial.truth,
             trial.option_1,
+            trial.label_1,
             trial.option_2,
+            trial.label_2,
             trial.option_3,
+            trial.label_3,
             trial.success,
             trial.score,
         ]
@@ -186,6 +205,7 @@ def custom_export_trials(_: list[Player]):
             yield fields + [
                 resp.iteration,
                 resp.response_time,
+                resp.button,
                 resp.answer,
                 resp.correct,
             ]

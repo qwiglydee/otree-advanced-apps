@@ -17,6 +17,9 @@ class DataRow(ExtraModel):
     option_1 = database.StringField()
     option_2 = database.StringField()
     option_3 = database.StringField()
+    label_1 = database.StringField()
+    label_2 = database.StringField()
+    label_3 = database.StringField()
 
 
 def load_source(filename: str) -> list[dict]:
