@@ -115,16 +115,6 @@ class otEnable extends ot.ContentDirective {
 }
 ot.attachDirective(otEnable, "[ot-enable]");
 
-class otRequired extends ot.ContentDirective {
-    params = { val: { attr: "ot-required", default: false } };
-
-    render() {
-        let toggle = ot.isVoid(this.val) || this.val == false;
-        this.elem.toggleAttribute("required", !toggle);
-    }
-}
-ot.attachDirective(otRequired, "[ot-required]");
-
 function autofocus(elem) {
     if (elem.hasAttribute("hidden") || elem.hasAttribute("invisible") || elem.hasAttribute("disabled")) return;
 
@@ -136,4 +126,30 @@ function autofocus(elem) {
         let nested = elem.querySelector("[autofocus]:not([disabled]):not([hidden]):not([invisible])");
         if (nested) nested.focus();
     }
+}
+
+class otRequired extends ot.ContentDirective {
+    params = { val: { attr: "ot-required", default: false } };
+
+    render() {
+        let toggle = !ot.isVoid(this.val) && this.val == true;
+        this.elem.toggleAttribute("required", toggle);
+    }
+}
+ot.attachDirective(otRequired, "[ot-required]");
+
+class otSelected extends ot.ContentDirective {
+    params = { val: { attr: "ot-selected", default: false } };
+
+    render() {
+        let toggle = !ot.isVoid(this.val) && this.val == true;
+        this.elem.toggleAttribute("selected", toggle);
+    }
+}
+ot.attachDirective(otSelected, "[ot-selected]");
+
+function classMap(stylemap) {
+    return Object.entries(stylemap)
+        .filter(([k, v]) => v == true)
+        .map(([k, v]) => k);
 }

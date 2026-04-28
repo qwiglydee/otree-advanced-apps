@@ -1,0 +1,220 @@
+{% extends "FullPage.html" %}
+{% block content %}
+    <header>
+        <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
+        <div class="alert alert-secondary m-2">Total score: <b ot-text="vars.progress.score"></b></div>
+    </header>
+
+    <main ot-visible="vars.trial">
+        <div class="cards cards-3">
+            <button
+                ot-click-input
+                type="button"
+                name="choice"
+                value="1"
+                ot-text="vars.labels.1"
+                ot-enable="vars.responding"
+                class="crd fs-1"
+                ot-selected="vars.selected.1"
+                ot-class="vars.styles.1"
+            ></button>
+            <button
+                ot-click-input
+                type="button"
+                name="choice"
+                value="2"
+                ot-text="vars.labels.2"
+                ot-enable="vars.responding"
+                class="crd fs-1"
+                ot-selected="vars.selected.2"
+                ot-class="vars.styles.2"
+            ></button>
+            <button
+                ot-click-input
+                type="button"
+                name="choice"
+                value="3"
+                ot-text="vars.labels.3"
+                ot-enable="vars.responding"
+                class="crd fs-1"
+                ot-selected="vars.selected.3"
+                ot-class="vars.styles.3"
+            ></button>
+        </div>
+    </main>
+
+    <footer>
+        <button ot-click-input type="button" name="finalize" ot-enable="vars.progress.finalizable" ot-display="vars.sampling" class="btn btn-primary m-3">
+            Finalize
+        </button>
+        <div class="flex-fill"></div>
+        <div ot-display="vars.sampling">Make your <b>sampling</b> choice or <kbd>Finalize</kbd> to proceed to final stage...</div>
+        <div ot-display="vars.finalizing">Make your <b>final</b> choice...</div>
+        <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-3" autofocus>Continue</button>
+        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+    </footer>
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+        "use strict";
+
+        const BLINK_DELAY = 200;
+        const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
+        const SAMPLING_DELAY = 1000 * "{{C.SAMPLING_DELAY}}";
+        const AUTO_ADVANCE = true;
+        const NUM_BUTTONS = 3;
+
+        onLoad(continueRound);
+        onLive("progress", liveProgress);
+        onLive("trial", startTrial);
+        onInput("choice", inputResponse);
+        onLive("feedback", liveFeedback);
+        onInput("finalize", finalizeTrial);
+        onInput("continue", continueRound);
+        onUpdate("vars.choice", renderChoice);
+        onUpdate("vars.feedback.outcomes", renderOutcomes);
+        onUpdate("vars.feedback.score", renderResult);
+
+        function switchState(state, stage) {
+            vars.responding = false;
+            vars.completing = false;
+            vars.waiting = false;
+            vars.sampling = false;
+            vars.finalizing = false;
+            switch (state) {
+                case "starting":
+                    vars.waiting = true;
+                    break;
+                case "responding":
+                    vars.responding = true;
+                    vars.sampling = stage == "SAMPLING";
+                    vars.finalizing = stage == "FINAL";
+                    break;
+                case "evaluating":
+                    vars.waiting = true;
+                    break;
+                case "completing":
+                    if (AUTO_ADVANCE) {
+                        vars.waiting = true;
+                    } else {
+                        vars.completing = true;
+                    }
+                    break;
+                default:
+                    throw Error("Invlid state");
+            }
+            ot.updatePage();
+        }
+
+        async function continueRound() {
+            resetTrial();
+            switchState("starting");
+            await ot.delay(BLINK_DELAY);
+            sendLive("continue");
+        }
+
+        async function liveProgress(progress) {
+            vars.progress = progress;
+            if (progress.finished) ot.completePage();
+        }
+
+        function resetTrial() {
+            vars.trial = null;
+            vars.choice = null;
+            vars.feedback = null;
+            ot.resetInputs();
+        }
+
+        function resetResponse() {
+            vars.choice = null;
+            vars.feedback = null;
+            ot.resetInputs();
+        }
+
+        function startTrial(trial, stage) {
+            vars.trial = trial;
+            vars.labels = Object.assign({}, trial.labels);
+            vars.stage = stage || "SAMPLING";
+            ot.beginTimeMeasurement();
+            switchState("responding", vars.stage);
+        }
+
+        async function restartTrial(stage) {
+            switchState("starting");
+            let bak = vars.trial;
+            if (stage == "SAMPLING") {
+                await ot.delay(SAMPLING_DELAY);
+                resetResponse();
+                startTrial(bak, stage);
+            }
+            if (stage == "FINAL") {
+                resetTrial();
+                await ot.delay(BLINK_DELAY);
+                startTrial(bak, stage);
+            }
+        }
+
+        function inputResponse(choice) {
+            vars.choice = Number(choice);
+            switchState("evaluating");
+            sendLive("response", {
+                id: vars.trial.id,
+                time: ot.getTimeMeasurement(),
+                stage: vars.stage,
+                button: vars.choice,
+            });
+        }
+
+        function liveFeedback(feedback) {
+            vars.feedback = feedback;
+            if (feedback.completed) completeTrial();
+            else restartTrial(vars.stage);
+        }
+
+        function finalizeTrial() {
+            restartTrial("FINAL");
+        }
+
+        async function completeTrial() {
+            switchState("completing");
+            if (AUTO_ADVANCE) {
+                await ot.delay(TRIAL_DELAY);
+                continueRound();
+            }
+        }
+
+        function renderOutcomes(outcomes) {
+            if (outcomes != null) {
+                // updating labels and styles for each button
+                // only when a corresponding outcome provided
+                for (let i in outcomes) {
+                    let val = outcomes[i];
+                    if (val != null) {
+                        vars.labels[i] = val; // TODO: format
+                        vars.styles[i] = "opened";
+                    }
+                }
+            } else {
+                vars.styles = { 1: "closed", 2: "closed", 3: "closed" };
+            }
+            ot.updatePage();
+        }
+
+        function renderChoice(choice) {
+            vars.selected = { 1: false, 2: false, 3: false };
+            if (choice != null) vars.selected[choice] = true;
+            ot.updatePage();
+        }
+
+        function renderResult(score) {
+            if (score != null) {
+                vars.result = { score }; // TODO: format
+            } else {
+                vars.result = null;
+            }
+            ot.updatePage();
+        }
+    </script>
+{% endblock scripts %}

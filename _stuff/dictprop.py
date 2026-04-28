@@ -13,8 +13,9 @@ Usage:
       bars = dictproperty('bar_', ('a1', 'a2')) # => { 'a1': bar_a1, 'B': bar_b }
 """
 
+
 def dictvalues(obj, prefix, suffixes):
-    return { k: getattr(obj, prefix + k.lower()) for k in suffixes }
+    return {k: getattr(obj, prefix + k.lower()) for k in suffixes}
 
 
 class dictproperty():
@@ -24,4 +25,3 @@ class dictproperty():
 
     def __get__(self, instance, owner):
         return dictvalues(instance, self.prefix, self.suffixes)
-

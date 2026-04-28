@@ -1,0 +1,101 @@
+/**
+ * Card-looking buttons for choices
+ * by qwiglydee@gmail.com
+ *
+ * A page should probably redefine number of buttons N like this:
+ * .cards { grid-template-columns: repeat(N, 1fr); } 
+ * 
+ * Usage:
+ * <div class="cards cards-2"> <button class="crd">...</button> ... </div>
+ */
+
+:root {
+    --card-size: 200px;
+    --card-pull: 75px;
+    --card-transition-open: 200ms ease-in;
+    --card-transition-close: 200ms ease-out;
+    --card-transition-select: 200ms ease-in-out;
+}
+
+.cards {
+    display: grid;
+    gap: 0 2rem;
+    padding-bottom: var(--card-pull);
+}
+
+.cards-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.cards-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.cards-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.cards-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.cards .crd {
+    width: var(--card-size);
+    height: var(--card-size);
+    text-align: center;
+    font-size: x-large;
+
+    border-radius: 16px;
+    border-width: 4px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.5);
+    box-shadow: var(--bs-box-shadow-sm);
+
+    position: relative;
+    top: 0;
+    margin: auto;
+}
+
+.cards .crd.crd-primary {
+    color: var(--bs-white);
+    background-color: var(--bs-primary);
+}
+
+.cards .crd.closed {
+    color: var(--bs-white);
+    background-color: var(--bs-primary);
+}
+
+.cards .crd.opened {
+    color: var(--bs-dark);
+    background-color: var(--bs-info);
+}
+
+.cards .crd[selected] {
+    top: var(--card-pull);
+    box-shadow: var(--bs-box-shadow-lg);
+}
+
+.cards .crd:not([selected]):disabled {
+    opacity: 0.75;
+}
+
+.cards .crd:not([selected]):enabled:hover {
+    box-shadow: var(--bs-box-shadow);
+}
+
+/**** transitions ****/
+
+.cards .crd.opened {
+    transition:
+        top var(--card-transition-select),
+        box-shadow var(--card-transition-open),
+        background-color var(--card-transition-open);
+}
+
+.cards .crd.closed {
+    transition:
+        top var(--card-transition-select),
+        box-shadow var(--card-transition-close),
+        background-color var(--card-transition-close);
+}

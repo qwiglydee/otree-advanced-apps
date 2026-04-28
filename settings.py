@@ -23,6 +23,16 @@ SESSION_CONFIGS = [
         app_sequence=['trials2'],
         condition="random",
     ),
+    dict(
+        name='lottery',
+        app_sequence=['lottery'],
+        condition="random",
+    ),
+    dict(
+        name='sampling',
+        app_sequence=['lottery_sampling'],
+        condition="random",
+    ),
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs

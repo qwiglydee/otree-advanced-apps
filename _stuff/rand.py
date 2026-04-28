@@ -88,3 +88,8 @@ class Choices(namedtuple('Choices', ['outcomes'])):
 
     def sample(self):
         return random.choice(self.outcomes)
+
+
+class Const(namedtuple('Const', ['value'])):
+    def sample(self):
+        return self.value
