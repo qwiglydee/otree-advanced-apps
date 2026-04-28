@@ -30,16 +30,16 @@ class LiveMethods:
 
         # restore trial on page reloading
         if current.trial and current.trial.is_started:
-            yield player, "trial", page.display_trial(current)
             yield player, "progress", page.display_progress(current)
+            yield player, "trial", page.display_trial(current)
             return
 
         current = progress.advance(current)
 
         if current.trial and current.trial.has_started:
             # synchronize progress and trial
-            yield group, "trial", page.display_trial(current)
             yield group, "progress", page.display_progress(current)
+            yield group, "trial", page.display_trial(current)
         else:
             yield player, "progress", page.display_progress(current)
 
@@ -51,11 +51,10 @@ class LiveMethods:
 
         progress.respond(current, response_time=message['time'], answer=message['answer'])
 
+        yield group, "progress", page.display_progress(current)
         for response in Response.all(current.trial):
             yield response.player, "feedback", page.display_feedback(current, response)
-
         yield group, "update", page.display_trial(current)
-        yield group, "progress", page.display_progress(current)
 
 
 @live_page
@@ -71,14 +70,6 @@ class Tasks(LiveMethods, Page):
 
     @staticmethod
     def display_progress(current: Progress):
-        def trialstate():
-            return {
-                "iteration": current.trial.iteration,
-                "running": current.trial.is_started,
-                "completed": current.trial.is_completed,
-                "stage": current.trial.progress_stage,
-            }
-
         assert current.iteround
         return {
             "finished": current.iteround.is_completed,
@@ -86,7 +77,8 @@ class Tasks(LiveMethods, Page):
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
             "pending": not current.has_started,
-            "current": trialstate() if current.trial else None
+            "current": current.trial.iteration if current.trial else None,
+            "stage": current.trial.progress_stage if current.trial else None,
         }
 
     @staticmethod
@@ -102,6 +94,7 @@ class Tasks(LiveMethods, Page):
     @staticmethod
     def display_feedback(current: Progress, response: Response):
         return {
+            "completed": current.trial.is_completed,
             "correct": response.correct if current.trial.is_completed else None,
             "score": current.trial.score if current.trial.is_completed else None,
             "truth": current.trial.truth if current.trial.is_completed else None,
@@ -113,6 +106,11 @@ class Tasks(LiveMethods, Page):
             set_payoff(player)
 
 
+class Intro(Page):
+    pass
+
+
 page_sequence = [
+    Intro,
     Tasks,
 ]

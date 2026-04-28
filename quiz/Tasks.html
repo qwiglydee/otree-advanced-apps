@@ -1,7 +1,7 @@
 {% extends "FullPage.html" %}
 {% block content %}
     <header>
-        <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current.iteration"></ot-progress>
+        <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
         <div class="alert alert-secondary m-2">Total score: <b ot-text="vars.progress.score"></b></div>
     </header>
 
@@ -72,6 +72,7 @@
 
         const BLINK_DELAY = 200;
         const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
+        const AUTO_ADVANCE = false;
 
         onLoad(continueRound);
         onLive("progress", liveProgress);
@@ -80,61 +81,73 @@
         onInput("confirm", confirmChoice);
         onLive("feedback", liveFeedback);
         onInput("continue", continueRound);
-        onUpdate("vars.feedback.score", showResult);
-        onUpdate("vars.feedback.correct", showValidity);
+        onUpdate("vars.feedback.score", renderResult);
+        onUpdate("vars.feedback.correct", renderValidity);
 
-        function switchPhase(phase) {
-            vars.responding = phase == "responding";
+        function switchState(state) {
+            vars.responding = false;
             vars.confirming = false;
-            vars.completing = phase == "completing";
-            vars.waiting = phase == "waiting";
+            vars.completing = false;
+            vars.waiting = false;
+            switch (state) {
+                case "starting":
+                    vars.waiting = true;
+                    break;
+                case "responding":
+                    vars.responding = true;
+                    vars.confirming = vars.choice != null;
+                    break;
+                case "evaluating":
+                    vars.waiting = true;
+                    break;
+                case "completing":
+                    if (AUTO_ADVANCE) {
+                        vars.waiting = true;
+                    } else {
+                        vars.completing = true;
+                    }
+                    break;
+                case null:
+                    break;
+                default:
+                    throw Error(`Invlid state: ${state}`);
+            }
             ot.updatePage();
         }
 
         async function continueRound() {
-            switchPhase("waiting");
             resetTrial();
+            switchState("starting");
             await ot.delay(BLINK_DELAY);
             sendLive("continue");
         }
 
         async function liveProgress(progress) {
             vars.progress = progress;
-            if (progress.finished) {
-                ot.completePage();
-            } else if (progress.current) {
-                if (progress.current.completed) {
-                    //switchPhase("waiting");
-                    //await ot.delay(TRIAL_DELAY);
-                    //continueRound()
-                    switchPhase("completing");
-                } else if (progress.current.running) {
-                    switchPhase("responding");
-                }
-            }
+            if (progress.finished) ot.completePage();
         }
 
         function resetTrial() {
             vars.trial = null;
             vars.choice = null;
             vars.feedback = null;
-            vars.validity = {};
             ot.resetInputs();
+            switchState(null);
         }
 
         function startTrial(trial) {
             vars.trial = trial;
+            switchState("responding");
             ot.beginTimeMeasurement();
         }
 
         function inputChoice(choice) {
             vars.choice = choice;
-            vars.confirming = true;
+            switchState("responding");
         }
 
         function confirmChoice() {
-            vars.responding = false;
-            vars.confirming = false;
+            switchState("evaluating");
             sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
@@ -144,17 +157,27 @@
 
         async function liveFeedback(feedback) {
             vars.feedback = feedback;
+            completeTrial();
         }
 
-        function showResult(score) {
+        async function completeTrial() {
+            switchState("completing");
+            if (AUTO_ADVANCE) {
+                await ot.delay(TRIAL_DELAY);
+                continueRound();
+            }
+        }
+
+        function renderResult(score) {
             if (score != null) {
                 vars.result = { score }; // TODO: format
             } else {
                 vars.result = null;
             }
+            ot.updatePage();
         }
 
-        function showValidity(correct) {
+        function renderValidity(correct) {
             if (correct == null) {
                 vars.validity = {};
             } else {

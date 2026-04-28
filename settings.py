@@ -8,6 +8,12 @@ SESSION_CONFIGS = [
         condition="random",
     ),
     dict(
+        name='quiz',
+        app_sequence=['quiz'],
+        condition="random",
+        source="tasks.csv",
+    ),
+    dict(
         name='trials1',
         app_sequence=['trials1'],
         condition="random",
@@ -16,12 +22,6 @@ SESSION_CONFIGS = [
         name='trials2',
         app_sequence=['trials2'],
         condition="random",
-    ),
-    dict(
-        name='quiz',
-        app_sequence=['quiz'],
-        condition="random",
-        source="tasks.csv",
     ),
 ]
 

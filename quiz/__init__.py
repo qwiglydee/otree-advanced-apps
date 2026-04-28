@@ -34,15 +34,15 @@ class LiveMethods:
 
         # restore trial on page reloading
         if current.trial and current.trial.is_started:
-            yield "trial", page.display_trial(current)
             yield "progress", page.display_progress(current)
+            yield "trial", page.display_trial(current)
             return
 
         current = progress.advance(current)
 
+        yield "progress", page.display_progress(current)
         if current.trial:
             yield "trial", page.display_trial(current)
-        yield "progress", page.display_progress(current)
 
     @classmethod
     def live_response(page, player: Player, data: dict):
@@ -52,8 +52,8 @@ class LiveMethods:
         answer = current.trial.options[data['choice']]  # position -> value
         response = progress.respond(current, response_time=data['time'], answer=answer)
 
-        yield "feedback", page.display_feedback(current, response)
         yield "progress", page.display_progress(current)
+        yield "feedback", page.display_feedback(current, response)
 
 
 @live_page
@@ -63,20 +63,13 @@ class Tasks(LiveMethods, Page):
 
     @staticmethod
     def display_progress(current: Progress):
-        def trialstate():
-            return {
-                "iteration": current.trial.iteration,
-                "running": current.trial.is_started,
-                "completed": current.trial.is_completed,
-            }
-
         assert current.iteround
         return {
             "finished": current.iteround.is_completed,
             "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
-            "current": trialstate() if current.trial else None
+            "current": current.trial.iteration if current.trial else None
         }
 
     @staticmethod
@@ -92,6 +85,7 @@ class Tasks(LiveMethods, Page):
     def display_feedback(current: Progress, response: Response):
         assert response
         return {
+            "completed": current.trial.is_completed,
             "correct": response.correct,
             "score": current.trial.score if current.trial.is_completed else None,
             "truth": current.trial.truth if current.trial.is_completed else None,
