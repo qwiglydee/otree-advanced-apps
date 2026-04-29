@@ -179,9 +179,9 @@ class Results(Page):
 
 
 page_sequence = [
-    # Intro,
-    # Questions1,
-    # Questions2,
+    Intro,
+    Questions1,
+    Questions2,
     Questions3,
-    # Results,
+    Results,
 ]
