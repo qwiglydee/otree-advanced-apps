@@ -59,7 +59,7 @@ class Round(BaseRoundModel):
         if not self.is_practice:
             self.player.total_score = self.total_score
 
-    progress_trials = database.IntegerField(initial=0)
+    progress_trials = database.IntegerField()
 
 
 class Trial(BaseTrialModel):
