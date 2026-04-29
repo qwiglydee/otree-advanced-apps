@@ -1,5 +1,5 @@
 from otree import database
-from otree.models import BaseSubsession, BaseGroup, BasePlayer
+from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
 
 from _stuff.iterating import BaseRoundModel, BaseTrialModel, BaseResponseModel
 
@@ -99,3 +99,85 @@ class Response(BaseResponseModel):
         players = trial.iteround.group.get_players()
         responses = [cls.last(trial, player=p) for p in players]
         return [r for r in responses if r is not None]
+
+
+def custom_export_trials(_: list[Player]):
+    yield [
+        "session.code",
+        "session.label",
+        "condition",
+        #
+        "iteround.pagename",
+        "iteround.is_practice",
+        "iteround.status",
+        "iteround.completion",
+        "iteround.processing_time",
+        "iteround.total_trials",
+        "iteround.total_score",
+        #
+        "trial.iteration",
+        "trial.status",
+        "trial.completion",
+        "trial.processing_time",
+        "trial.task",
+        "trial.truth",
+        "trial.success",
+        "trial.score",
+        #
+        "participant.code",
+        "participant.label",
+        "player.role",
+        #
+        "response.iteration",
+        "response.stage",
+        "response.time",
+        "response.answer",
+        "response.correct",
+
+    ]
+
+    for trial in Trial.objects_filter():
+        iteround: Round = trial.iteround
+        group: Group = iteround.group
+        session: Session = group.session
+
+        fields = [
+            session.code,
+            session.label,
+            group.condition,
+            #
+            iteround.pagename,
+            iteround.is_practice,
+            iteround.status,
+            iteround.completion,
+            f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
+            iteround.progress_trials,
+            iteround.total_score,
+            #
+            trial.iteration,
+            trial.status,
+            trial.completion,
+            f"{trial.processing_time:.01f}" if trial.processing_time else None,
+            trial.task,
+            trial.truth,
+            trial.success,
+            trial.score,
+        ]
+
+        yield fields
+
+        responses = Response.list(trial=trial)
+        for response in responses:
+            player: Player = response.player
+            participant: Participant = player.participant
+            yield fields + [
+                participant.code,
+                participant.label,
+                player.role,
+                #
+                response.iteration,
+                response.stage,
+                response.response_time,
+                response.answer,
+                response.correct,
+            ]

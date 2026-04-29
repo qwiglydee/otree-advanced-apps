@@ -21,9 +21,9 @@ class C(BaseConstants):
     CONDITIONS = ["C0", "C1", "C2"]
 
     SCORING = {
-        0: Points(-5),
+        0: Points(0),
         1: Points(10),
     }
 
     TRIAL_DELAY = 3
-    RETRY_DELAY = 0.5
+    RETRY_DELAY = 1

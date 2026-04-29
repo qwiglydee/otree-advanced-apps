@@ -145,7 +145,7 @@ def custom_export_trials(_: list[Player]):
             iteround.status,
             iteround.completion,
             f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
-            Trial.count(iteround),
+            iteround.progress_trials,
             iteround.total_score,
             #
             trial.iteration,
@@ -161,10 +161,10 @@ def custom_export_trials(_: list[Player]):
         yield fields
 
         responses = Response.list(trial=trial)
-        for resp in responses:
+        for response in responses:
             yield fields + [
-                resp.iteration,
-                resp.response_time,
-                resp.answer,
-                resp.correct,
+                response.iteration,
+                response.response_time,
+                response.answer,
+                response.correct,
             ]

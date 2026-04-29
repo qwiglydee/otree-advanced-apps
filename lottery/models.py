@@ -111,6 +111,7 @@ class Response(BaseResponseModel):
     player: Player = database.Link(Player)
 
     response_time = database.IntegerField()
+    button = database.IntegerField()
     choice = database.StringField()
 
     outcome_a = database.DecimalField(unit=Points)
@@ -120,7 +121,7 @@ class Response(BaseResponseModel):
 
     result = database.DecimalField(unit=Points)
 
-    def respond(self, response_time: int, choice: int):
+    def respond(self, response_time: int, button: int, choice: str):
         self.response_time = response_time
         self.choice = choice
 
@@ -170,6 +171,7 @@ def custom_export_trials(_: list[Player]):
         "response.outcome.A",
         "response.outcome.B",
         "response.outcome.C",
+        "response.button",
         "response.choice",
         "response.result"
     ]
@@ -192,7 +194,7 @@ def custom_export_trials(_: list[Player]):
             iteround.status,
             iteround.completion,
             f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
-            Trial.count(iteround),
+            iteround.progress_trials,
             iteround.total_score,
             #
             trial.iteration,
@@ -218,6 +220,7 @@ def custom_export_trials(_: list[Player]):
                 response.outcome_a,
                 response.outcome_b,
                 response.outcome_c,
+                response.button,
                 response.choice,
                 response.result,
             ]

@@ -46,8 +46,9 @@ class LiveMethods:
         current = progress.current(player)
         assert current.trial and current.trial.id == message['id'], "mismatched response"
 
-        choice = current.trial.layout[message['button']]  # position -> id
-        response = progress.respond(current, response_time=message['time'], choice=choice)
+        button = int(message['button'])
+        choice = current.trial.layout[button]
+        response = progress.respond(current, response_time=message['time'], button=button, choice=choice)
 
         yield "progress", page.display_progress(current)
         yield "feedback", page.display_feedback(current, response)

@@ -20,7 +20,7 @@ class C(BaseConstants):
     P2_ROLE = "P2"
 
     NUM_TRIALS = {
-        'Tasks': 3,
+        'Tasks': 5,
     }
 
     STAGES = ['S1', 'S2']
