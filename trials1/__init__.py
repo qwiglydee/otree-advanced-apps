@@ -53,7 +53,7 @@ class LiveMethods:
 @live_page
 class Tasks(LiveMethods, Page):
     page_styles = ['game-style.css', 'ot-progress.css', 'ot-pulse.css']
-    page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js']
+    page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
 
     @staticmethod
     def display_progress(current: Progress):

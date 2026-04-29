@@ -193,7 +193,7 @@
                 for (let i in outcomes) {
                     let val = outcomes[i];
                     if (val != null) {
-                        vars.labels[i] = val; // TODO: format
+                        vars.labels[i] = format_number(val, ".2");
                         vars.styles[i] = "opened";
                     }
                 }
@@ -211,7 +211,7 @@
 
         function renderResult(score) {
             if (score != null) {
-                vars.result = { score }; // TODO: format
+                vars.result = { score: format_number(score, "+.2") };
             } else {
                 vars.result = null;
             }

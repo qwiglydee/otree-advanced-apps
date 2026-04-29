@@ -21,7 +21,7 @@ class C(BaseConstants):
     CONDITIONS = ["C0", "C1", "C2"]
 
     SCORING = {
-        0: Points(0),
+        0: Points(-5),
         1: Points(10),
     }
 

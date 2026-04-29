@@ -171,7 +171,7 @@
 
         function renderResult(score) {
             if (score != null) {
-                vars.result = { score }; // TODO: format
+                vars.result = { score: format_number(score, "+.2") };
             } else {
                 vars.result = null;
             }
