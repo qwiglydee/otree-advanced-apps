@@ -2,57 +2,57 @@ taskid,condition,section,task,truth,option_1,label_1,option_2,label_2,option_3,l
 C0P01,C0,Practice,16 + 15,31,41,fourty one,21,twenty one,31,thirty one
 C0P02,C0,Practice,16 + 19,35,45,fourty five,25,twenty five,35,thirty five
 C0P03,C0,Practice,15 + 14,29,29,twenty nine,39,thirty nine,19,nineteen
-C0T01,C0,Tasks,19 + 19,38,38,thirty eight,48,fourty eight,28,twenty eight
-C0T02,C0,Tasks,12 + 13,25,15,fifteen,35,thirty five,25,twenty five
-C0T03,C0,Tasks,13 + 17,30,20,twenty,40,fourty,30,thirty
-C0T04,C0,Tasks,16 + 15,31,21,twenty one,41,fourty one,31,thirty one
-C0T05,C0,Tasks,14 + 16,30,40,fourty,20,twenty,30,thirty
-C0T06,C0,Tasks,14 + 12,26,16,sixteen,36,thirty six,26,twenty six
-C0T07,C0,Tasks,14 + 14,28,18,eighteen,28,twenty eight,38,thirty eight
-C0T08,C0,Tasks,18 + 18,36,46,fourty six,36,thirty six,26,twenty six
-C0T09,C0,Tasks,15 + 13,28,18,eighteen,38,thirty eight,28,twenty eight
-C0T10,C0,Tasks,13 + 14,27,17,seventeen,27,twenty seven,37,thirty seven
-C0T11,C0,Tasks,17 + 12,29,29,twenty nine,19,nineteen,39,thirty nine
-C0T12,C0,Tasks,15 + 12,27,27,twenty seven,17,seventeen,37,thirty seven
-C0T13,C0,Tasks,19 + 18,37,27,twenty seven,37,thirty seven,47,fourty seven
-C0T14,C0,Tasks,17 + 13,30,30,thirty,40,fourty,20,twenty
-C0T15,C0,Tasks,18 + 14,32,42,fourty two,32,thirty two,22,twenty two
-C0T16,C0,Tasks,13 + 18,31,21,twenty one,41,fourty one,31,thirty one
+C0T01,C0,Main,19 + 19,38,38,thirty eight,48,fourty eight,28,twenty eight
+C0T02,C0,Main,12 + 13,25,15,fifteen,35,thirty five,25,twenty five
+C0T03,C0,Main,13 + 17,30,20,twenty,40,fourty,30,thirty
+C0T04,C0,Main,16 + 15,31,21,twenty one,41,fourty one,31,thirty one
+C0T05,C0,Main,14 + 16,30,40,fourty,20,twenty,30,thirty
+C0T06,C0,Main,14 + 12,26,16,sixteen,36,thirty six,26,twenty six
+C0T07,C0,Main,14 + 14,28,18,eighteen,28,twenty eight,38,thirty eight
+C0T08,C0,Main,18 + 18,36,46,fourty six,36,thirty six,26,twenty six
+C0T09,C0,Main,15 + 13,28,18,eighteen,38,thirty eight,28,twenty eight
+C0T10,C0,Main,13 + 14,27,17,seventeen,27,twenty seven,37,thirty seven
+C0T11,C0,Main,17 + 12,29,29,twenty nine,19,nineteen,39,thirty nine
+C0T12,C0,Main,15 + 12,27,27,twenty seven,17,seventeen,37,thirty seven
+C0T13,C0,Main,19 + 18,37,27,twenty seven,37,thirty seven,47,fourty seven
+C0T14,C0,Main,17 + 13,30,30,thirty,40,fourty,20,twenty
+C0T15,C0,Main,18 + 14,32,42,fourty two,32,thirty two,22,twenty two
+C0T16,C0,Main,13 + 18,31,21,twenty one,41,fourty one,31,thirty one
 C1P01,C1,Practice,15 + 17,32,42,fourty two,22,twenty two,32,thirty two
 C1P02,C1,Practice,13 + 13,26,26,twenty six,36,thirty six,16,sixteen
 C1P03,C1,Practice,17 + 13,30,40,fourty,30,thirty,20,twenty
-C1T01,C1,Tasks,13 + 19,32,22,twenty two,32,thirty two,42,fourty two
-C1T02,C1,Tasks,15 + 17,32,32,thirty two,22,twenty two,42,fourty two
-C1T03,C1,Tasks,19 + 17,36,36,thirty six,46,fourty six,26,twenty six
-C1T04,C1,Tasks,19 + 13,32,22,twenty two,42,fourty two,32,thirty two
-C1T05,C1,Tasks,17 + 17,34,24,twenty four,34,thirty four,44,fourty four
-C1T06,C1,Tasks,17 + 13,30,40,fourty,30,thirty,20,twenty
-C1T07,C1,Tasks,19 + 19,38,48,fourty eight,28,twenty eight,38,thirty eight
-C1T08,C1,Tasks,17 + 15,32,42,fourty two,22,twenty two,32,thirty two
-C1T09,C1,Tasks,17 + 19,36,46,fourty six,26,twenty six,36,thirty six
-C1T10,C1,Tasks,13 + 13,26,26,twenty six,16,sixteen,36,thirty six
-C1T11,C1,Tasks,15 + 13,28,28,twenty eight,38,thirty eight,18,eighteen
-C1T12,C1,Tasks,13 + 17,30,20,twenty,40,fourty,30,thirty
-C1T13,C1,Tasks,19 + 15,34,24,twenty four,34,thirty four,44,fourty four
-C1T14,C1,Tasks,15 + 19,34,24,twenty four,34,thirty four,44,fourty four
-C1T15,C1,Tasks,13 + 15,28,38,thirty eight,18,eighteen,28,twenty eight
-C1T16,C1,Tasks,15 + 15,30,30,thirty,40,fourty,20,twenty
+C1T01,C1,Main,13 + 19,32,22,twenty two,32,thirty two,42,fourty two
+C1T02,C1,Main,15 + 17,32,32,thirty two,22,twenty two,42,fourty two
+C1T03,C1,Main,19 + 17,36,36,thirty six,46,fourty six,26,twenty six
+C1T04,C1,Main,19 + 13,32,22,twenty two,42,fourty two,32,thirty two
+C1T05,C1,Main,17 + 17,34,24,twenty four,34,thirty four,44,fourty four
+C1T06,C1,Main,17 + 13,30,40,fourty,30,thirty,20,twenty
+C1T07,C1,Main,19 + 19,38,48,fourty eight,28,twenty eight,38,thirty eight
+C1T08,C1,Main,17 + 15,32,42,fourty two,22,twenty two,32,thirty two
+C1T09,C1,Main,17 + 19,36,46,fourty six,26,twenty six,36,thirty six
+C1T10,C1,Main,13 + 13,26,26,twenty six,16,sixteen,36,thirty six
+C1T11,C1,Main,15 + 13,28,28,twenty eight,38,thirty eight,18,eighteen
+C1T12,C1,Main,13 + 17,30,20,twenty,40,fourty,30,thirty
+C1T13,C1,Main,19 + 15,34,24,twenty four,34,thirty four,44,fourty four
+C1T14,C1,Main,15 + 19,34,24,twenty four,34,thirty four,44,fourty four
+C1T15,C1,Main,13 + 15,28,38,thirty eight,18,eighteen,28,twenty eight
+C1T16,C1,Main,15 + 15,30,30,thirty,40,fourty,20,twenty
 C2P01,C2,Practice,16 + 12,28,28,twenty eight,38,thirty eight,18,eighteen
 C2P02,C2,Practice,18 + 16,34,34,thirty four,24,twenty four,44,fourty four
 C2P03,C2,Practice,16 + 14,30,20,twenty,40,fourty,30,thirty
-C2T01,C2,Tasks,14 + 18,32,22,twenty two,32,thirty two,42,fourty two
-C2T02,C2,Tasks,12 + 12,24,34,thirty four,24,twenty four,14,fourteen
-C2T03,C2,Tasks,14 + 12,26,36,thirty six,26,twenty six,16,sixteen
-C2T04,C2,Tasks,16 + 14,30,40,fourty,20,twenty,30,thirty
-C2T05,C2,Tasks,16 + 18,34,24,twenty four,34,thirty four,44,fourty four
-C2T06,C2,Tasks,12 + 16,28,28,twenty eight,18,eighteen,38,thirty eight
-C2T07,C2,Tasks,14 + 14,28,38,thirty eight,28,twenty eight,18,eighteen
-C2T08,C2,Tasks,14 + 16,30,30,thirty,20,twenty,40,fourty
-C2T09,C2,Tasks,18 + 16,34,24,twenty four,44,fourty four,34,thirty four
-C2T10,C2,Tasks,16 + 16,32,32,thirty two,22,twenty two,42,fourty two
-C2T11,C2,Tasks,18 + 12,30,40,fourty,20,twenty,30,thirty
-C2T12,C2,Tasks,16 + 12,28,18,eighteen,38,thirty eight,28,twenty eight
-C2T13,C2,Tasks,12 + 14,26,16,sixteen,26,twenty six,36,thirty six
-C2T14,C2,Tasks,18 + 14,32,42,fourty two,32,thirty two,22,twenty two
-C2T15,C2,Tasks,12 + 18,30,40,fourty,30,thirty,20,twenty
-C2T16,C2,Tasks,18 + 18,36,36,thirty six,26,twenty six,46,fourty six
+C2T01,C2,Main,14 + 18,32,22,twenty two,32,thirty two,42,fourty two
+C2T02,C2,Main,12 + 12,24,34,thirty four,24,twenty four,14,fourteen
+C2T03,C2,Main,14 + 12,26,36,thirty six,26,twenty six,16,sixteen
+C2T04,C2,Main,16 + 14,30,40,fourty,20,twenty,30,thirty
+C2T05,C2,Main,16 + 18,34,24,twenty four,34,thirty four,44,fourty four
+C2T06,C2,Main,12 + 16,28,28,twenty eight,18,eighteen,38,thirty eight
+C2T07,C2,Main,14 + 14,28,38,thirty eight,28,twenty eight,18,eighteen
+C2T08,C2,Main,14 + 16,30,30,thirty,20,twenty,40,fourty
+C2T09,C2,Main,18 + 16,34,24,twenty four,44,fourty four,34,thirty four
+C2T10,C2,Main,16 + 16,32,32,thirty two,22,twenty two,42,fourty two
+C2T11,C2,Main,18 + 12,30,40,fourty,20,twenty,30,thirty
+C2T12,C2,Main,16 + 12,28,18,eighteen,38,thirty eight,28,twenty eight
+C2T13,C2,Main,12 + 14,26,16,sixteen,26,twenty six,36,thirty six
+C2T14,C2,Main,18 + 14,32,42,fourty two,32,thirty two,22,twenty two
+C2T15,C2,Main,12 + 18,30,40,fourty,30,thirty,20,twenty
+C2T16,C2,Main,18 + 18,36,36,thirty six,26,twenty six,46,fourty six

@@ -20,7 +20,8 @@ class C(BaseConstants):
     P2_ROLE = "P2"
 
     NUM_TRIALS = {
-        'Tasks': 5,
+        'Practice': 3,
+        'Main': 10,
     }
 
     STAGES = ['S1', 'S2']
@@ -40,4 +41,4 @@ class C(BaseConstants):
         2: Points(10),
     }
 
-    TRIAL_DELAY = 3
+    TRIAL_DELAY = 2

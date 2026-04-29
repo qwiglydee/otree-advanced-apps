@@ -4,7 +4,6 @@ from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Partici
 from _stuff.iterating import BaseRoundModel, BaseTrialModel, BaseResponseModel
 from _stuff.dictprop import dictproperty
 
-from .source import sample_data
 from .const import C, Points
 
 
@@ -98,9 +97,8 @@ class Trial(BaseTrialModel):
     progress_retries = database.IntegerField()
 
 
-def generate_trials(count: int, player: Player, pagename: str, sourcedata: list[dict]):
-    iteround = Round.create_new(pagename, player=player)
-    data = sample_data(sourcedata, count, condition=player.condition, section=pagename)
+def create_trials(iteround: Round, data: list[dict]):
+    count = len(data)
     trials = Trial.create_many(iteround, count)
     for trial, datum in zip(trials, data, strict=True):
         trial.init(datarow=datum)

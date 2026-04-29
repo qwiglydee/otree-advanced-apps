@@ -17,11 +17,12 @@ class C(BaseConstants):
     PLAYERS_PER_GROUP = None
 
     NUM_TRIALS = {
-        'Tasks': 5,
+        'Practice': 3,
+        'Main': 10,
     }
 
     NUM_RETRIES = {
-        'Tasks': 3,
+        'Practice': 3,
     }
 
     CONDITIONS = ["C0", "C1", "C2"]
@@ -36,5 +37,5 @@ class C(BaseConstants):
         1: Points(10),
     }
 
-    TRIAL_DELAY = 3
     RETRY_DELAY = 1
+    TRIAL_DELAY = 2

@@ -55,7 +55,7 @@ class LiveMethods:
 
 
 @live_page
-class Tasks(LiveMethods, Page):
+class Main(LiveMethods, Page):
     page_styles = ['game-style.css', 'ot-progress.css', 'ot-pulse.css', 'cards.css']
     page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
 
@@ -93,6 +93,16 @@ class Tasks(LiveMethods, Page):
             set_payoff(player)
 
 
+class Intro(Page):
+    page_styles = ['game-style.css']
+
+
+class Results(Page):
+    page_styles = ['game-style.css']
+
+
 page_sequence = [
-    Tasks,
+    Intro,
+    Main,
+    Results,
 ]

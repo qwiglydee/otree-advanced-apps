@@ -51,7 +51,7 @@ class LiveMethods:
 
 
 @live_page
-class Tasks(LiveMethods, Page):
+class Practice(LiveMethods, Page):
     page_styles = ['game-style.css', 'ot-progress.css', 'ot-pulse.css']
     page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
 
@@ -85,12 +85,57 @@ class Tasks(LiveMethods, Page):
             "truth": current.trial.truth if current.trial.is_completed else None,
         }
 
+
+@live_page
+class Main(LiveMethods, Page):
+    page_styles = ['game-style.css', 'ot-progress.css', 'ot-pulse.css']
+    page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
+
+    @staticmethod
+    def display_progress(current: Progress):
+        assert current.iteround
+        return {
+            "finished": current.iteround.is_completed,
+            "total": progress.max_trials(current.iteround),
+            "passed": current.iteround.progress_trials,
+            "score": current.iteround.total_score,
+            "current": current.trial.iteration if current.trial else None,
+            "retries": progress.max_retries(current.trial) - current.trial.progress_retries if current.trial else None,
+        }
+
+    @staticmethod
+    def display_trial(current: Progress):
+        assert current.trial
+        return {
+            "id": current.trial.id,
+            "task": current.trial.task,
+        }
+
+    @staticmethod
+    def display_feedback(current: Progress, response: Response):
+        assert response
+        return {
+            "completed": current.trial.is_completed,
+            "score": current.trial.score if current.trial.is_completed else None,
+        }
+
     @staticmethod
     def before_next_page(player: Player, timeout_happened: bool):
         if not timeout_happened:
             set_payoff(player)
 
 
+class Intro(Page):
+    page_styles = ['game-style.css']
+
+
+class Results(Page):
+    page_styles = ['game-style.css']
+
+
 page_sequence = [
-    Tasks,
+    Intro,
+    Practice,
+    Main,
+    Results,
 ]
