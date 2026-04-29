@@ -7,27 +7,41 @@ Generic usage:
 
 The distributions are compatible with Constants and can be passed as vars or jsvars
 """
-
-from collections import namedtuple
+from typing import Any
+from dataclasses import dataclass
 import random
 
 
-class Bernoulli(namedtuple('Bernoulli', ['p'])):
+@dataclass(slots=True)
+class Bernoulli:
     """Bernoulli distribution defined by probability (float)"""
+    p: float
 
     def sample(self) -> bool:
         return random.random() <= self.p
 
+    def samples(self, n):
+        return tuple(self.sample() for _ in range(n))
 
-class BernoulliF(namedtuple('BernoulliF', ['nom', 'den'])):
+
+@dataclass(slots=True)
+class BernoulliF:
     """Bernoulli distribution defined by rational"""
+    nom: int
+    den: int
 
     def sample(self) -> bool:
         return random.randint(1, self.den) <= self.nom
 
+    def samples(self, n):
+        return tuple(self.sample() for _ in range(n))
 
-class Uniform(namedtuple('Uniform', ['min', 'max'])):
+
+@dataclass(slots=True)
+class Uniform:
     """Uniform distribution defined by range on floats or ints"""
+    min: int | float
+    max: int | float
 
     def sample(self) -> int | float:
         if isinstance(self.min, int) and isinstance(self.max, int):
@@ -35,9 +49,15 @@ class Uniform(namedtuple('Uniform', ['min', 'max'])):
         else:
             return random.uniform(self.min, self.max)
 
+    def samples(self, n):
+        return tuple(self.sample() for _ in range(n))
 
-class Normal(namedtuple('Normal', ['mean', 'std'])):
+
+@dataclass(slots=True)
+class Normal:
     """Normal distribution on integers or floats"""
+    mean: int | float
+    std: int | float
 
     def sample(self) -> int | float:
         val = random.gauss(self.mean, self.std)
@@ -46,50 +66,66 @@ class Normal(namedtuple('Normal', ['mean', 'std'])):
         else:
             return val
 
+    def samples(self, n):
+        return tuple(self.sample() for _ in range(n))
 
-class Discrete(namedtuple('Discrete', ['outcomes', 'weights'])):
+
+@dataclass(slots=True)
+class Discrete:
     """Discrete distribution defined by outcomes and weights"""
+    outcomes: tuple
+    weights: tuple
 
-    def __new__(cls, *args):
-        return super().__new__(cls, tuple(a[0] for a in args), tuple(a[1] for a in args))
+    def __init__(self, *args):
+        self.outcomes = tuple(a[0] for a in args)
+        self.weights = tuple(a[1] for a in args)
 
     def __repr__(self):
         args = tuple(zip(self.outcomes, self.weights))
         return f"Discrete{args}"
 
     def sample(self):
-        val, = random.choices(self.outcomes, self.weights, k=1)
-        return val
+        return self.samples(1)[0]
+
+    def samples(self, n):
+        return tuple(self.sample() for _ in range(n))
 
 
-class Outcomes(namedtuple('Outcomes', ['outcomes', 'weights'])):
-    """Discrete distribution defined as dict of key=weight"""
-
-    def __new__(cls, **kwargs):
-        return super().__new__(cls, tuple(kwargs.keys()), tuple(kwargs.values()))
-
-    def __repr__(self):
-        args = ", ".join(f"{k}={v}" for k, v in zip(self.outcomes, self.weights))
-        return f"Outcomes({args})"
-
-    def sample(self):
-        val, = random.choices(self.outcomes, self.weights, k=1)
-        return val
+def Outcomes(**kwargs):
+    """Discrete distribution by kwargs notation (outcome=weight, ...)"""
+    return Discrete(*kwargs.items())
 
 
-class Choices(namedtuple('Choices', ['outcomes'])):
-    """Discrete distribution with equal weights"""
+@dataclass(slots=True)
+class Choices:
+    """Equally distributed choices"""
+    outcomes: tuple
 
-    def __new__(cls, *args):
-        return super().__new__(cls, args)
+    def __init__(self, *args):
+        self.outcomes = args
 
     def __repr__(self):
-        return f"Choices{self.outcomes}"
+        return f"Choices{repr(self.outcomes)}"
 
     def sample(self):
         return random.choice(self.outcomes)
 
+    def samples(self, n):
+        return tuple(self.sample() for _ in range(n))
 
-class Const(namedtuple('Const', ['value'])):
+
+@dataclass(slots=True)
+class Const:
+    value: Any
+
+    def __init__(self, arg):
+        self.value = arg
+
+    def __repr__(self):
+        return f"Const({self.value})"
+
     def sample(self):
         return self.value
+
+    def samples(self, n):
+        return tuple(self.value for _ in range(n))
