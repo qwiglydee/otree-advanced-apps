@@ -19,18 +19,18 @@ SESSION_CONFIGS = [
         condition="random",
     ),
     dict(
-        name='trials2',
-        app_sequence=['trials2'],
+        name='trials2g',
+        app_sequence=['trials2g'],
         condition="random",
     ),
     dict(
-        name='lottery',
-        app_sequence=['lottery'],
+        name='lottery1',
+        app_sequence=['lottery1'],
         condition="random",
     ),
     dict(
-        name='sampling',
-        app_sequence=['lottery_sampling'],
+        name='lottery2s',
+        app_sequence=['lottery2s'],
         condition="random",
     ),
 ]
