@@ -61,8 +61,9 @@
         <div ot-display="vars.feedback.truth">Correct solution: <span ot-text="vars.feedback.truth"></span></div>
         <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
         <div class="flex-fill"></div>
-        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-3" autofocus>Continue</button>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+        <div ot-display="vars.responding">Select and <kbd>Confirm</kbd> your answer...</div>
+        <ot-pulse ot-display="vars.waiting"></ot-pulse>
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary" autofocus>Continue</button>
     </footer>
 {% endblock content %}
 
@@ -71,8 +72,8 @@
         "use strict";
 
         const BLINK_DELAY = 200;
+        const AUTO_ADVANCE = true;
         const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
-        const AUTO_ADVANCE = false;
 
         onLoad(continueRound);
         onLive("progress", liveProgress);

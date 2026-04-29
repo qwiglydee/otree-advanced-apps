@@ -40,4 +40,4 @@ class C(BaseConstants):
         2: Points(10),
     }
 
-    TRIAL_DELAY = 1
+    TRIAL_DELAY = 3

@@ -25,5 +25,5 @@ class C(BaseConstants):
         1: Points(10),
     }
 
-    TRIAL_DELAY = 1
+    TRIAL_DELAY = 3
     RETRY_DELAY = 0.5

@@ -107,7 +107,7 @@ class Tasks(LiveMethods, Page):
 
 
 class Intro(Page):
-    pass
+    page_styles = ['game-style.css']
 
 
 page_sequence = [
