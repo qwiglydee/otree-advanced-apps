@@ -67,16 +67,16 @@
         const AUTO_ADVANCE = true;
         const NUM_BUTTONS = 3;
 
-        onLoad(continueRound);
-        onLive("progress", liveProgress);
-        onLive("trial", startTrial);
-        onInput("choice", inputResponse);
-        onLive("feedback", liveFeedback);
-        onInput("finalize", finalizeTrial);
-        onInput("continue", continueRound);
-        onUpdate("vars.choice", renderChoice);
-        onUpdate("vars.feedback.outcomes", renderOutcomes);
-        onUpdate("vars.feedback.score", renderResult);
+        ot.onLoad(continueRound);
+        ot.onLive("progress", liveProgress);
+        ot.onLive("trial", startTrial);
+        ot.onInput("choice", inputResponse);
+        ot.onLive("feedback", liveFeedback);
+        ot.onInput("finalize", finalizeTrial);
+        ot.onInput("continue", continueRound);
+        ot.onUpdate("vars.choice", renderChoice);
+        ot.onUpdate("vars.feedback.outcomes", renderOutcomes);
+        ot.onUpdate("vars.feedback.score", renderResult);
 
         function switchState(state, stage) {
             vars.responding = false;
@@ -113,7 +113,7 @@
             resetTrial();
             switchState("starting");
             await ot.delay(BLINK_DELAY);
-            sendLive("continue");
+            ot.sendLive("continue");
         }
 
         async function liveProgress(progress) {
@@ -160,7 +160,7 @@
         function inputResponse(choice) {
             vars.choice = Number(choice);
             switchState("evaluating");
-            sendLive("response", {
+            ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 stage: vars.stage,

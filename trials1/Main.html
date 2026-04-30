@@ -43,14 +43,14 @@
         const AUTO_ADVANCE = true;
         const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
 
-        onLoad(continueRound);
-        onLive("progress", liveProgress);
-        onLive("trial", startTrial);
-        onInput("answer", inputResponse);
-        onLive("feedback", liveFeedback);
-        onInput("continue", continueRound);
-        onUpdate("vars.feedback.score", renderResult);
-        onUpdate("vars.feedback.correct", renderValidity);
+        ot.onLoad(continueRound);
+        ot.onLive("progress", liveProgress);
+        ot.onLive("trial", startTrial);
+        ot.onInput("answer", inputResponse);
+        ot.onLive("feedback", liveFeedback);
+        ot.onInput("continue", continueRound);
+        ot.onUpdate("vars.feedback.score", renderResult);
+        ot.onUpdate("vars.feedback.correct", renderValidity);
 
         function switchState(state) {
             vars.responding = false;
@@ -83,7 +83,7 @@
             resetTrial();
             switchState("starting");
             await ot.delay(BLINK_DELAY);
-            sendLive("continue");
+            ot.sendLive("continue");
         }
 
         async function liveProgress(progress) {
@@ -119,7 +119,7 @@
         function inputResponse(answer) {
             vars.answer = answer;
             switchState("evaluating");
-            sendLive("response", {
+            ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 answer: String(answer),
