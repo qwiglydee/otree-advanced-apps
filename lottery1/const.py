@@ -31,16 +31,19 @@ class C(BaseConstants):
             "x": rand.Const(+1.0),
             "y": rand.Const(-1.0),
             "z": 10.0,
+            "std": 1.0,
         },
         "C1": {
             "x": rand.Normal(+1.0, 1.0),
             "y": rand.Normal(-1.0, 1.0),
             "z": 10.0,
+            "std": 1.0,
         },
         "C2": {
             "x": rand.Uniform(0.0, +2.0),
             "y": rand.Uniform(-2.0, 0.0),
             "z": 10.0,
+            "std": 1.0,
         },
     }
 

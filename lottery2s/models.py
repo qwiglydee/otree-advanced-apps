@@ -10,13 +10,13 @@ from _stuff.dictprop import dictproperty
 from .const import C, Points
 
 
-def sample_params(params: dict):
-    "Realize trial parameters from conf PARAMS"
+def init_params(config: dict):
+    "Initialize trial parameters from config"
     return {
-        'x': params['x'].sample(),
-        'y': params['y'].sample(),
-        'z': params['z'],
-        'std': params['std']
+        'x': config['x'].sample(),
+        'y': config['y'].sample(),
+        'z': config['z'],
+        'std': config['std']
     }
 
 
@@ -92,16 +92,16 @@ class Trial(BaseTrialModel):
         return layoutdict(self.iteround.player.layout)
 
     def init(self, **kwargs):
-        labels = derange(self.layout, C.LABELS)
-        self.label_a = labels["A"]
-        self.label_b = labels["B"]
-        self.label_c = labels["C"]
-
-        params = sample_params(C.PARAMS[self.condition])
+        params = init_params(C.PARAMS[self.condition])
         self.param_x = params['x']
         self.param_y = params['y']
         self.param_z = params['z']
         self.param_std = params['std']
+
+        labels = derange(self.layout, C.LABELS)
+        self.label_a = labels["A"]
+        self.label_b = labels["B"]
+        self.label_c = labels["C"]
 
     def update(self):
         pass

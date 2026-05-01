@@ -73,16 +73,16 @@ class Trial(BaseTrialModel):
             # skip auto-init
             return
 
-        datarow = kwargs['datarow']
+        params = kwargs['datarow']
 
-        self.task = datarow['task']
-        self.truth = datarow['truth']
-        self.option_1 = datarow['option_1']
-        self.option_2 = datarow['option_2']
-        self.option_3 = datarow['option_3']
-        self.label_1 = datarow['label_1']
-        self.label_2 = datarow['label_2']
-        self.label_3 = datarow['label_3']
+        self.task = params['task']
+        self.truth = params['truth']
+        self.option_1 = params['option_1']
+        self.option_2 = params['option_2']
+        self.option_3 = params['option_3']
+        self.label_1 = params['label_1']
+        self.label_2 = params['label_2']
+        self.label_3 = params['label_3']
 
     def update(self):
         """Update something after a response"""

@@ -6,10 +6,9 @@ from _stuff.iterating import BaseRoundModel, BaseTrialModel, BaseResponseModel
 from .const import C, Points
 
 
-def sample_params(numbers):
-    num1 = numbers.sample()
-    num2 = numbers.sample()
-    return num1, num2
+def init_params(config):
+    "Initialize trial parameters from config"
+    return config.samples(2)
 
 
 class Subsession(BaseSubsession):
@@ -63,7 +62,8 @@ class Trial(BaseTrialModel):
         return self.iteround.player.condition
 
     def init(self, **kwargs):
-        num1, num2 = sample_params(C.NUMBERS[self.condition])
+        params = init_params(C.NUMBERS[self.condition])
+        [num1, num2] = params
         self.task = f"{num1} + {num2}"
         self.truth = str(num1 + num2)
 
