@@ -1,5 +1,6 @@
 /**
- * Format number with precision and sign
+ * Format a number with precision and sign
+ *
  * @param {*} value
  * @param {*} format: ".2" "+.2"
  */

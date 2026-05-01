@@ -4,6 +4,7 @@ by qwiglydee@gmail.com
 Generic usage:
     rnd_distrib = Something(params)
     rnd_value = rnd_distrib.sample()
+    rnd_values = rnd_distrib.samples(5)
 
 The distributions are compatible with Constants and can be passed as vars or jsvars
 """
@@ -116,6 +117,9 @@ class Choices:
 
 @dataclass(slots=True)
 class Const:
+    """Just a constant value
+    added for interchangability with other distributions
+    """
     value: Any
 
     def __init__(self, arg):

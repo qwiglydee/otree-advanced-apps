@@ -1,3 +1,7 @@
+/**
+ * Registering all otree-front inputs directives on standard form inputs
+ */
+
 window.addEventListener("DOMContentLoaded", function () {
     ot.attachDirective(ot.otTextInput, "input:is([type=text],[type=number])");
     ot.attachDirective(ot.otRangeInput, "input[type=range]");

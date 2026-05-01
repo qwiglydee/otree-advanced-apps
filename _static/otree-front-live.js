@@ -1,7 +1,10 @@
 /**
  * Utils for type-based live message
  * by qwiglydee@gmail.com
+ *
+ * Best used with _stuff/live.py
  */
+
 (function (ot) {
     if (window.ot === undefined) throw Error("otree-front-live requires otree-front");
     if (window.liveSocket === undefined) throw Error("otree-front-live requires live page");

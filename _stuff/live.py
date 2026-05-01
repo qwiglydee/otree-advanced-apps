@@ -2,7 +2,25 @@
 Utils to simplify live communicating.
 by qwiglydee@gmail.com
 
-Best used with otree-front-live.js
+Best used with _static/otree-front-live.js
+
+Usage:
+    @live_page
+    class SomePage(Page):
+
+        @staticmethod
+        def live_foo1(player: Player, payload):
+            # handle live message of type 'foo1' from browser
+
+            yield 'bar' # send message of type 'bar' back to the player
+            yield 'baz', data # send message of type 'baz' with some payload to the player
+
+        @staticmethod
+        def live_foo2(player: Player, payload):
+            # handle live message of type 'foo2' from browser
+
+            yield player.group, 'qux', data # send a message to all players in the group
+            yield another_player, 'qux', data # send a message to another player
 """
 
 import inspect
@@ -40,29 +58,12 @@ def parse_response(player: BasePlayer, response: LiveResponse) -> dict:
 
 
 def live_page(cls):
-    """Wrapper for page classes to make them smart live pages
+    """Wraps a live page
 
-    Creates live method that recognizes different recipients and message types.
+    Expects the page to already have `live_` methods (or inherit it from classes).
 
-    Usage:
-        @live_page
-        class SomePage(Page):
-
-            @staticmethod
-            def live_foo1(player: Player, payload):
-                # handle live message of type 'foo1' from browser
-
-                yield 'bar' # send message of type 'bar' back to the player
-                yield 'baz', data # send message of type 'baz' with some payload to the player
-
-            @staticmethod
-            def live_foo2(player: Player, payload):
-                # handle live message of type 'foo2' from browser
-
-                yield player.group, 'qux', data # send a message to all players in the group
-                yield another_player, 'qux', data # send a message to another player
+    The methods should be either generators (with `yield`) or async generators (with `async def`)
     """
-
     # grab all live_ methods including inherited
     methods = inspect.getmembers(cls, predicate=lambda m: inspect.ismethod(m) and m.__name__.startswith('live_'))
 

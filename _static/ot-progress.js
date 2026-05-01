@@ -1,14 +1,11 @@
 /**
  * Directive ot-progress
+ * Draws progress with two layers with smooth real-time transitions.
  * by qwiglydee@gmail.com
+ *
  * Requires otree-front-2.0, use together with `ot-progress.css`
  *
- * Draws progress with two layers and smooth transitions.
- *
  * All the parameters can be either constants or variable references.
- *
- * When value is set exactly to `null` the progress bar resets to zero without animations.
- * And i has special attribute `reset` so that some special css can be applied.
  *
  * @example:
  *    <ot-progress max="..." ticks="..." value="..." value2="..."></ot-progress>
