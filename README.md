@@ -3,13 +3,6 @@
 The repository contains utilities and example apps for [oTtree](https://www.otree.org/) v6
 with some advanced features and techniques beyond standard capabilities of the oTree.
 
-All the code is written implying further modifications and adjustment to fit various other experiment designs.
-It is structured as much as possible for better clarity and written in very general/universal way to make it adjustable.
-Some modules, scripts and snippets can be easily reused in other oTree applications.
-
-The code is mostly documented in comments.
-However, it's still quite complex and will require some programming skills or AI assistance.
-
 ## The Features
 
 - interactive live pages with real-time dynamic content
@@ -19,13 +12,14 @@ However, it's still quite complex and will require some programming skills or AI
 - system of repetitive tasks (trials) organized in rounds
     - running within single app (without repeating everything or reloading pages)
     - the rounds are run within one or several pages and linked to each player or group of players
-    - the tasks are generated on the fly or loaded from pre-generated data file
+    - the tasks could be generated on the fly or loaded from pre-generated data file
     - the trials can have one or multiple responses (several retries, multiple stages or multiple players)
 - also, somewhat vibrant style and fullscreen layout
 
 ## The Apps
 
-Content of the demo apps is intentionally dull so they can be easily changed into something meaningful.
+The apps are intended to serve as stubs/templates for real experiments.
+Example content and calculations are intentionally dull so it can be easily replaced.
 
 - [Survey](survey): a traditional survey with some enhancements in styles and input widgets
     - a hidden field to record local time
@@ -78,7 +72,7 @@ If you already have existing project:
 
 ### Utilities and scripts
 
-The utilities in `_stuff` an `_static` are intended to be used without modification in many apps
+The utilities are all intended to be used without modification in many apps.
 
 Python utilities from `_stuff` can be imported with:
 
@@ -92,7 +86,7 @@ Styles from `_static` can be included into page templates in block `styles`:
 ```html
 {% block styles %}
 <link rel="stylesheet" href="{{ static 'filename.css' }}" />
-{% endblock }
+{% endblock %}
 ```
 
 Scripts from `_static` can be added into page templates in block `scripts`:
@@ -100,8 +94,10 @@ Scripts from `_static` can be added into page templates in block `scripts`:
 ```html
 {% block scripts %}
 <script src="{{ static 'filename.js' }}"></script>
-{% endblock }
+{% endblock %}
 ```
+
+The `ot-` and `otree-front-` scripts rely on the `otree-front` library that should also be included.
 
 Templates from `_templates` can be used in your page by adding the line at top of your page template:
 
@@ -109,13 +105,27 @@ Templates from `_templates` can be used in your page by adding the line at top o
 {% extends "ExtPage.html" %}
 ```
 
-(the same for FullPage)
+(the same for `FullPage.html`)
 
 The templates already include some scripts and styles from `_static`,
-and allow to add additional stuff in python class:
+and allow adding additional stuff in python class:
 
 ```python
 class SomePage(Page):
     page_styles = [ "somestyle.css" ]
-    page_scripts = [ "somescript.css" ]
+    page_scripts = [ "somescript.js" ]
 ```
+
+## The Code
+
+All the code is written with intention of further modification and adjustment to fit various experiment designs.
+It is structured as much as possible for better clarity and written in very general way to make it more reusable.
+Some modules, scripts and snippets can be easily reused in other oTree applications.
+
+The code extensively uses type hints to enable assisting from enough smart IDE.
+(However, the core of oTree does not respect this approach.)
+Also, it uses lots of `assert` statements to help detecting bugs at runtime.
+
+Documentation is mostly inside the code in comments in modules from `_stuff` and `_static`.
+Documentation for the `otree-front` is missing at the moment.
+However, it's still quite not trivial and will require some programming skills or AI assistance.
