@@ -10,7 +10,7 @@ class Points(DecimalUnit):
 
 
 class C(BaseConstants):
-    NAME_IN_URL = __name__
+    NAME_IN_URL = __package__
     NUM_ROUNDS = 1  # should be =1
     PLAYERS_PER_GROUP = None
 

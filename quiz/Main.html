@@ -181,9 +181,8 @@
         }
 
         function renderValidity(correct) {
-            if (correct == null) {
-                vars.validity = {};
-            } else {
+            vars.validity = {};
+            if (correct !== null) {
                 vars.validity[vars.choice] = correct ? "is-valid" : "is-invalid";
             }
             ot.updatePage();
