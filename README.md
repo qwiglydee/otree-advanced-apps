@@ -26,23 +26,17 @@ Example content and calculations are intentionally dull so it can be easily repl
     - horizontal choices scale
     - form fields defined by a session condition
     - conditional fields for something 'other'
-- [Quiz](quiz): trials of a simple math task with predefined choices for answer
-    - tasks and choices are sampled from a data file
-    - 2 rounds on separate pages:
-        - practice: full feedback, 'continue' button
-        - main: scarse feedback, auto-continue
+- [Quiz](quiz): questions with choices of answers
+    - the questions and choices are sampled from a data file
+    - practice and main rounds on different pages with different feedback
 - [Trials 1](trials1): trials of a math task with text input for answer
     - tasks are geneated on the fly according to session condition
-    - multiple responses for retries
-    - 2 rounds on separate pages:
-        - practice: multiple retries, full feedback, 'continue' button
-        - main: single attempt, scarse feedback, auto-continue
+    - multiple retries in practice round
+    - practice and main rounds on different pages with different feedback
 - [Trials 2g](trials2g): two-player trials with 2 stages of answering
     - each player answers in a corresponding stage according to player role
     - page updates to make players see partners answer
-    - 2 rounds on separate pages:
-        - practice: full feedback, 'continue' button
-        - main: scarse feedback, auto-continue
+    - practice and main rounds on different pages with different feedback
 - [Lottery 1](lottery1): lottery with cards-like buttons with different outcomes
     - lottery parameters are geneated on the fly according to configuration
     - layout of the buttons is randomized for each player

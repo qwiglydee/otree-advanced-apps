@@ -6,8 +6,10 @@
     </header>
 
     <main ot-visible="vars.trial">
-        <section class="paper fs-4">
-            <p ot-text="vars.trial.task"></p>
+        <section class="paper fs-4 text-center">
+            What is the capital of:
+            <br />
+            <b ot-text="vars.trial.question"></b>
         </section>
 
         <section class="form">
@@ -22,7 +24,7 @@
                     ot-enable="vars.responding"
                     ot-class="vars.validity.1"
                 />
-                <label for="choice1" ot-text="vars.trial.labels.1" class="form-check-label"></label>
+                <label for="choice1" ot-text="vars.trial.options.1" class="form-check-label"></label>
             </div>
 
             <div class="form-check">
@@ -36,7 +38,7 @@
                     ot-enable="vars.responding"
                     ot-class="vars.validity.2"
                 />
-                <label for="choice2" ot-text="vars.trial.labels.2" class="form-check-label"></label>
+                <label for="choice2" ot-text="vars.trial.options.2" class="form-check-label"></label>
             </div>
 
             <div class="form-check">
@@ -50,7 +52,7 @@
                     ot-enable="vars.responding"
                     ot-class="vars.validity.3"
                 />
-                <label for="choice3" ot-text="vars.trial.labels.3" class="form-check-label"></label>
+                <label for="choice3" ot-text="vars.trial.options.3" class="form-check-label"></label>
             </div>
 
             <button ot-click-input type="button" name="confirm" class="btn btn-primary m-3" ot-enable="vars.confirming">Confirm</button>
@@ -58,7 +60,7 @@
     </main>
 
     <footer>
-        <div ot-display="vars.feedback.truth">Correct solution: <span ot-text="vars.feedback.truth"></span></div>
+        <div ot-display="vars.feedback.truth">Correct answer: <b ot-text="vars.feedback.truth"></b></div>
         <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
         <div class="flex-fill"></div>
         <div ot-display="vars.responding">Select and <kbd>Confirm</kbd> your answer...</div>

@@ -48,18 +48,14 @@ class Round(BaseRoundModel):
 class Trial(BaseTrialModel):
     iteround: Round = database.Link(Round)
 
-    task = database.StringField()
+    taskid = database.StringField()
+    question = database.StringField()
     truth = database.StringField()
 
     option_1 = database.StringField()
     option_2 = database.StringField()
     option_3 = database.StringField()
     options = dictproperty('option_', '123')
-
-    label_1 = database.StringField()
-    label_2 = database.StringField()
-    label_3 = database.StringField()
-    labels = dictproperty('label_', '123')
 
     success = database.IntegerField()
     score = database.DecimalField(unit=Points, initial=0)
@@ -75,14 +71,12 @@ class Trial(BaseTrialModel):
 
         params = kwargs['datarow']
 
-        self.task = params['task']
-        self.truth = params['truth']
+        self.taskid = params['taskid']
+        self.question = params['question']
+        self.truth = params['answer']
         self.option_1 = params['option_1']
         self.option_2 = params['option_2']
         self.option_3 = params['option_3']
-        self.label_1 = params['label_1']
-        self.label_2 = params['label_2']
-        self.label_3 = params['label_3']
 
     def update(self):
         """Update something after a response"""
@@ -140,23 +134,14 @@ def custom_export_trials(_: list[Player]):
         "trial.status",
         "trial.completion",
         "trial.processing_time",
-        "trial.task",
+        "trial.taskid",
+        "trial.question",
         "trial.truth",
         "trial.option_1",
-        "trial.label_1",
         "trial.option_2",
-        "trial.label_2",
         "trial.option_3",
-        "trial.label_3",
         "trial.success",
         "trial.score",
-        #
-        "response.iteration",
-        "response.time",
-        "response.button",
-        "response.answer",
-        "response.correct",
-
     ]
 
     for trial in Trial.objects_filter():
@@ -165,7 +150,7 @@ def custom_export_trials(_: list[Player]):
         session: Session = player.session
         participant: Participant = player.participant
 
-        fields = [
+        yield [
             session.code,
             session.label,
             participant.code,
@@ -184,26 +169,91 @@ def custom_export_trials(_: list[Player]):
             trial.status,
             trial.completion,
             f"{trial.processing_time:.01f}" if trial.processing_time else None,
-            trial.task,
+            trial.taskid,
+            trial.question,
             trial.truth,
             trial.option_1,
-            trial.label_1,
             trial.option_2,
-            trial.label_2,
             trial.option_3,
-            trial.label_3,
             trial.success,
             trial.score,
         ]
 
-        yield fields
 
-        responses = Response.list(trial=trial)
-        for response in responses:
-            yield fields + [
-                response.iteration,
-                response.response_time,
-                response.button,
-                response.answer,
-                response.correct,
-            ]
+def custom_export_responses(_: list[Player]):
+    yield [
+        "session.code",
+        "session.label",
+        "participant.code",
+        "participant.label",
+        "condition",
+        #
+        "iteround.pagename",
+        "iteround.is_practice",
+        "iteround.status",
+        "iteround.completion",
+        "iteround.processing_time",
+        "iteround.total_trials",
+        "iteround.total_score",
+        #
+        "trial.iteration",
+        "trial.status",
+        "trial.completion",
+        "trial.processing_time",
+        "trial.taskid",
+        "trial.question",
+        "trial.truth",
+        "trial.option_1",
+        "trial.option_2",
+        "trial.option_3",
+        "trial.success",
+        "trial.score",
+        #
+        "response.iteration",
+        "response.time",
+        "response.button",
+        "response.answer",
+        "response.correct",
+    ]
+
+    for response in Response.objects_filter().order_by('trial_id', 'iteration'):
+        trial = response.trial
+        iteround: Round = trial.iteround
+        player: Player = iteround.player
+        session: Session = player.session
+        participant: Participant = player.participant
+
+        yield [
+            session.code,
+            session.label,
+            participant.code,
+            participant.label,
+            player.condition,
+            #
+            iteround.pagename,
+            iteround.is_practice,
+            iteround.status,
+            iteround.completion,
+            f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
+            iteround.progress_trials,
+            iteround.total_score,
+            #
+            trial.iteration,
+            trial.status,
+            trial.completion,
+            f"{trial.processing_time:.01f}" if trial.processing_time else None,
+            trial.taskid,
+            trial.question,
+            trial.truth,
+            trial.option_1,
+            trial.option_2,
+            trial.option_3,
+            trial.success,
+            trial.score,
+            #
+            response.iteration,
+            response.response_time,
+            response.button,
+            response.answer,
+            response.correct,
+        ]

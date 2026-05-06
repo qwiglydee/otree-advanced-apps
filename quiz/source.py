@@ -10,16 +10,12 @@ DIR = Path(__file__).parent
 
 class DataRow(ExtraModel):
     taskid = database.StringField()
-    section = database.StringField()
-    condition = database.StringField()
-    task = database.StringField()
-    truth = database.StringField()
+    category = database.StringField()
+    question = database.StringField()
+    answer = database.StringField()
     option_1 = database.StringField()
     option_2 = database.StringField()
     option_3 = database.StringField()
-    label_1 = database.StringField()
-    label_2 = database.StringField()
-    label_3 = database.StringField()
 
 
 def load_source(filename: str) -> list[dict]:

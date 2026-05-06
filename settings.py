@@ -11,7 +11,7 @@ SESSION_CONFIGS = [
         name='quiz',
         app_sequence=['quiz'],
         condition="random",
-        source="tasks.csv",
+        source="questions.csv",
     ),
     dict(
         name='trials1',

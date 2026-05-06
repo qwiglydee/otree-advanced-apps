@@ -1,0 +1,180 @@
+taskid,category,question,answer,option_1,option_2,option_3
+P000,practice,France,Paris,Warsaw,Dodoma,Paris
+P001,practice,United Kingdom,London,Caracas,Nairobi,London
+P002,practice,United States,Washington,Manama,Washington,Oslo
+P003,practice,Russia,Moscow,Pretoria,Moscow,Tallinn
+P004,practice,Mexico,Mexico City,Belmopan,Libreville,Mexico City
+P005,practice,Japan,Tokyo,Kigali,Tokyo,Lisbon
+P006,practice,Germany,Berlin,Honiara,Berlin,Roseau
+P007,practice,Israel,Jerusalem,Jerusalem,Vienna,Dushanbe
+T008,task,Afghanistan,Kabul,Canberra,Kabul,Buenos Aires
+T009,task,Albania,Tirana,Tirana,Riyadh,Addis Ababa
+T010,task,Algeria,Algiers,Beirut,Mbabane,Algiers
+T011,task,Andorra,Andorra la Vella,Andorra la Vella,Phnom Penh,Lima
+T012,task,Angola,Luanda,Jerusalem,Tbilisi,Luanda
+T013,task,Antigua and Barbuda,Saint John's,Lisbon,Saint John's,Nassau
+T014,task,Argentina,Buenos Aires,Port-au-Prince,Tbilisi,Buenos Aires
+T015,task,Armenia,Yerevan,Yerevan,Apia,San Salvador
+T016,task,Australia,Canberra,Kigali,Canberra,Muscat
+T017,task,Austria,Vienna,San José,Vienna,Minsk
+T018,task,Azerbaijan,Baku,Baku,Vilnius,Praia
+T019,task,Bahamas,Nassau,Nassau,Rabat,Riyadh
+T020,task,Bahrain,Manama,Manama,Stockholm,Porto-Novo
+T021,task,Bangladesh,Dhaka,Seoul,Port-au-Prince,Dhaka
+T022,task,Barbados,Bridgetown,Roseau,Santo Domingo,Bridgetown
+T023,task,Belarus,Minsk,Minsk,Funafuti,Santiago
+T024,task,Belgium,Brussels,Port Vila,Kuala Lumpur,Brussels
+T025,task,Belize,Belmopan,Buenos Aires,Antananarivo,Belmopan
+T026,task,Benin,Porto-Novo,Washington,Porto-Novo,Reykjavík
+T027,task,Bhutan,Thimphu,Cairo,Manila,Thimphu
+T028,task,Bolivia,Sucre,N'Djamena,Ngerulmud,Sucre
+T029,task,Bosnia and Herzegovina,Sarajevo,Bucharest,Kathmandu,Sarajevo
+T030,task,Botswana,Gaborone,Baku,Gaborone,Bogotá
+T031,task,Brazil,Brasília,Dakar,Port-au-Prince,Brasília
+T032,task,Brunei,Bandar Seri Begawan,Banjul,Bandar Seri Begawan,Montevideo
+T033,task,Bulgaria,Sofia,Windhoek,Sofia,Gitega
+T034,task,Burkina Faso,Ouagadougou,Ouagadougou,Nassau,Port Moresby
+T035,task,Burundi,Gitega,Lima,Muscat,Gitega
+T036,task,Cabo Verde,Praia,Port Moresby,Praia,Montevideo
+T037,task,Cambodia,Phnom Penh,Phnom Penh,Lomé,Apia
+T038,task,Cameroon,Yaoundé,Paris,Chisinau,Yaoundé
+T039,task,Canada,Ottawa,Ottawa,Port-au-Prince,Seoul
+T040,task,Central African Republic,Bangui,Astana,Bangui,Palikir
+T041,task,Chad,N'Djamena,Beijing,N'Djamena,Gitega
+T042,task,Chile,Santiago,Freetown,Santiago,Sarajevo
+T043,task,China,Beijing,Beijing,Bern,Porto-Novo
+T044,task,Colombia,Bogotá,Funafuti,Bogotá,Minsk
+T045,task,Comoros,Moroni,Phnom Penh,Moroni,Kyiv
+T046,task,Costa Rica,San José,Naypyidaw,Nicosia,San José
+T047,task,Côte d'Ivoire,Yamoussoukro,Yamoussoukro,Hanoi,Astana
+T048,task,Croatia,Zagreb,Zagreb,Managua,Malabo
+T049,task,Cuba,Havana,Warsaw,Havana,New Delhi
+T050,task,Cyprus,Nicosia,Nicosia,Nairobi,Tunis
+T051,task,Czech Republic,Prague,Seoul,Prague,Baku
+T052,task,Denmark,Copenhagen,Kathmandu,Tripoli,Copenhagen
+T053,task,Djibouti,Djibouti,Dublin,Djibouti,Harare
+T054,task,Dominica,Roseau,Buenos Aires,Roseau,N'Djamena
+T055,task,Dominican Republic,Santo Domingo,Santo Domingo,Tehran,Cairo
+T056,task,Ecuador,Quito,Quito,Vaduz,Buenos Aires
+T057,task,Egypt,Cairo,Cairo,Abu Dhabi,Budapest
+T058,task,El Salvador,San Salvador,San Salvador,Saint John's,Addis Ababa
+T059,task,Equatorial Guinea,Malabo,Abuja,Ljubljana,Malabo
+T060,task,Eritrea,Asmara,Vaduz,Asmara,San Salvador
+T061,task,Estonia,Tallinn,Windhoek,Tallinn,Tehran
+T062,task,Eswatini,Mbabane,Canberra,Mbabane,Lilongwe
+T063,task,Ethiopia,Addis Ababa,Lisbon,Addis Ababa,Yaren District
+T064,task,Fiji,Suva,Suva,Thimphu,Monrovia
+T065,task,Finland,Helsinki,Dili,Helsinki,Dodoma
+T066,task,Gabon,Libreville,Libreville,Thimphu,Rome
+T067,task,Gambia,Banjul,Banjul,London,Ouagadougou
+T068,task,Georgia,Tbilisi,Tbilisi,Addis Ababa,Dublin
+T069,task,Ghana,Accra,Tripoli,Accra,Astana
+T070,task,Greece,Athens,Wellington,Monrovia,Athens
+T071,task,Grenada,St. George's,St. George's,Khartoum,Ljubljana
+T072,task,Guinea,Conakry,Canberra,Riyadh,Conakry
+T073,task,Guyana,Georgetown,Dakar,Georgetown,Lusaka
+T074,task,Haiti,Port-au-Prince,Suva,Port-au-Prince,Caracas
+T075,task,Honduras,Tegucigalpa,Tegucigalpa,Lima,Ulaanbaatar
+T076,task,Hungary,Budapest,Khartoum,Monaco,Budapest
+T077,task,Iceland,Reykjavík,Santo Domingo,Reykjavík,Majuro
+T078,task,India,New Delhi,New Delhi,Brussels,Paramaribo
+T079,task,Indonesia,Jakarta,Wellington,Jakarta,Khartoum
+T080,task,Iran,Tehran,Asunción,Tehran,Jerusalem
+T081,task,Iraq,Baghdad,Kathmandu,Baghdad,Majuro
+T082,task,Ireland,Dublin,Nassau,Helsinki,Dublin
+T083,task,Italy,Rome,Tbilisi,Rome,Yamoussoukro
+T084,task,Jamaica,Kingston,Gitega,Kingston,Banjul
+T085,task,Jordan,Amman,Hanoi,Yerevan,Amman
+T086,task,Kazakhstan,Astana,Dhaka,Astana,Abuja
+T087,task,Kenya,Nairobi,Nairobi,Copenhagen,Apia
+T088,task,Kiribati,South Tarawa,Jerusalem,South Tarawa,Paramaribo
+T089,task,North Korea,Pyongyang,Pyongyang,Mbabane,Amsterdam
+T090,task,South Korea,Seoul,Oslo,Majuro,Seoul
+T091,task,Kyrgyzstan,Bishkek,Bishkek,Santiago,Manila
+T092,task,Laos,Vientiane,Vientiane,Jerusalem,Libreville
+T093,task,Latvia,Riga,Riga,Mexico City,Rabat
+T094,task,Lebanon,Beirut,Vaduz,Skopje,Beirut
+T095,task,Lesotho,Maseru,Maseru,Baku,Cairo
+T096,task,Liberia,Monrovia,Sarajevo,Monrovia,Mogadishu
+T097,task,Libya,Tripoli,Tripoli,Doha,Dublin
+T098,task,Liechtenstein,Vaduz,Vaduz,Honiara,Victoria
+T099,task,Lithuania,Vilnius,Tripoli,Vilnius,Dakar
+T100,task,Madagascar,Antananarivo,Tokyo,Budapest,Antananarivo
+T101,task,Malawi,Lilongwe,Paramaribo,Lilongwe,Apia
+T102,task,Malaysia,Kuala Lumpur,Kuala Lumpur,Moscow,San José
+T103,task,Maldives,Malé,Malé,Dakar,Tashkent
+T104,task,Mali,Bamako,Nassau,Bamako,Accra
+T105,task,Malta,Valletta,Podgorica,Zagreb,Valletta
+T106,task,Marshall Islands,Majuro,Tirana,Baghdad,Majuro
+T107,task,Mauritania,Nouakchott,Managua,Tehran,Nouakchott
+T108,task,Mauritius,Port Louis,Kampala,Athens,Port Louis
+T109,task,Micronesia,Palikir,Berlin,Yaren District,Palikir
+T110,task,Moldova,Chisinau,Nicosia,Kathmandu,Chisinau
+T111,task,Monaco,Monaco,Yaoundé,Monaco,Kathmandu
+T112,task,Mongolia,Ulaanbaatar,Accra,Amsterdam,Ulaanbaatar
+T113,task,Montenegro,Podgorica,Podgorica,Athens,Jerusalem
+T114,task,Morocco,Rabat,Rabat,N'Djamena,Canberra
+T115,task,Mozambique,Maputo,Algiers,Bangkok,Maputo
+T116,task,Myanmar,Naypyidaw,Paris,Yamoussoukro,Naypyidaw
+T117,task,Namibia,Windhoek,Thimphu,Windhoek,Suva
+T118,task,Nauru,Yaren District,Buenos Aires,Maputo,Yaren District
+T119,task,Nepal,Kathmandu,Kathmandu,Lomé,Ljubljana
+T120,task,Netherlands,Amsterdam,Amsterdam,Thimphu,Tokyo
+T121,task,New Zealand,Wellington,Wellington,Conakry,Baghdad
+T122,task,Nicaragua,Managua,Managua,Mogadishu,Dili
+T123,task,Niger,Niamey,Niamey,Dublin,Luanda
+T124,task,Nigeria,Abuja,Addis Ababa,Washington,Abuja
+T125,task,North Macedonia,Skopje,Havana,Apia,Skopje
+T126,task,Norway,Oslo,Zagreb,Oslo,Ottawa
+T127,task,Oman,Muscat,Muscat,Naypyidaw,Cairo
+T128,task,Pakistan,Islamabad,Nairobi,Yaren District,Islamabad
+T129,task,Palau,Ngerulmud,Doha,Canberra,Ngerulmud
+T130,task,Palestine,Jerusalem,Athens,Kampala,Jerusalem
+T131,task,Papua New Guinea,Port Moresby,Port Moresby,Kigali,Canberra
+T132,task,Paraguay,Asunción,Baghdad,Caracas,Asunción
+T133,task,Peru,Lima,Lima,Vienna,Tunis
+T134,task,Philippines,Manila,Baku,Malé,Manila
+T135,task,Poland,Warsaw,Doha,Warsaw,Mexico City
+T136,task,Portugal,Lisbon,Bamako,Nassau,Lisbon
+T137,task,Qatar,Doha,Canberra,Washington,Doha
+T138,task,Romania,Bucharest,Skopje,Port Louis,Bucharest
+T139,task,Rwanda,Kigali,Apia,Ottawa,Kigali
+T140,task,Samoa,Apia,Baku,Apia,Beijing
+T141,task,Saudi Arabia,Riyadh,Bangkok,Bangui,Riyadh
+T142,task,Senegal,Dakar,Tashkent,Lima,Dakar
+T143,task,Serbia,Belgrade,Belgrade,Vienna,Berlin
+T144,task,Seychelles,Victoria,Victoria,Maputo,Antananarivo
+T145,task,Sierra Leone,Freetown,Freetown,Bangkok,Bogotá
+T146,task,Slovakia,Bratislava,Khartoum,Bratislava,Addis Ababa
+T147,task,Slovenia,Ljubljana,Gaborone,Ljubljana,Maputo
+T148,task,Solomon Islands,Honiara,Malé,Budapest,Honiara
+T149,task,Somalia,Mogadishu,Libreville,Mogadishu,Victoria
+T150,task,South Africa,Pretoria,Amman,Lomé,Pretoria
+T151,task,Spain,Madrid,Madrid,Algiers,Luanda
+T152,task,Sudan,Khartoum,Tallinn,Paris,Khartoum
+T153,task,Suriname,Paramaribo,Port Moresby,Paramaribo,Tunis
+T154,task,Sweden,Stockholm,Paris,Athens,Stockholm
+T155,task,Switzerland,Bern,Algiers,Bern,Riyadh
+T156,task,Syria,Damascus,Taipei,Freetown,Damascus
+T157,task,Taiwan,Taipei,Nairobi,Washington,Taipei
+T158,task,Tajikistan,Dushanbe,Port Vila,Harare,Dushanbe
+T159,task,Tanzania,Dodoma,Roseau,Manila,Dodoma
+T160,task,Thailand,Bangkok,Dakar,Bogotá,Bangkok
+T161,task,Timor-Leste,Dili,Belgrade,Dili,Majuro
+T162,task,Togo,Lomé,Lomé,Vaduz,Sana'a
+T163,task,Tonga,Nukuʻalofa,Nukuʻalofa,Libreville,Madrid
+T164,task,Tunisia,Tunis,Luanda,Rome,Tunis
+T165,task,Turkey,Ankara,Malabo,Ankara,Tegucigalpa
+T166,task,Turkmenistan,Ashgabat,Monaco,Yaoundé,Ashgabat
+T167,task,Tuvalu,Funafuti,Funafuti,Georgetown,Rabat
+T168,task,Uganda,Kampala,Bern,Kampala,Lomé
+T169,task,Ukraine,Kyiv,Cairo,Khartoum,Kyiv
+T170,task,United Arab Emirates,Abu Dhabi,Apia,Abu Dhabi,Lomé
+T171,task,Uruguay,Montevideo,Brasília,Tunis,Montevideo
+T172,task,Uzbekistan,Tashkent,Tashkent,Amman,Brasília
+T173,task,Vanuatu,Port Vila,Port Vila,Nairobi,Luanda
+T174,task,Venezuela,Caracas,Caracas,Bucharest,Tirana
+T175,task,Vietnam,Hanoi,Hanoi,Lilongwe,Riga
+T176,task,Yemen,Sana'a,Luanda,Sana'a,Praia
+T177,task,Zambia,Lusaka,London,New Delhi,Lusaka
+T178,task,Zimbabwe,Harare,Windhoek,Yerevan,Harare

@@ -27,4 +27,4 @@ class C(BaseConstants):
     }
 
     RETRY_DELAY = 1
-    TRIAL_DELAY = 2
+    TRIAL_DELAY = 1

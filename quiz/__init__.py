@@ -5,7 +5,7 @@ from _stuff.config import get_session_param
 
 from .const import C
 from .models import Subsession, Group, Player, Round, Trial, Response  # noqa
-from .models import create_trials, custom_export_trials  # noqa
+from .models import create_trials, custom_export_trials, custom_export_responses  # noqa
 from .source import load_source, sample_data
 from .progress import Progress
 from . import progress
@@ -18,14 +18,10 @@ def creating_session(subsession: Subsession):
 
     for player in subsession.get_players():
         player.condition = get_session_param(session, 'condition', choices=C.CONDITIONS, default="random")
-        create_tasks(sourcedata, player, 'Practice')
-        create_tasks(sourcedata, player, 'Main')
-
-
-def create_tasks(sourcedata: list[dict], player: Player, pagename: str):
-    iteround = Round.create_new(pagename, player=player)
-    data = sample_data(sourcedata, C.NUM_TRIALS[pagename], section=pagename, condition=player.condition)
-    create_trials(iteround, data)
+        round1 = Round.create_new('Practice', player=player)
+        create_trials(round1, sample_data(sourcedata, C.NUM_TRIALS['Practice'], category='practice'))
+        round2 = Round.create_new('Main', player=player)
+        create_trials(round2, sample_data(sourcedata, C.NUM_TRIALS['Main'], category='task'))
 
 
 def set_payoff(player: Player):
@@ -85,9 +81,8 @@ class Practice(LiveMethods, Page):
         assert current.trial
         return {
             "id": current.trial.id,
-            "task": current.trial.task,
+            "question": current.trial.question,
             "options": current.trial.options,
-            "labels": current.trial.labels,
         }
 
     @staticmethod
@@ -122,9 +117,8 @@ class Main(LiveMethods, Page):
         assert current.trial
         return {
             "id": current.trial.id,
-            "task": current.trial.task,
+            "question": current.trial.question,
             "options": current.trial.options,
-            "labels": current.trial.labels,
         }
 
     @staticmethod
