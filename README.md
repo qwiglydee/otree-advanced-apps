@@ -37,14 +37,18 @@ Example content and calculations are intentionally dull so they can be easily re
     - tasks and choices are geneated on the fly according to session condition
     - multiple retries in practice round
     - practice and main rounds on different pages with different feedback
-- [Trials 3](trials3): trials with choosing answering strategy
+- [Trials 3](trials3): trials with 2 stages and different answering methods
     - the trials are of 2 stages: decision and answering
     - tasks and choices are geneated on the fly according to session condition
     - multiple retries in practice round
     - practice and main rounds on different pages with different feedback
-- [Trials 2g](trials2g): two-player trials with 2 stages of answering
-    - each player answers in a corresponding stage according to player role
-    - page updates to make players see partners answer
+- [Sequential](h2sequential): two-player trials with sequential answering
+    - each player answers in turn
+    - page updates to display answers of partners
+    - practice and main rounds on different pages with different feedback
+- [Parallel](h2parallel): two-player trials with parallel answering
+    - each player answers on their own
+    - feedback provided when everyone answered
     - practice and main rounds on different pages with different feedback
 - [Lottery 1](lottery1): lottery with cards-like buttons with different outcomes
     - lottery parameters are geneated on the fly according to configuration
