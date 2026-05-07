@@ -80,7 +80,6 @@
         <div class="flex-fill"></div>
         <div ot-display="vars.prompt.choosing">Select and <kbd>Confirm</kbd> your answer...</div>
         <div ot-display="vars.prompt.inputing">Enter your answer and press <kbd>Enter</kbd>...</div>
-        <div ot-display="vars.progress.retries">Retries left: <span ot-text="vars.progress.retries"></span></div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
         <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary" autofocus>Continue</button>
     </footer>
@@ -166,12 +165,6 @@
             ot.resetInputs();
         }
 
-        function resetResponse() {
-            vars.choice = null;
-            vars.feedback = null;
-            ot.resetInputs();
-        }
-
         function startTrial(trial) {
             vars.trial = trial;
             switchState("responding");
@@ -181,12 +174,6 @@
         function updateTrial(data) {
             Object.assign(vars.trial, data);
             if (vars.progress.stage != null) switchState("responding");
-        }
-
-        async function restartTrial() {
-            await ot.delay(RETRY_DELAY);
-            resetResponse();
-            switchState("responding");
         }
 
         function inputDecision(decision) {
@@ -224,8 +211,7 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (feedback.completed) completeTrial();
-            else restartTrial();
+            completeTrial();
         }
 
         async function completeTrial() {

@@ -97,21 +97,9 @@
             ot.resetInputs();
         }
 
-        function resetResponse() {
-            vars.answer = null;
-            vars.feedback = null;
-            ot.resetInputs();
-        }
-
         function startTrial(trial) {
             vars.trial = trial;
             ot.beginTimeMeasurement();
-            switchState("responding");
-        }
-
-        async function restartTrial() {
-            await ot.delay(RETRY_DELAY);
-            resetResponse();
             switchState("responding");
         }
 
@@ -127,8 +115,7 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (feedback.completed) completeTrial();
-            else restartTrial();
+            completeTrial();
         }
 
         async function completeTrial() {
