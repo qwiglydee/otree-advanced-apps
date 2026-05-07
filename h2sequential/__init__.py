@@ -5,7 +5,7 @@ from _stuff.config import get_session_param
 
 from .const import C
 from .models import Subsession, Group, Player, Round, Trial, Response  # noqa
-from .models import custom_export_trials  # noqa
+from .models import custom_export_trials, custom_export_responses  # noqa
 from .progress import Progress
 from . import progress
 
@@ -52,7 +52,7 @@ class LiveMethods:
         progress.respond(current, response_time=message['time'], answer=message['answer'])
 
         yield group, "progress", page.display_progress(current)
-        for response in Response.all(current.trial):
+        for response in Response.allast(current.trial):
             yield response.player, "feedback", page.display_feedback(current, response)
         yield group, "update", page.display_trial(current)
 
@@ -61,12 +61,6 @@ class LiveMethods:
 class Practice(LiveMethods, Page):
     page_styles = ['game-style.css', 'ot-progress.css', 'ot-pulse.css']
     page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
-
-    @staticmethod
-    def vars_for_template(player: Player):
-        return {
-            'MYSTAGE': C.STAGEMAP[player.role]
-        }
 
     @staticmethod
     def display_progress(current: Progress):
@@ -78,13 +72,13 @@ class Practice(LiveMethods, Page):
             "score": current.iteround.total_score,
             "pending": not current.has_started,
             "current": current.trial.iteration if current.trial else None,
-            "stage": current.trial.progress_stage if current.trial else None,
+            "turn": current.turn,
         }
 
     @staticmethod
     def display_trial(current: Progress):
         assert current.trial
-        responses = Response.all(current.trial)
+        responses = Response.allast(current.trial)
         return {
             "id": current.trial.id,
             "task": current.trial.task,
@@ -107,12 +101,6 @@ class Main(LiveMethods, Page):
     page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
 
     @staticmethod
-    def vars_for_template(player: Player):
-        return {
-            'MYSTAGE': C.STAGEMAP[player.role]
-        }
-
-    @staticmethod
     def display_progress(current: Progress):
         assert current.iteround
         return {
@@ -122,13 +110,13 @@ class Main(LiveMethods, Page):
             "score": current.iteround.total_score,
             "pending": not current.has_started,
             "current": current.trial.iteration if current.trial else None,
-            "stage": current.trial.progress_stage if current.trial else None,
+            "turn": current.turn,
         }
 
     @staticmethod
     def display_trial(current: Progress):
         assert current.trial
-        responses = Response.all(current.trial)
+        responses = Response.allast(current.trial)
         return {
             "id": current.trial.id,
             "task": current.trial.task,

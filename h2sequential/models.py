@@ -69,19 +69,19 @@ class Trial(BaseTrialModel):
         self.truth = str(num1 + num2)
 
     def update(self):
-        self.success = Response.count(self, correct=True)
+        responses = [r for r in Response.allast(self) if r.correct]
+        self.success = len(responses)
 
     def complete(self):
         super().complete()
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
 
-    progress_stage = database.StringField()
+    progress_turn = database.StringField()
 
 
 class Response(BaseResponseModel):
     trial: Trial = database.Link(Trial)
-    stage = database.StringField()
     player: Player = database.Link(Player)
 
     response_time = database.IntegerField()
@@ -94,7 +94,8 @@ class Response(BaseResponseModel):
         self.correct = self.answer == self.trial.truth
 
     @classmethod
-    def all(cls, trial: Trial):
+    def allast(cls, trial: Trial):
+        """Last responses of each player in group"""
         # supporting multiple retries / subiterations
         players = trial.iteround.group.get_players()
         responses = [cls.last(trial, player=p) for p in players]
@@ -105,6 +106,8 @@ def custom_export_trials(_: list[Player]):
     yield [
         "session.code",
         "session.label",
+        "participant.code",
+        "participant.label",
         "condition",
         #
         "iteround.pagename",
@@ -123,28 +126,20 @@ def custom_export_trials(_: list[Player]):
         "trial.truth",
         "trial.success",
         "trial.score",
-        #
-        "participant.code",
-        "participant.label",
-        "player.role",
-        #
-        "response.iteration",
-        "response.stage",
-        "response.time",
-        "response.answer",
-        "response.correct",
-
     ]
 
-    for trial in Trial.objects_filter():
+    for trial in Trial.objects_filter().order_by('player_id', 'iteration'):
         iteround: Round = trial.iteround
-        group: Group = iteround.group
-        session: Session = group.session
+        player: Player = iteround.player
+        session: Session = player.session
+        participant: Participant = player.participant
 
-        fields = [
+        yield [
             session.code,
             session.label,
-            group.condition,
+            participant.code,
+            participant.label,
+            player.condition,
             #
             iteround.pagename,
             iteround.is_practice,
@@ -164,20 +159,73 @@ def custom_export_trials(_: list[Player]):
             trial.score,
         ]
 
-        yield fields
 
-        responses = Response.list(trial=trial)
-        for response in responses:
-            player: Player = response.player
-            participant: Participant = player.participant
-            yield fields + [
-                participant.code,
-                participant.label,
-                player.role,
-                #
-                response.iteration,
-                response.stage,
-                response.response_time,
-                response.answer,
-                response.correct,
-            ]
+def custom_export_responses(_: list[Player]):
+    yield [
+        "session.code",
+        "session.label",
+        "participant.code",
+        "participant.label",
+        "condition",
+        #
+        "iteround.pagename",
+        "iteround.is_practice",
+        "iteround.status",
+        "iteround.completion",
+        "iteround.processing_time",
+        "iteround.total_trials",
+        "iteround.total_score",
+        #
+        "trial.iteration",
+        "trial.status",
+        "trial.completion",
+        "trial.processing_time",
+        "trial.task",
+        "trial.truth",
+        "trial.success",
+        "trial.score",
+        #
+        "player.role",
+        "response.iteration",
+        "response.time",
+        "response.answer",
+        "response.correct",
+    ]
+
+    for response in Response.objects_filter().order_by('trial_id', 'iteration'):
+        trial: Trial = response.trial
+        iteround: Round = trial.iteround
+        player: Player = iteround.player
+        session: Session = player.session
+        participant: Participant = player.participant
+
+        yield [
+            session.code,
+            session.label,
+            participant.code,
+            participant.label,
+            player.condition,
+            #
+            iteround.pagename,
+            iteround.is_practice,
+            iteround.status,
+            iteround.completion,
+            f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
+            iteround.progress_trials,
+            iteround.total_score,
+            #
+            trial.iteration,
+            trial.status,
+            trial.completion,
+            f"{trial.processing_time:.01f}" if trial.processing_time else None,
+            trial.task,
+            trial.truth,
+            trial.success,
+            trial.score,
+            #
+            player.role,
+            response.iteration,
+            response.response_time,
+            response.answer,
+            response.correct,
+        ]

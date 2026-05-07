@@ -29,8 +29,13 @@ SESSION_CONFIGS = [
         condition="random",
     ),
     dict(
-        name='trials2g',
-        app_sequence=['trials2g'],
+        name='h2sequential',
+        app_sequence=['h2sequential'],
+        condition="random",
+    ),
+    dict(
+        name='h2parallel',
+        app_sequence=['h2parallel'],
         condition="random",
     ),
     dict(

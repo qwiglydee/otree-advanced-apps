@@ -12,21 +12,18 @@ class Points(DecimalUnit):
 
 
 class C(BaseConstants):
-    NAME_IN_URL = __name__
+    NAME_IN_URL = __package__
     NUM_ROUNDS = 1  # should be =1
     PLAYERS_PER_GROUP = 2
 
     P1_ROLE = "P1"
     P2_ROLE = "P2"
+    TURNS = [P1_ROLE, P2_ROLE]  # unordered
 
     NUM_TRIALS = {
         'Practice': 3,
         'Main': 10,
     }
-
-    STAGES = ['S1', 'S2']
-    ROLESMAP = {'S1': 'P1', 'S2': 'P2'}
-    STAGEMAP = {'P1': 'S1', 'P2': 'S2'}
 
     CONDITIONS = ["C0", "C1", "C2"]
     NUMBERS = {

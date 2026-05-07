@@ -44,10 +44,6 @@ class Progress(NamedTuple):
     def is_running(self):
         return self.trial and self.trial.is_started
 
-    @property
-    def stage(self):
-        return self.trial.progress_stage if self.trial else None
-
 
 def current(player: Player):
     group = player.group
@@ -85,7 +81,6 @@ def advance(current: Progress) -> Progress:
     if trial.is_pristine and all_around:
         trial.start()
         trial.update()
-        trial.progress_stage = C.STAGES[0]
 
     return Progress(pagename, player, iteround, trial)
 
@@ -93,19 +88,18 @@ def advance(current: Progress) -> Progress:
 def respond(current: Progress, **kwargs) -> Response:
     assert current.is_valid
     pagename, player, iteround, trial = current
-    stage = trial.progress_stage
 
-    assert player.role == C.ROLESMAP[stage]
-    response = Response.create_next(trial, player, stage=stage)
+    responded = set(resp.player.role for resp in Response.allast(trial))
+
+    assert player.role not in responded
+    responded.add(player.role)
+    response = Response.create_next(trial, player)
     response.respond(**kwargs)
 
     trial.update()
 
-    if trial.progress_stage == C.STAGES[-1]:
+    if len(responded) == len(C.TURNS):
         trial.complete()
-        trial.progress_stage = None
-    else:
-        trial.progress_stage = C.STAGES[C.STAGES.index(stage) + 1]
 
     iteround.update()
     track_round(iteround)
