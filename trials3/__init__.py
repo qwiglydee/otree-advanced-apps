@@ -40,12 +40,34 @@ class LiveMethods:
             yield "trial", page.display_trial(current)
 
     @classmethod
+    def live_decision(page, player: Player, data: dict):
+        current = progress.current(player)
+        assert current.trial and current.trial.id == data['id'], "mismatched response"
+        assert current.trial.strategy is None
+        assert data['decision'] in C.STRATEGIES
+
+        progress.decision(current, data['decision'])
+
+        yield "progress", page.display_progress(current)
+        yield "update", page.display_trial(current)
+
+    @classmethod
     def live_response(page, player: Player, data: dict):
         current = progress.current(player)
         assert current.trial and current.trial.id == data['id'], "mismatched response"
+        assert current.trial.strategy in C.STRATEGIES
 
-        answer = str(data['answer'])
-        response = progress.respond(current, response_time=data['time'], answer=answer)
+        if current.trial.strategy == 'INPUT':
+            assert 'answer' in data and 'choice' not in data
+            button = None
+            answer = str(data['answer'])
+
+        if current.trial.strategy == 'CHOOSE':
+            assert 'choice' in data and 'answer' not in data
+            button = str(data['choice'])
+            answer = current.trial.options[button]
+
+        response = progress.respond(current, response_time=data['time'], button=button, answer=answer)
 
         yield "progress", page.display_progress(current)
         yield "feedback", page.display_feedback(current, response)
@@ -59,6 +81,12 @@ class Practice(LiveMethods, Page):
     @staticmethod
     def display_progress(current: Progress):
         assert current.iteround
+
+        if current.trial:
+            stage = "DECIDING" if current.trial.strategy is None else 'ANSWERING'
+        else:
+            stage = None
+
         return {
             "finished": current.iteround.is_completed,
             "total": progress.max_trials(current.iteround),
@@ -66,6 +94,7 @@ class Practice(LiveMethods, Page):
             "score": current.iteround.total_score,
             "current": current.trial.iteration if current.trial else None,
             "retries": progress.max_retries(current.trial) - current.trial.progress_retries if current.trial else None,
+            "stage": stage
         }
 
     @staticmethod
@@ -74,6 +103,8 @@ class Practice(LiveMethods, Page):
         return {
             "id": current.trial.id,
             "task": current.trial.task,
+            "options": current.trial.options,
+            "strategy": current.trial.strategy,
         }
 
     @staticmethod
@@ -109,6 +140,7 @@ class Main(LiveMethods, Page):
         return {
             "id": current.trial.id,
             "task": current.trial.task,
+            "options": current.trial.options,
         }
 
     @staticmethod

@@ -19,22 +19,27 @@ with some advanced features and techniques beyond standard capabilities of the o
 ## The Apps
 
 The apps are intended to serve as stubs/templates for real experiments.
-Example content and calculations are intentionally dull so it can be easily replaced.
+Example content and calculations are intentionally dull so they can be easily replaced with something meaningful.
 
 - [Survey](survey): a traditional survey with some enhancements in styles and input widgets
     - a hidden field to record local time
     - horizontal choices scale
     - form fields defined by a session condition
     - conditional fields for something 'other'
-- [Quiz](quiz): questions with choices of answers
+- [Quiz](quiz): trials of questions with answers' choices
     - the questions and choices are sampled from a data file
     - practice and main rounds on different pages with different feedback
-- [Trials 1](trials1): trials of a math task with text input for answer
-    - the tasks are geneated on the fly according to session condition
+- [Trials 1](trials1): trials with text input
+    - tasks are geneated on the fly according to session condition
     - multiple retries in practice round
     - practice and main rounds on different pages with different feedback
-- [Trials 2](trials2): trials of a math task with choices of answers
-    - the tasks and choices are geneated on the fly according to session condition
+- [Trials 2](trials2): trials with choices
+    - tasks and choices are geneated on the fly according to session condition
+    - multiple retries in practice round
+    - practice and main rounds on different pages with different feedback
+- [Trials 3](trials3): trials with choosing answering strategy
+    - the trials are of 2 stages: decision and answering
+    - tasks and choices are geneated on the fly according to session condition
     - multiple retries in practice round
     - practice and main rounds on different pages with different feedback
 - [Trials 2g](trials2g): two-player trials with 2 stages of answering

@@ -18,7 +18,7 @@
                     value="1"
                     class="form-check-input"
                     ot-enable="vars.responding"
-                    ot-class="vars.validity.1"
+                    ot-class="vars.styles.1"
                 />
                 <label for="choice1" ot-text="vars.trial.options.1" class="form-check-label"></label>
             </div>
@@ -32,7 +32,7 @@
                     value="2"
                     class="form-check-input"
                     ot-enable="vars.responding"
-                    ot-class="vars.validity.2"
+                    ot-class="vars.styles.2"
                 />
                 <label for="choice2" ot-text="vars.trial.options.2" class="form-check-label"></label>
             </div>
@@ -46,7 +46,7 @@
                     value="3"
                     class="form-check-input"
                     ot-enable="vars.responding"
-                    ot-class="vars.validity.3"
+                    ot-class="vars.styles.3"
                 />
                 <label for="choice3" ot-text="vars.trial.options.3" class="form-check-label"></label>
             </div>
@@ -82,8 +82,6 @@
         ot.onInput("confirm", confirmChoice);
         ot.onLive("feedback", liveFeedback);
         ot.onInput("continue", continueRound);
-        ot.onUpdate("vars.feedback.score", renderResult);
-        ot.onUpdate("vars.feedback.correct", renderValidity);
 
         function switchState(state) {
             vars.responding = false;
@@ -132,8 +130,8 @@
             vars.trial = null;
             vars.choice = null;
             vars.feedback = null;
+            vars.styles = {};
             ot.resetInputs();
-            switchState(null);
         }
 
         function resetResponse() {
@@ -182,21 +180,20 @@
             }
         }
 
-        function renderResult(score) {
+        ot.onUpdate("vars.feedback.score", function renderResult(score) {
             if (score != null) {
                 vars.result = { score: format_number(score, "+.2") };
             } else {
                 vars.result = null;
             }
             ot.updatePage();
-        }
+        });
 
-        function renderValidity(correct) {
-            vars.validity = {};
-            if (correct !== null) {
-                vars.validity[vars.choice] = correct ? "is-valid" : "is-invalid";
+        ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {
+            if (correct != null && vars.choice != null) {
+                vars.styles[vars.choice] = correct ? "is-valid" : "is-invalid";
             }
             ot.updatePage();
-        }
+        });
     </script>
 {% endblock scripts %}

@@ -16,8 +16,8 @@
                 class="form-control"
                 ot-key-input="Enter"
                 autofocus
-                ot-class="vars.validity"
                 ot-enable="vars.responding"
+                ot-class="vars.styles.0"
             />
         </section>
     </main>
@@ -48,8 +48,6 @@
         ot.onInput("answer", inputResponse);
         ot.onLive("feedback", liveFeedback);
         ot.onInput("continue", continueRound);
-        ot.onUpdate("vars.feedback.score", renderResult);
-        ot.onUpdate("vars.feedback.correct", renderValidity);
 
         function switchState(state) {
             vars.responding = false;
@@ -94,6 +92,7 @@
             vars.trial = null;
             vars.answer = null;
             vars.feedback = null;
+            vars.styles = {};
             ot.resetInputs();
         }
 
@@ -139,21 +138,20 @@
             }
         }
 
-        function renderResult(score) {
+        ot.onUpdate("vars.feedback.score", function renderResult(score) {
             if (score != null) {
                 vars.result = { score: format_number(score, "+.2") };
             } else {
                 vars.result = null;
             }
-        }
+            ot.updatePage();
+        });
 
-        function renderValidity(correct) {
-            if (correct != null) {
-                vars.validity = correct ? "is-valid" : "is-invalid";
-            } else {
-                vars.validity = null;
+        ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {
+            if (correct != null && vars.answer != null) {
+                vars.styles[0] = correct ? "is-valid" : "is-invalid";
             }
             ot.updatePage();
-        }
+        });
     </script>
 {% endblock scripts %}
