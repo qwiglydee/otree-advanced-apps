@@ -114,7 +114,7 @@
             vars.inputing = vars.trial ? vars.trial.strategy == "INPUT" : false;
             vars.choosing = vars.trial ? vars.trial.strategy == "CHOOSE" : false;
             vars.prompt = {};
-            if (state == "responding") state += `/${vars.progress.stage}`;
+            if (state == "running") state += `/${vars.progress.stage}`;
             switch (state) {
                 case "starting":
                     vars.waiting = true;
@@ -127,7 +127,7 @@
                     vars.confirming = vars.choosing && vars.choice != null;
                     vars.prompt = { inputing: vars.inputing, choosing: vars.choosing };
                     break;
-                case "evaluating":
+                case "processing":
                     vars.waiting = true;
                     break;
                 case "completing":
@@ -167,13 +167,13 @@
 
         function startTrial(trial) {
             vars.trial = trial;
-            switchState("responding");
+            switchState("running");
             ot.beginTimeMeasurement();
         }
 
         function updateTrial(data) {
             Object.assign(vars.trial, data);
-            if (vars.progress.stage != null) switchState("responding");
+            if (vars.progress.stage != null) switchState("running");
         }
 
         function inputDecision(decision) {
@@ -187,7 +187,7 @@
 
         function inputResponse(answer) {
             vars.answer = answer;
-            switchState("evaluating");
+            switchState("processing");
             ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
@@ -197,11 +197,11 @@
 
         function inputChoice(choice) {
             vars.choice = choice;
-            switchState("responding");
+            switchState("running");
         }
 
         function confirmChoice() {
-            switchState("evaluating");
+            switchState("processing");
             ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),

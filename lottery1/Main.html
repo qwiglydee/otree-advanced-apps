@@ -79,10 +79,10 @@
                 case "starting":
                     vars.waiting = true;
                     break;
-                case "responding":
+                case "running":
                     vars.responding = true;
                     break;
-                case "evaluating":
+                case "processing":
                     vars.waiting = true;
                     break;
                 case "completing":
@@ -121,12 +121,12 @@
             vars.trial = trial;
             vars.labels = trial.labels;
             ot.beginTimeMeasurement();
-            switchState("responding");
+            switchState("running");
         }
 
         function inputResponse(choice) {
             vars.choice = Number(choice);
-            switchState("evaluating");
+            switchState("processing");
             ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),

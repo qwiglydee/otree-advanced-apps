@@ -73,11 +73,11 @@
                 case "starting":
                     vars.waiting = true;
                     break;
-                case "responding":
+                case "running":
                     vars.responding = vars.answer == null;
                     vars.pending = !vars.responding;
                     break;
-                case "evaluating":
+                case "processing":
                     vars.waiting = true;
                     break;
                 case "completing":
@@ -123,7 +123,7 @@
             vars.trial = trial;
             vars.answer = trial.answers[MYROLE]; // restore own answer on page reload
             ot.beginTimeMeasurement();
-            switchState("responding");
+            switchState("running");
         }
 
         function updateTrial(update) {
@@ -132,7 +132,7 @@
 
         function inputResponse(answer) {
             vars.answer = answer;
-            switchState("evaluating");
+            switchState("processing");
             ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),

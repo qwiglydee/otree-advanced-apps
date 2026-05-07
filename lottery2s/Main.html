@@ -88,12 +88,12 @@
                 case "starting":
                     vars.waiting = true;
                     break;
-                case "responding":
+                case "running":
                     vars.responding = true;
                     vars.sampling = stage == "SAMPLING";
                     vars.finalizing = stage == "FINAL";
                     break;
-                case "evaluating":
+                case "processing":
                     vars.waiting = true;
                     break;
                 case "completing":
@@ -139,7 +139,7 @@
             vars.labels = Object.assign({}, trial.labels);
             vars.stage = stage || "SAMPLING";
             ot.beginTimeMeasurement();
-            switchState("responding", vars.stage);
+            switchState("running", vars.stage);
         }
 
         async function restartTrial(stage) {
@@ -159,7 +159,7 @@
 
         function inputResponse(choice) {
             vars.choice = Number(choice);
-            switchState("evaluating");
+            switchState("processing");
             ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
