@@ -9,27 +9,60 @@
         <section class="paper fs-4 text-center"><b ot-text="vars.trial.task"></b> =</section>
 
         <section class="form">
-            <input
-                ot-input
-                type="number"
-                name="answer"
-                class="form-control"
-                ot-key-input="Enter"
-                autofocus
-                ot-class="vars.validity"
-                ot-enable="vars.responding"
-            />
+            <div class="form-check">
+                <input
+                    id="choice1"
+                    ot-input
+                    type="radio"
+                    name="choice"
+                    value="1"
+                    class="form-check-input"
+                    ot-enable="vars.responding"
+                    ot-class="vars.validity.1"
+                />
+                <label for="choice1" ot-text="vars.trial.options.1" class="form-check-label"></label>
+            </div>
+
+            <div class="form-check">
+                <input
+                    id="choice2"
+                    ot-input
+                    type="radio"
+                    name="choice"
+                    value="2"
+                    class="form-check-input"
+                    ot-enable="vars.responding"
+                    ot-class="vars.validity.2"
+                />
+                <label for="choice2" ot-text="vars.trial.options.2" class="form-check-label"></label>
+            </div>
+
+            <div class="form-check">
+                <input
+                    id="choice3"
+                    ot-input
+                    type="radio"
+                    name="choice"
+                    value="3"
+                    class="form-check-input"
+                    ot-enable="vars.responding"
+                    ot-class="vars.validity.3"
+                />
+                <label for="choice3" ot-text="vars.trial.options.3" class="form-check-label"></label>
+            </div>
+
+            <button ot-click-input type="button" name="confirm" class="btn btn-primary m-3" ot-enable="vars.confirming">Confirm</button>
         </section>
     </main>
 
     <footer>
-        <div ot-display="vars.feedback.truth">Correct solution: <span ot-text="vars.feedback.truth"></span></div>
+        <div ot-display="vars.feedback.truth">Correct answer: <b ot-text="vars.feedback.truth"></b></div>
         <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
         <div class="flex-fill"></div>
-        <div ot-display="vars.responding">Enter your answer and press <kbd>Enter</kbd>...</div>
+        <div ot-display="vars.responding">Select and <kbd>Confirm</kbd> your answer...</div>
         <div ot-display="vars.responding">Retries left: <span ot-text="vars.progress.retries"></span></div>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
-        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-3" autofocus>Continue</button>
+        <ot-pulse ot-display="vars.waiting"></ot-pulse>
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary" autofocus>Continue</button>
     </footer>
 {% endblock content %}
 
@@ -45,7 +78,8 @@
         ot.onLoad(continueRound);
         ot.onLive("progress", liveProgress);
         ot.onLive("trial", startTrial);
-        ot.onInput("answer", inputResponse);
+        ot.onInput("choice", inputChoice);
+        ot.onInput("confirm", confirmChoice);
         ot.onLive("feedback", liveFeedback);
         ot.onInput("continue", continueRound);
         ot.onUpdate("vars.feedback.score", renderResult);
@@ -53,6 +87,7 @@
 
         function switchState(state) {
             vars.responding = false;
+            vars.confirming = false;
             vars.completing = false;
             vars.waiting = false;
             switch (state) {
@@ -61,6 +96,7 @@
                     break;
                 case "responding":
                     vars.responding = true;
+                    vars.confirming = vars.choice != null;
                     break;
                 case "evaluating":
                     vars.waiting = true;
@@ -72,8 +108,10 @@
                         vars.completing = true;
                     }
                     break;
+                case null:
+                    break;
                 default:
-                    throw Error("Invlid state");
+                    throw Error(`Invlid state: ${state}`);
             }
             ot.updatePage();
         }
@@ -92,21 +130,22 @@
 
         function resetTrial() {
             vars.trial = null;
-            vars.answer = null;
+            vars.choice = null;
             vars.feedback = null;
             ot.resetInputs();
+            switchState(null);
         }
 
         function resetResponse() {
-            vars.answer = null;
+            vars.choice = null;
             vars.feedback = null;
             ot.resetInputs();
         }
 
         function startTrial(trial) {
             vars.trial = trial;
-            ot.beginTimeMeasurement();
             switchState("responding");
+            ot.beginTimeMeasurement();
         }
 
         async function restartTrial() {
@@ -115,17 +154,21 @@
             switchState("responding");
         }
 
-        function inputResponse(answer) {
-            vars.answer = answer;
+        function inputChoice(choice) {
+            vars.choice = choice;
+            switchState("responding");
+        }
+
+        function confirmChoice() {
             switchState("evaluating");
             ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
-                answer: String(answer),
+                choice: vars.choice,
             });
         }
 
-        function liveFeedback(feedback) {
+        async function liveFeedback(feedback) {
             vars.feedback = feedback;
             if (feedback.completed) completeTrial();
             else restartTrial();
@@ -145,13 +188,13 @@
             } else {
                 vars.result = null;
             }
+            ot.updatePage();
         }
 
         function renderValidity(correct) {
-            if (correct != null) {
-                vars.validity = correct ? "is-valid" : "is-invalid";
-            } else {
-                vars.validity = null;
+            vars.validity = {};
+            if (correct !== null) {
+                vars.validity[vars.choice] = correct ? "is-valid" : "is-invalid";
             }
             ot.updatePage();
         }

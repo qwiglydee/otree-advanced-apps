@@ -19,6 +19,11 @@ SESSION_CONFIGS = [
         condition="random",
     ),
     dict(
+        name='trials2',
+        app_sequence=['trials2'],
+        condition="random",
+    ),
+    dict(
         name='trials2g',
         app_sequence=['trials2g'],
         condition="random",

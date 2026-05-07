@@ -40,11 +40,13 @@ class LiveMethods:
             yield "trial", page.display_trial(current)
 
     @classmethod
-    def live_response(page, player: Player, message: dict):
+    def live_response(page, player: Player, data: dict):
         current = progress.current(player)
-        assert current.trial and current.trial.id == message['id'], "mismatched response"
+        assert current.trial and current.trial.id == data['id'], "mismatched response"
 
-        response = progress.respond(current, response_time=message['time'], answer=message['answer'])
+        button = str(data['choice'])
+        answer = current.trial.options[button]
+        response = progress.respond(current, response_time=data['time'], button=button, answer=answer)
 
         yield "progress", page.display_progress(current)
         yield "feedback", page.display_feedback(current, response)
@@ -73,6 +75,7 @@ class Practice(LiveMethods, Page):
         return {
             "id": current.trial.id,
             "task": current.trial.task,
+            "options": current.trial.options,
         }
 
     @staticmethod
@@ -108,6 +111,7 @@ class Main(LiveMethods, Page):
         return {
             "id": current.trial.id,
             "task": current.trial.task,
+            "options": current.trial.options,
         }
 
     @staticmethod

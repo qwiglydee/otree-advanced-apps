@@ -1,7 +1,10 @@
+import random
+
 from otree import database
 from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
 
 from _stuff.iterating import BaseRoundModel, BaseTrialModel, BaseResponseModel
+from _stuff.dictprop import dictproperty
 
 from .const import C, Points
 
@@ -10,9 +13,12 @@ def init_params(config):
     "Initialize trial parameters from config"
     num1, num2 = config.samples(2)
     result = num1 + num2
+    options = [result, result + 10, result - 10]
+    random.shuffle(options)
     return {
         'task': f"{num1} + {num2}",
-        'truth': f"{result}"
+        'truth': str(result),
+        'options': [str(v) for v in options]
     }
 
 
@@ -59,6 +65,12 @@ class Trial(BaseTrialModel):
 
     task = database.StringField()
     truth = database.StringField()
+
+    option_1 = database.StringField()
+    option_2 = database.StringField()
+    option_3 = database.StringField()
+    options = dictproperty('option_', '123')
+
     success = database.IntegerField()
     score = database.DecimalField(unit=Points, initial=0)
 
@@ -70,6 +82,9 @@ class Trial(BaseTrialModel):
         params = init_params(C.NUMBERS[self.condition])
         self.task = params['task']
         self.truth = params['truth']
+        self.option_1 = params['options'][0]
+        self.option_2 = params['options'][1]
+        self.option_3 = params['options'][2]
 
     def update(self):
         """Update something after a response"""
@@ -89,14 +104,15 @@ class Response(BaseResponseModel):
     player: Player = database.Link(Player)
 
     response_time = database.IntegerField()
+    button = database.StringField()
     answer = database.StringField()
     correct = database.BooleanField()
 
-    def respond(self, response_time: int, answer: str):
+    def respond(self, response_time: int, button: str, answer: str):
         self.response_time = response_time
+        self.button = button
         self.answer = answer
         self.correct = self.answer == self.trial.truth
-        return self
 
 
 def custom_export_trials(_: list[Player]):
@@ -121,6 +137,9 @@ def custom_export_trials(_: list[Player]):
         "trial.processing_time",
         "trial.task",
         "trial.truth",
+        "trial.option_1",
+        "trial.option_2",
+        "trial.option_3",
         "trial.success",
         "trial.score",
     ]
@@ -152,6 +171,9 @@ def custom_export_trials(_: list[Player]):
             f"{trial.processing_time:.01f}" if trial.processing_time else None,
             trial.task,
             trial.truth,
+            trial.option_1,
+            trial.option_2,
+            trial.option_3,
             trial.success,
             trial.score,
         ]
@@ -179,11 +201,15 @@ def custom_export_responses(_: list[Player]):
         "trial.processing_time",
         "trial.task",
         "trial.truth",
+        "trial.option_1",
+        "trial.option_2",
+        "trial.option_3",
         "trial.success",
         "trial.score",
         #
         "response.iteration",
         "response.time",
+        "response.button",
         "response.answer",
         "response.correct",
     ]
@@ -216,11 +242,15 @@ def custom_export_responses(_: list[Player]):
             f"{trial.processing_time:.01f}" if trial.processing_time else None,
             trial.task,
             trial.truth,
+            trial.option_1,
+            trial.option_2,
+            trial.option_3,
             trial.success,
             trial.score,
             #
             response.iteration,
             response.response_time,
+            response.button,
             response.answer,
             response.correct,
         ]

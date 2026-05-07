@@ -22,7 +22,7 @@ class C(BaseConstants):
     }
 
     NUM_RETRIES = {
-        'Practice': 3,
+        'Practice': 2,
     }
 
     CONDITIONS = ["C0", "C1", "C2"]

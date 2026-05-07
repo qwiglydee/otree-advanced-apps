@@ -30,7 +30,11 @@ Example content and calculations are intentionally dull so it can be easily repl
     - the questions and choices are sampled from a data file
     - practice and main rounds on different pages with different feedback
 - [Trials 1](trials1): trials of a math task with text input for answer
-    - tasks are geneated on the fly according to session condition
+    - the tasks are geneated on the fly according to session condition
+    - multiple retries in practice round
+    - practice and main rounds on different pages with different feedback
+- [Trials 2](trials2): trials of a math task with choices of answers
+    - the tasks and choices are geneated on the fly according to session condition
     - multiple retries in practice round
     - practice and main rounds on different pages with different feedback
 - [Trials 2g](trials2g): two-player trials with 2 stages of answering
