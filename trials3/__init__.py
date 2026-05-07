@@ -5,7 +5,7 @@ from _stuff.config import get_session_param
 
 from .const import C
 from .models import Subsession, Group, Player, Round, Trial, Response  # noqa
-from .models import custom_export_trials  # noqa
+from .models import custom_export_trials, custom_export_responses  # noqa
 from .progress import Progress
 from . import progress
 

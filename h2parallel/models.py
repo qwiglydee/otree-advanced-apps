@@ -126,18 +126,17 @@ def custom_export_trials(_: list[Player]):
         "trial.score",
     ]
 
-    for trial in Trial.objects_filter().order_by('player_id', 'iteration'):
+    for trial in Trial.objects_filter().order_by('group_id', 'iteration'):
         iteround: Round = trial.iteround
-        player: Player = iteround.player
-        session: Session = player.session
-        participant: Participant = player.participant
+        group: Group = iteround.group
+        session: Session = group.session
 
         yield [
             session.code,
             session.label,
-            participant.code,
-            participant.label,
-            player.condition,
+            None,
+            None,
+            group.condition,
             #
             iteround.pagename,
             iteround.is_practice,
@@ -193,7 +192,8 @@ def custom_export_responses(_: list[Player]):
     for response in Response.objects_filter().order_by('trial_id', 'iteration'):
         trial: Trial = response.trial
         iteround: Round = trial.iteround
-        player: Player = iteround.player
+        group: Group = iteround.group
+        player: Player = response.player
         session: Session = player.session
         participant: Participant = player.participant
 
@@ -202,7 +202,7 @@ def custom_export_responses(_: list[Player]):
             session.label,
             participant.code,
             participant.label,
-            player.condition,
+            group.condition,
             #
             iteround.pagename,
             iteround.is_practice,
