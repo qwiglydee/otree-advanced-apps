@@ -1,3 +1,5 @@
+> :warning: The repository is currently work in progress. Code is not quite usable
+
 # otree-advanced-apps
 
 The repository contains utilities and example apps for [oTtree](https://www.otree.org/) v6
