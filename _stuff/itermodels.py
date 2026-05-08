@@ -66,6 +66,7 @@ class IterStatusMixin:
         """
         self.close("COMPLETED")
 
+    @property
     def is_completed(self):
         return self.is_closed and self.completion == 'COMPLETED'
 
