@@ -3,7 +3,7 @@ import random
 from otree.models import Session
 
 
-def get_session_param(session: Session, param: str, /, choices: tuple[str] | list[str], default: str | None = None) -> str:
+def get_session_param(session: Session, param: str, /, choices: tuple[str] | list[str], default: str | None = "random") -> str:
     """Get session config param
     - check validity agains possible `choices`
     - sets default value if missing
@@ -11,7 +11,6 @@ def get_session_param(session: Session, param: str, /, choices: tuple[str] | lis
     """
     value = session.config.get(param, default)
     if value == "random":
-        value = random.choice(choices)
-    assert value in choices, f"unrecognized value for `{param}` in session settings"
-    assert value is not None
+        return random.choice(choices)
+    assert value in choices, f"invalid value for `{param}` in session settings"
     return value

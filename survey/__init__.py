@@ -120,7 +120,7 @@ class Player(BasePlayer):
 
     def setup(self) -> None:
         """Configure some session-based fields and conditions"""
-        self.condition = get_session_param(self.session, "condition", choices=C.CONDITIONS, default="random")
+        self.condition = get_session_param(self.session, "condition", choices=C.CONDITIONS)
 
 
 # SESSION

@@ -18,7 +18,7 @@ def dictvalues(obj, prefix, suffixes):
     return {k: getattr(obj, prefix + k.lower()) for k in suffixes}
 
 
-class dictproperty():
+class dictprop():
     def __init__(self, prefix, suffixes):
         self.prefix = prefix
         self.suffixes = suffixes

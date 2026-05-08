@@ -13,7 +13,7 @@ from . import progress
 def creating_session(subsession: Subsession):
     session = subsession.session
     for player in subsession.get_players():
-        player.condition = get_session_param(session, 'condition', choices=C.CONDITIONS, default="random")
+        player.condition = get_session_param(session, 'condition', choices=C.CONDITIONS)
 
 
 def set_payoff(player: Player):
@@ -28,7 +28,7 @@ class LiveMethods:
         current = progress.current(player)
 
         # restore trial on page reloading
-        if current.trial and current.trial.is_started:
+        if current.is_running:
             yield "progress", page.display_progress(current)
             yield "trial", page.display_trial(current)
             return
@@ -36,7 +36,7 @@ class LiveMethods:
         current = progress.advance(current)
 
         yield "progress", page.display_progress(current)
-        if current.trial:
+        if current.is_running:
             yield "trial", page.display_trial(current)
 
     @classmethod

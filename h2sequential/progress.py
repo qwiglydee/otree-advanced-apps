@@ -37,12 +37,8 @@ class Progress(NamedTuple):
         return self.iteround and self.trial
 
     @property
-    def has_started(self):
-        return self.trial and self.trial.has_started
-
-    @property
     def is_running(self):
-        return self.trial and self.trial.is_started
+        return self.trial and self.trial.is_running
 
     @property
     def turn(self):

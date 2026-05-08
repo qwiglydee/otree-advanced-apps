@@ -3,9 +3,9 @@ import random
 from otree import database
 from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
 
-from _stuff.iterating import BaseRoundModel, BaseTrialModel, BaseResponseModel
+from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 from _stuff.layout import layoutdict, derange
-from _stuff.dictprop import dictproperty
+from _stuff.dictprop import dictprop
 
 from .const import C, Points
 
@@ -70,7 +70,7 @@ class Trial(BaseTrialModel):
     label_a = database.StringField()
     label_b = database.StringField()
     label_c = database.StringField()
-    labels = dictproperty("label_", "ABC")
+    labels = dictprop("label_", "ABC")
 
     param_x = database.FloatField()
     param_y = database.FloatField()
@@ -119,7 +119,7 @@ class Response(BaseResponseModel):
     outcome_a = database.DecimalField(unit=Points)
     outcome_b = database.DecimalField(unit=Points)
     outcome_c = database.DecimalField(unit=Points)
-    outcomes = dictproperty("outcome_", "ABC")
+    outcomes = dictprop("outcome_", "ABC")
 
     result = database.DecimalField(unit=Points)
 

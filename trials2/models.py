@@ -3,8 +3,8 @@ import random
 from otree import database
 from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
 
-from _stuff.iterating import BaseRoundModel, BaseTrialModel, BaseResponseModel
-from _stuff.dictprop import dictproperty
+from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
+from _stuff.dictprop import dictprop
 
 from .const import C, Points
 
@@ -69,7 +69,7 @@ class Trial(BaseTrialModel):
     option_1 = database.StringField()
     option_2 = database.StringField()
     option_3 = database.StringField()
-    options = dictproperty('option_', '123')
+    options = dictprop('option_', '123')
 
     success = database.IntegerField()
     score = database.DecimalField(unit=Points, initial=0)

@@ -17,7 +17,7 @@ def creating_session(subsession: Subsession):
     sourcedata = load_source(sourcefile)
 
     for player in subsession.get_players():
-        player.condition = get_session_param(session, 'condition', choices=C.CONDITIONS, default="random")
+        player.condition = get_session_param(session, 'condition', choices=C.CONDITIONS)
         round1 = Round.create_new('Practice', player=player)
         create_trials(round1, sample_data(sourcedata, C.NUM_TRIALS['Practice'], category='practice'))
         round2 = Round.create_new('Main', player=player)
@@ -36,7 +36,7 @@ class LiveMethods:
         current = progress.current(player)
 
         # restore trial on page reloading
-        if current.trial and current.trial.is_started:
+        if current.is_running:
             yield "progress", page.display_progress(current)
             yield "trial", page.display_trial(current)
             return
@@ -44,7 +44,7 @@ class LiveMethods:
         current = progress.advance(current)
 
         yield "progress", page.display_progress(current)
-        if current.trial:
+        if current.is_running:
             yield "trial", page.display_trial(current)
 
     @classmethod

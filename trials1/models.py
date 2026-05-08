@@ -1,7 +1,7 @@
 from otree import database
 from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
 
-from _stuff.iterating import BaseRoundModel, BaseTrialModel, BaseResponseModel
+from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 
 from .const import C, Points
 

@@ -13,7 +13,7 @@ from . import progress
 def creating_session(subsession: Subsession):
     session = subsession.session
     for group in subsession.get_groups():
-        group.condition = get_session_param(session, 'condition', choices=C.CONDITIONS, default="random")
+        group.condition = get_session_param(session, 'condition', choices=C.CONDITIONS)
 
 
 def set_payoff(player: Player):
@@ -29,18 +29,19 @@ class LiveMethods:
         current = progress.current(player)
 
         # restore trial on page reloading
-        if current.trial and current.trial.is_started:
+        if current.is_running:
             yield player, "progress", page.display_progress(current)
             yield player, "trial", page.display_trial(current)
             return
 
         current = progress.advance(current)
 
-        if current.trial and current.trial.has_started:
+        if current.is_running:
             # synchronize progress and trial
             yield group, "progress", page.display_progress(current)
             yield group, "trial", page.display_trial(current)
         else:
+            # pending state
             yield player, "progress", page.display_progress(current)
 
     @classmethod
@@ -70,7 +71,7 @@ class Practice(LiveMethods, Page):
             "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
-            "pending": not current.has_started,
+            "pending": not current.is_running,
             "current": current.trial.iteration if current.trial else None,
         }
 
@@ -107,7 +108,7 @@ class Main(LiveMethods, Page):
             "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
-            "pending": not current.has_started,
+            "pending": not current.is_running,
             "current": current.trial.iteration if current.trial else None,
         }
 
