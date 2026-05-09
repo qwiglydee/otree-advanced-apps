@@ -2,24 +2,8 @@ from typing import NamedTuple
 
 from _stuff.participant import current_pagename
 
-from .const import C  # noqa
+from .conf import C  # noqa
 from .models import Player, Round, Trial, Response
-
-
-def max_trials(iteround: Round):
-    return C.NUM_TRIALS[iteround.pagename]
-
-
-def track_round(iteround: Round):
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-
-
-def max_retries(trial: Trial):
-    return C.NUM_RETRIES.get(trial.iteround.pagename, 1)
-
-
-def track_trial(trial: Trial):
-    trial.progress_retries = Response.count(trial)
 
 
 class Progress(NamedTuple):
@@ -36,8 +20,31 @@ class Progress(NamedTuple):
     def is_running(self):
         return self.trial and self.trial.is_running
 
+    @property
+    def retries_left(self):
+        assert self.trial
+        return max_retries(self.trial) - self.trial.progress_retries
 
-def current(player: Player):
+
+def max_trials(iteround: Round):
+    return C.NUM_TRIALS[iteround.pagename]
+
+
+def max_retries(trial):
+    return C.NUM_RETRIES.get(trial.iteround.pagename, 1)
+
+
+def track_round(iteround: Round):
+    iteround.update()
+    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
+
+
+def track_trial(trial: Trial):
+    trial.update()
+    trial.progress_retries = Response.count(trial)
+
+
+def current(player: Player) -> Progress:
     pagename = current_pagename(player.participant)
     iteround = Round.current(pagename, player=player)
     trial = Trial.current(iteround) if iteround else None
@@ -54,7 +61,6 @@ def advance(current: Progress) -> Progress:
     if iteround.is_pristine:
         iteround.start()
 
-    iteround.update()
     track_round(iteround)
 
     if iteround.progress_trials >= max_trials(iteround):
@@ -68,26 +74,21 @@ def advance(current: Progress) -> Progress:
 
     if trial.is_pristine:
         trial.start()
-        trial.update()
         track_trial(trial)
 
     return Progress(pagename, player, iteround, trial)
 
 
-def respond(current: Progress, **kwargs) -> Response:
+def respond(current: Progress, answer: str, **kwargs) -> Response:
     assert current.is_valid
     pagename, player, iteround, trial = current
 
-    response = Response.create_next(trial, player)
-    response.respond(**kwargs)
-
-    trial.update()
+    response = Response.create_next(trial, player, answer=answer, **kwargs)
+    response.evaluate()
     track_trial(trial)
 
-    if trial.progress_retries >= max_retries(trial) or trial.success:
+    if trial.success or trial.progress_retries >= max_retries(trial):
         trial.complete()
-
-    iteround.update()
-    track_round(iteround)
+        track_round(iteround)
 
     return response

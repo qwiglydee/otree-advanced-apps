@@ -4,6 +4,7 @@ from otree.constants import BaseConstants
 from otree.decimal import DecimalUnit
 
 from _stuff import rand
+from _stuff.config import get_session_param
 
 
 class Points(DecimalUnit):
@@ -14,15 +15,17 @@ class Points(DecimalUnit):
 
 
 class C(BaseConstants):
-    NAME_IN_URL = __name__
+    NAME_IN_URL = __package__
     NUM_ROUNDS = 1  # should be =1
     PLAYERS_PER_GROUP = None
 
     NUM_TRIALS = {
-        'Main': 5
+        'Main': 10,
     }
 
     CONDITIONS = ["C0", "C1", "C2"]
+    DISCLOSURES = ['FULL', 'CHOICE']
+
     CHOICES = ["A", "B", "C"]
     LABELS = {1: 'foo', 2: 'bar', 3: 'baz'}  # by screen position
 
@@ -31,7 +34,7 @@ class C(BaseConstants):
             "x": rand.Const(+1.0),
             "y": rand.Const(-1.0),
             "z": 10.0,
-            "std": 0.5,
+            "std": 1.0,
         },
         "C1": {
             "x": rand.Normal(+1.0, 1.0),
@@ -43,17 +46,21 @@ class C(BaseConstants):
             "x": rand.Uniform(0.0, +2.0),
             "y": rand.Uniform(-2.0, 0.0),
             "z": 10.0,
-            "std": 2.0,
+            "std": 1.0,
         },
     }
 
-    STAGES = ['SAMPLING', 'FINAL']
-    MIN_SAMPLES = 3
-
-    TRIAL_DELAY = 2
-    SAMPLING_DELAY = 1
+    TRIAL_DELAY = 1
 
 
-def sample_layout():
+def config_condition(session):
+    return get_session_param(session, 'condition', C.CONDITIONS)
+
+
+def config_disclosure(session):
+    return get_session_param(session, 'disclosure', C.DISCLOSURES)
+
+
+def config_layout():
     layout = random.sample(C.CHOICES, k=len(C.CHOICES))
     return "".join(layout)

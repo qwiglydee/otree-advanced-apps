@@ -2,24 +2,8 @@ from typing import NamedTuple
 
 from _stuff.participant import current_pagename
 
-from .const import C  # noqa
+from .conf import C  # noqa
 from .models import Player, Round, Trial, Response
-
-
-def max_trials(iteround: Round):
-    return C.NUM_TRIALS[iteround.pagename]
-
-
-def track_round(iteround: Round):
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-
-
-def track_trial(trial: Trial):
-    trial.progress_samples = Response.count(trial, stage='SAMPLING')
-
-
-def trial_finalizable(trial: Trial):
-    return trial.progress_samples >= C.MIN_SAMPLES
 
 
 class Progress(NamedTuple):
@@ -36,8 +20,27 @@ class Progress(NamedTuple):
     def is_running(self):
         return self.trial and self.trial.is_running
 
+    @property
+    def is_finalizable(self):
+        return self.trial.progress_samples >= C.MIN_SAMPLES if self.trial else None
 
-def current(player: Player):
+
+def max_trials(iteround: Round):
+    return C.NUM_TRIALS[iteround.pagename]
+
+
+def track_round(iteround: Round):
+    iteround.update()
+    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
+
+
+def track_trial(trial: Trial):
+    trial.update()
+
+    trial.progress_samples = Response.count(trial, stage='SAMPLING')
+
+
+def current(player: Player) -> Progress:
     pagename = current_pagename(player.participant)
     iteround = Round.current(pagename, player=player)
     trial = Trial.current(iteround) if iteround else None
@@ -54,7 +57,6 @@ def advance(current: Progress) -> Progress:
     if iteround.is_pristine:
         iteround.start()
 
-    iteround.update()
     track_round(iteround)
 
     if iteround.progress_trials >= max_trials(iteround):
@@ -68,28 +70,24 @@ def advance(current: Progress) -> Progress:
 
     if trial.is_pristine:
         trial.start()
-        trial.update()
         track_trial(trial)
 
     return Progress(pagename, player, iteround, trial)
 
 
-def respond(current: Progress, stage: str, **kwargs) -> Response:
+def respond(current: Progress, stage: str, choice: str, **kwargs) -> Response:
     assert current.is_valid
+    if stage == 'FINAL':
+        assert current.is_finalizable
     pagename, player, iteround, trial = current
 
-    assert stage == 'SAMPLING' or (stage == 'FINAL' and trial_finalizable(current.trial))
-
-    response = Response.create_next(trial, player, stage=stage)
-    response.respond(**kwargs)
-
-    trial.update()
+    response = Response.create_next(trial, player, stage=stage, choice=choice, **kwargs)
+    response.evaluate()
     track_trial(trial)
 
-    if response.stage == 'FINAL':
+    if stage == 'FINAL':
         trial.complete()
 
-    iteround.update()
     track_round(iteround)
 
     return response

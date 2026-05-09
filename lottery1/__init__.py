@@ -1,12 +1,11 @@
 from otree.views import Page
 
 from _stuff.live import live_page
-from _stuff.config import get_session_param
 from _stuff.layout import arrange
 
-from .const import C, sample_layout
+from .conf import C, config_condition, config_disclosure, config_layout  # noqa
 from .models import Subsession, Group, Player, Round, Trial, Response  # noqa
-from .models import custom_export_trials  # noqa
+from .models import custom_export_trials, custom_export_responses  # noqa
 from .progress import Progress
 from . import progress
 
@@ -14,8 +13,9 @@ from . import progress
 def creating_session(subsession: Subsession):
     session = subsession.session
     for player in subsession.get_players():
-        player.condition = get_session_param(session, 'condition', choices=C.CONDITIONS)
-        player.layout = sample_layout()
+        player.condition = config_condition(session)
+        player.disclosure = config_disclosure(session)
+        player.layout = config_layout()
 
 
 def set_payoff(player: Player):
@@ -42,13 +42,14 @@ class LiveMethods:
             yield "trial", page.display_trial(current)
 
     @classmethod
-    def live_response(page, player: Player, message: dict):
+    def live_response(page, player: Player, data: dict):
         current = progress.current(player)
-        assert current.trial and current.trial.id == message['id'], "mismatched response"
+        assert current.trial and current.trial.id == data['id'], "mismatched response"
 
-        button = int(message['button'])
+        assert 'button' in data
+        button = int(data['button'])
         choice = current.trial.layout[button]
-        response = progress.respond(current, response_time=message['time'], button=button, choice=choice)
+        response = progress.respond(current, choice, response_time=data['time'], button=button)
 
         yield "progress", page.display_progress(current)
         yield "feedback", page.display_feedback(current, response)
@@ -56,8 +57,8 @@ class LiveMethods:
 
 @live_page
 class Main(LiveMethods, Page):
-    page_styles = ['game-style.css', 'ot-progress.css', 'ot-pulse.css', 'cards.css']
-    page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
+    page_styles = ['ot-progress.css', 'ot-pulse.css', 'cards.css']
+    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
 
     @staticmethod
     def display_progress(current: Progress):
@@ -67,7 +68,7 @@ class Main(LiveMethods, Page):
             "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
-            "current": current.trial.iteration if current.trial else None
+            "current": current.trial.iteration if current.trial else None,
         }
 
     @staticmethod
@@ -81,9 +82,10 @@ class Main(LiveMethods, Page):
     @staticmethod
     def display_feedback(current: Progress, response: Response):
         assert response
+
         return {
             "completed": current.trial.is_completed,
-            "outcomes": arrange(current.trial.layout, response.outcomes) if current.trial.is_completed else None,
+            "outcomes": arrange(current.trial.layout, response.outcomes) if response else None,
             "score": current.trial.score if current.trial.is_completed else None,
         }
 
@@ -94,11 +96,11 @@ class Main(LiveMethods, Page):
 
 
 class Intro(Page):
-    page_styles = ['game-style.css']
+    pass
 
 
 class Results(Page):
-    page_styles = ['game-style.css']
+    pass
 
 
 page_sequence = [

@@ -3,17 +3,7 @@ from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Partici
 
 from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 
-from .const import C, Points
-
-
-def init_params(config):
-    "Initialize trial parameters from config"
-    num1, num2 = config.samples(2)
-    result = num1 + num2
-    return {
-        'task': f"{num1} + {num2}",
-        'truth': f"{result}"
-    }
+from .conf import C, Points
 
 
 class Subsession(BaseSubsession):
@@ -47,7 +37,7 @@ class Round(BaseRoundModel):
         pass
 
     def complete(self):
-        super().complete()
+        self.close('COMPLETED')
         if not self.is_practice:
             self.player.total_score = self.total_score
 
@@ -67,17 +57,19 @@ class Trial(BaseTrialModel):
         return self.iteround.player.condition
 
     def init(self, **kwargs):
-        params = init_params(C.NUMBERS[self.condition])
-        self.task = params['task']
-        self.truth = params['truth']
+        config = C.NUMBERS[self.condition]
+        num1, num2 = config.samples(2)
+        result = num1 + num2
+
+        self.task = f"{num1} + {num2}"
+        self.truth = str(result)
 
     def update(self):
-        """Update something after a response"""
         response = Response.last(self)
-        self.success = response and response.correct
+        self.success = response.correct if response else None
 
     def complete(self):
-        super().complete()
+        self.close('COMPLETED')
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
 
@@ -92,11 +84,9 @@ class Response(BaseResponseModel):
     answer = database.StringField()
     correct = database.BooleanField()
 
-    def respond(self, response_time: int, answer: str):
-        self.response_time = response_time
-        self.answer = answer
+    def evaluate(self):
+        assert self.answer is not None
         self.correct = self.answer == self.trial.truth
-        return self
 
 
 def custom_export_trials(_: list[Player]):
@@ -123,9 +113,10 @@ def custom_export_trials(_: list[Player]):
         "trial.truth",
         "trial.success",
         "trial.score",
+        "trial.retries",
     ]
 
-    for trial in Trial.objects_filter().order_by('player_id', 'iteration'):
+    for trial in Trial.objects_filter().order_by('iteround_id', 'iteration'):
         iteround: Round = trial.iteround
         player: Player = iteround.player
         session: Session = player.session
@@ -154,6 +145,7 @@ def custom_export_trials(_: list[Player]):
             trial.truth,
             trial.success,
             trial.score,
+            trial.progress_retries
         ]
 
 
@@ -181,6 +173,7 @@ def custom_export_responses(_: list[Player]):
         "trial.truth",
         "trial.success",
         "trial.score",
+        "trial.retries",
         #
         "response.iteration",
         "response.time",
@@ -218,6 +211,7 @@ def custom_export_responses(_: list[Player]):
             trial.truth,
             trial.success,
             trial.score,
+            trial.progress_retries,
             #
             response.iteration,
             response.response_time,

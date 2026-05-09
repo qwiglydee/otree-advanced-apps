@@ -4,32 +4,10 @@ from otree import database
 from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
 
 from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
-from _stuff.layout import layoutdict, derange
 from _stuff.dictprop import dictprop
+from _stuff.layout import layoutdict, derange
 
-from .const import C, Points
-
-
-def init_params(config: dict):
-    "Initialize trial parameters from config"
-    return {
-        'x': config['x'].sample(),
-        'y': config['y'].sample(),
-        'z': config['z'],
-        'std': config['std']
-    }
-
-
-def evaluate_outcomes(choice: str, x: float, y: float, z: float, std: float):
-    "Realize outcomes for given params"
-    a = z + random.gauss(x, std)
-    b = z + random.gauss(y, std)
-    c = z + random.gauss(0, std)
-    return {
-        'A': Points(a),
-        'B': Points(b),
-        'C': Points(c),
-    }
+from .conf import C, Points
 
 
 class Subsession(BaseSubsession):
@@ -42,6 +20,7 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     condition = database.StringField()
+    disclosure = database.StringField()
     layout = database.StringField()
     total_score = database.DecimalField(unit=Points, initial=0)
 
@@ -51,7 +30,7 @@ class Round(BaseRoundModel):
     total_score = database.DecimalField(unit=Points, initial=0)
 
     @property
-    def is_practice(self):
+    def is_practice(self) -> bool:
         return self.pagename == 'Practice'
 
     def init(self, **kwargs):
@@ -61,7 +40,7 @@ class Round(BaseRoundModel):
         pass
 
     def complete(self):
-        super().complete()
+        self.close('COMPLETED')
         if not self.is_practice:
             self.player.total_score = self.total_score
 
@@ -80,6 +59,7 @@ class Trial(BaseTrialModel):
     param_y = database.FloatField()
     param_z = database.FloatField()
     param_std = database.FloatField()
+    params = dictprop("param_", ('x', 'y', 'z', 'std'))
 
     score = database.DecimalField(unit=Points, initial=0)
 
@@ -88,15 +68,19 @@ class Trial(BaseTrialModel):
         return self.iteround.player.condition
 
     @property
+    def disclosure(self) -> str:
+        return self.iteround.player.disclosure
+
+    @property
     def layout(self) -> dict[int, str]:
         return layoutdict(self.iteround.player.layout)
 
     def init(self, **kwargs):
-        params = init_params(C.PARAMS[self.condition])
-        self.param_x = params['x']
-        self.param_y = params['y']
-        self.param_z = params['z']
-        self.param_std = params['std']
+        config = C.PARAMS[self.condition]
+        self.param_x = config['x'].sample()
+        self.param_y = config['y'].sample()
+        self.param_z = config['z']
+        self.param_std = config['std']
 
         labels = derange(self.layout, C.LABELS)
         self.label_a = labels["A"]
@@ -104,13 +88,12 @@ class Trial(BaseTrialModel):
         self.label_c = labels["C"]
 
     def update(self):
-        pass
+        response = Response.last(self, stage='FINAL')
+        self.score = response.result if response else None
 
     def complete(self):
-        super().complete()
-        response = Response.last(self, stage='FINAL')
-        assert response
-        self.score = response.result
+        self.close('COMPLETED')
+        assert self.score is not None
         self.iteround.total_score += self.score
 
     progress_samples = database.IntegerField()
@@ -132,23 +115,28 @@ class Response(BaseResponseModel):
 
     result = database.DecimalField(unit=Points)
 
-    def respond(self, response_time: int, button: int, choice: str):
-        self.response_time = response_time
-        self.button = button
-        self.choice = choice
+    def evaluate(self):
+        assert self.choice is not None
+        params = self.trial.params
+        x = params['x']
+        y = params['y']
+        z = params['z']
 
-        outcomes = evaluate_outcomes(
-            choice,
-            self.trial.param_x,
-            self.trial.param_y,
-            self.trial.param_z,
-            self.trial.param_std,
-        )
-        self.outcome_a = outcomes['A']
-        self.outcome_b = outcomes['B']
-        self.outcome_c = outcomes['C']
+        c = z + random.gauss(0, params['std'])
+        a = c + x
+        b = c + y
 
-        self.result = outcomes[choice]
+        disclosure = self.trial.disclosure
+        if disclosure == 'FULL' or (disclosure == 'FINAL' and self.stage == 'FINAL'):
+            self.outcome_a = Points(a)
+            self.outcome_b = Points(b)
+            self.outcome_c = Points(c)
+        if disclosure == 'CHOICE' or (disclosure == 'FINAL' and self.stage == 'SAMPLING'):
+            self.outcome_a = Points(a) if self.choice == 'A' else None
+            self.outcome_b = Points(b) if self.choice == 'B' else None
+            self.outcome_c = Points(c) if self.choice == 'C' else None
+
+        self.result = self.outcomes[self.choice]
 
 
 def custom_export_trials(_: list[Player]):
@@ -161,6 +149,7 @@ def custom_export_trials(_: list[Player]):
         "layout",
         #
         "iteround.pagename",
+        "iteround.is_practice",
         "iteround.status",
         "iteround.completion",
         "iteround.processing_time",
@@ -171,40 +160,32 @@ def custom_export_trials(_: list[Player]):
         "trial.status",
         "trial.completion",
         "trial.processing_time",
-        "trial.label.A",
-        "trial.label.B",
-        "trial.label.C",
         "trial.param.x",
         "trial.param.y",
         "trial.param.z",
+        "trial.param.std",
+        "trial.label.A",
+        "trial.label.B",
+        "trial.label.C",
         "trial.score",
-        #
-        "response.iteration",
-        "response.stage",
-        "response.response_time",
-        "response.outcome.A",
-        "response.outcome.B",
-        "response.outcome.C",
-        "response.button",
-        "response.choice",
-        "response.result"
     ]
 
-    for trial in Trial.objects_filter():
+    for trial in Trial.objects_filter().order_by('iteround_id', 'iteration'):
         iteround: Round = trial.iteround
         player: Player = iteround.player
         session: Session = player.session
         participant: Participant = player.participant
 
-        fields = [
+        yield [
             session.code,
             session.label,
             participant.code,
             participant.label,
-            #
             player.condition,
             player.layout,
+            #
             iteround.pagename,
+            iteround.is_practice,
             iteround.status,
             iteround.completion,
             f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
@@ -215,27 +196,101 @@ def custom_export_trials(_: list[Player]):
             trial.status,
             trial.completion,
             f"{trial.processing_time:.01f}" if trial.processing_time else None,
-            trial.label_a,
-            trial.label_b,
-            trial.label_c,
             trial.param_x,
             trial.param_y,
             trial.param_z,
+            trial.param_std,
+            trial.label_a,
+            trial.label_b,
+            trial.label_c,
             trial.score,
         ]
 
-        yield fields
 
-        responses = Response.list(trial=trial)
-        for response in responses:
-            yield fields + [
-                response.iteration,
-                response.stage,
-                response.response_time,
-                response.outcome_a,
-                response.outcome_b,
-                response.outcome_c,
-                response.button,
-                response.choice,
-                response.result,
-            ]
+def custom_export_responses(_: list[Player]):
+    yield [
+        "session.code",
+        "session.label",
+        "participant.code",
+        "participant.label",
+        "condition",
+        "layout",
+        #
+        "iteround.pagename",
+        "iteround.is_practice",
+        "iteround.status",
+        "iteround.completion",
+        "iteround.processing_time",
+        "iteround.total_trials",
+        "iteround.total_score",
+        #
+        "trial.iteration",
+        "trial.status",
+        "trial.completion",
+        "trial.processing_time",
+        "trial.param.x",
+        "trial.param.y",
+        "trial.param.z",
+        "trial.param.std",
+        "trial.label.A",
+        "trial.label.B",
+        "trial.label.C",
+        "trial.score",
+        #
+        "response.iteration",
+        "response.stage",
+        "response.response_time",
+        "response.button",
+        "response.choice",
+        "response.outcome.A",
+        "response.outcome.B",
+        "response.outcome.C",
+        "response.result",
+    ]
+
+    for response in Response.objects_filter().order_by('trial_id', 'iteration'):
+        trial: Trial = response.trial
+        iteround: Round = trial.iteround
+        player: Player = iteround.player
+        session: Session = player.session
+        participant: Participant = player.participant
+
+        yield [
+            session.code,
+            session.label,
+            participant.code,
+            participant.label,
+            player.condition,
+            player.layout,
+            #
+            iteround.pagename,
+            iteround.is_practice,
+            iteround.status,
+            iteround.completion,
+            f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
+            iteround.progress_trials,
+            iteround.total_score,
+            #
+            trial.iteration,
+            trial.status,
+            trial.completion,
+            f"{trial.processing_time:.01f}" if trial.processing_time else None,
+            trial.param_x,
+            trial.param_y,
+            trial.param_z,
+            trial.param_std,
+            trial.label_a,
+            trial.label_b,
+            trial.label_c,
+            trial.score,
+            #
+            response.iteration,
+            response.stage,
+            response.response_time,
+            response.button,
+            response.choice,
+            response.outcome_a,
+            response.outcome_b,
+            response.outcome_c,
+            response.result,
+        ]

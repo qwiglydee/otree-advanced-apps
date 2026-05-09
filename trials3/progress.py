@@ -2,24 +2,8 @@ from typing import NamedTuple
 
 from _stuff.participant import current_pagename
 
-from .const import C  # noqa
+from .conf import C  # noqa
 from .models import Player, Round, Trial, Response
-
-
-def max_trials(iteround: Round):
-    return C.NUM_TRIALS[iteround.pagename]
-
-
-def track_round(iteround: Round):
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-
-
-def max_retries(trial: Trial):
-    return C.NUM_RETRIES.get(trial.iteround.pagename, 1)
-
-
-def track_trial(trial: Trial):
-    trial.progress_retries = Response.count(trial)
 
 
 class Progress(NamedTuple):
@@ -36,8 +20,36 @@ class Progress(NamedTuple):
     def is_running(self):
         return self.trial and self.trial.is_running
 
+    @property
+    def stage(self):
+        return self.trial.progress_stage if self.is_running else None
 
-def current(player: Player):
+    @property
+    def retries_left(self):
+        assert self.trial
+        return max_retries(self.trial) - self.trial.progress_retries
+
+
+def max_trials(iteround: Round):
+    return C.NUM_TRIALS[iteround.pagename]
+
+
+def max_retries(trial):
+    return C.NUM_RETRIES.get(trial.iteround.pagename, 1)
+
+
+def track_round(iteround: Round):
+    iteround.update()
+    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
+
+
+def track_trial(trial: Trial):
+    trial.update()
+    trial.progress_retries = Response.count(trial, stage='ANSWER')
+    trial.progress_stage = 'ANSWER' if trial.strategy else 'DECISION'
+
+
+def current(player: Player) -> Progress:
     pagename = current_pagename(player.participant)
     iteround = Round.current(pagename, player=player)
     trial = Trial.current(iteround) if iteround else None
@@ -54,7 +66,6 @@ def advance(current: Progress) -> Progress:
     if iteround.is_pristine:
         iteround.start()
 
-    iteround.update()
     track_round(iteround)
 
     if iteround.progress_trials >= max_trials(iteround):
@@ -68,36 +79,31 @@ def advance(current: Progress) -> Progress:
 
     if trial.is_pristine:
         trial.start()
-        trial.update()
         track_trial(trial)
 
     return Progress(pagename, player, iteround, trial)
 
 
-def decision(current: Progress, strategy: str):
-    assert current.is_valid
+def respond_decision(current: Progress, decision: str, **kwargs):
+    assert current.is_valid and current.stage == 'DECISION'
     pagename, player, iteround, trial = current
 
-    current.trial.strategy = strategy
-    trial.update()
+    response = Response.create_next(trial, player, stage='DECISION', decision=decision, **kwargs)
     track_trial(trial)
 
+    return response
 
-def respond(current: Progress, **kwargs) -> Response:
-    assert current.is_valid
+
+def respond_answer(current: Progress, answer: str, **kwargs) -> Response:
+    assert current.is_valid and current.stage == 'ANSWER'
     pagename, player, iteround, trial = current
 
-    response = Response.create_next(trial, player)
-
-    response.respond(**kwargs)
-
-    trial.update()
+    response = Response.create_next(trial, player, stage='ANSWER', answer=answer, **kwargs)
+    response.evaluate()
     track_trial(trial)
 
-    if trial.progress_retries >= max_retries(trial) or trial.success:
+    if trial.success or trial.progress_retries >= max_retries(trial):
         trial.complete()
-
-    iteround.update()
-    track_round(iteround)
+        track_round(iteround)
 
     return response

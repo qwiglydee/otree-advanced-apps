@@ -8,10 +8,14 @@
     <main ot-visible="vars.trial">
         <section class="paper fs-4 text-center"><b ot-text="vars.trial.task"></b> =</section>
 
-        <section class="form text-center" ot-display="vars.deciding">
-            <p>Select your strategy of answering</p>
-            <button ot-click-input type="button" name="decision" value="INPUT" class="btn btn-primary">Input</button>
-            <button ot-click-input type="button" name="decision" value="CHOOSE" class="btn btn-primary">Choose</button>
+        <section class="form text-center">
+            <div class="btn-group">
+                <input ot-input type="radio" class="btn-check" name="decision" value="INPUT" id="decision1" ot-enable="vars.deciding" />
+                <label class="btn btn-outline-primary" for="decision1">Type-in<br />an answer</label>
+
+                <input ot-input type="radio" class="btn-check" name="decision" value="CHOOSE" id="decision2" ot-enable="vars.deciding" />
+                <label class="btn btn-outline-primary" for="decision2">Choose<br />an option</label>
+            </div>
         </section>
 
         <section class="form" ot-display="vars.inputing">
@@ -76,10 +80,11 @@
 
     <footer>
         <div ot-display="vars.feedback.truth">Correct answer: <b ot-text="vars.feedback.truth"></b></div>
-        <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
+        <div ot-display="vars.result">Score gain: <b ot-text="vars.result.score"></b></div>
         <div class="flex-fill"></div>
-        <div ot-display="vars.prompt.choosing">Select and <kbd>Confirm</kbd> your answer...</div>
-        <div ot-display="vars.prompt.inputing">Enter your answer and press <kbd>Enter</kbd>...</div>
+        <div ot-display="vars.prompting.deciding">Choose your strategy to solve the task...</div>
+        <div ot-display="vars.prompting.choosing">Select and <kbd>Confirm</kbd> your answer...</div>
+        <div ot-display="vars.prompting.inputing">Enter your answer and press <kbd>Enter</kbd>...</div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
         <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary" autofocus>Continue</button>
     </footer>
@@ -90,9 +95,50 @@
         "use strict";
 
         const BLINK_DELAY = 200;
-        const RETRY_DELAY = 1000 * "{{C.RETRY_DELAY}}";
-        const AUTO_ADVANCE = false;
+        const AUTO_ADVANCE = true;
         const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
+
+        function switchState(state) {
+            let stage = vars.progress ? vars.progress.stage : null;
+            let strategy = vars.trial ? vars.trial.strategy : null;
+            if (state == "running") state += `/${stage}`;
+            if (state == "completing") state += AUTO_ADVANCE ? "/AUTO" : "/BTN";
+            // console.debug("switching", state, stage, strategy);
+
+            // display in all states
+            vars.inputing = strategy == "INPUT";
+            vars.choosing = strategy == "CHOOSE";
+
+            vars.waiting = false;
+            vars.deciding = false;
+            vars.responding = false;
+            vars.confirming = false;
+            vars.completing = false;
+            vars.prompting = {};
+
+            switch (state) {
+                case "starting":
+                case "processing":
+                case "completing/AUTO":
+                    vars.waiting = true;
+                    break;
+                case "completing/BTN":
+                    vars.completing = true;
+                    break;
+                case "running/DECISION":
+                    vars.deciding = true;
+                    vars.prompting = { deciding: true };
+                    break;
+                case "running/ANSWER":
+                    vars.responding = true;
+                    vars.confirming = vars.choosing && vars.choice != null;
+                    vars.prompting = { inputing: vars.inputing, choosing: vars.choosing };
+                    break;
+                default:
+                    throw Error(`Bogus state switch: ${state}`);
+            }
+            ot.updatePage();
+        }
 
         ot.onLoad(continueRound);
         ot.onLive("progress", liveProgress);
@@ -105,46 +151,6 @@
         ot.onLive("feedback", liveFeedback);
         ot.onInput("continue", continueRound);
 
-        function switchState(state) {
-            vars.deciding = false;
-            vars.responding = false;
-            vars.confirming = false;
-            vars.completing = false;
-            vars.waiting = false;
-            vars.inputing = vars.trial ? vars.trial.strategy == "INPUT" : false;
-            vars.choosing = vars.trial ? vars.trial.strategy == "CHOOSE" : false;
-            vars.prompt = {};
-            if (state == "running") state += `/${vars.progress.stage}`;
-            switch (state) {
-                case "starting":
-                    vars.waiting = true;
-                    break;
-                case "responding/DECIDING":
-                    vars.deciding = true;
-                    break;
-                case "responding/ANSWERING":
-                    vars.responding = true;
-                    vars.confirming = vars.choosing && vars.choice != null;
-                    vars.prompt = { inputing: vars.inputing, choosing: vars.choosing };
-                    break;
-                case "processing":
-                    vars.waiting = true;
-                    break;
-                case "completing":
-                    if (AUTO_ADVANCE) {
-                        vars.waiting = true;
-                    } else {
-                        vars.completing = true;
-                    }
-                    break;
-                case null:
-                    break;
-                default:
-                    throw Error(`Invlid state: ${state}`);
-            }
-            ot.updatePage();
-        }
-
         async function continueRound() {
             resetTrial();
             switchState("starting");
@@ -152,32 +158,55 @@
             ot.sendLive("continue");
         }
 
-        async function liveProgress(progress) {
+        function liveProgress(progress) {
             vars.progress = progress;
             if (progress.finished) ot.completePage();
         }
 
         function resetTrial() {
             vars.trial = null;
+            vars.decision = null;
             vars.choice = null;
+            vars.answer = null;
             vars.feedback = null;
             vars.styles = {};
             ot.resetInputs();
         }
 
+        function updateTrial(update) {
+            Object.assign(vars.trial, update);
+            // after `decision`
+            if (vars.progress.stage != null) switchState("running");
+        }
+
+        function resetResponse() {
+            vars.choice = null;
+            vars.answer = null;
+            vars.feedback = null;
+            vars.styles = {};
+            ot.resetInputs(["choice", "answer"]); // keep 'decision'
+        }
+
         function startTrial(trial) {
             vars.trial = trial;
+            // TODO: restore decision inputs on page reload
+            resetResponse();
             switchState("running");
             ot.beginTimeMeasurement();
         }
 
-        function updateTrial(data) {
-            Object.assign(vars.trial, data);
-            if (vars.progress.stage != null) switchState("running");
+        async function restartTrial() {
+            resetResponse();
+            switchState("running");
+        }
+
+        async function continueTrial() {
+            switchState("running");
         }
 
         function inputDecision(decision) {
-            vars.deciding = false;
+            vars.decision = decision;
+            switchState("processing");
             ot.sendLive("decision", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
@@ -211,7 +240,8 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            completeTrial();
+            if (feedback.completed) completeTrial();
+            else restartTrial();
         }
 
         async function completeTrial() {
@@ -232,11 +262,13 @@
         });
 
         ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {
-            if (correct != null && vars.choice !== null) {
-                vars.styles[vars.choice] = correct ? "is-valid" : "is-invalid";
-            }
-            if (correct != null && vars.answer !== null) {
-                vars.styles[0] = correct ? "is-valid" : "is-invalid";
+            if (correct != null) {
+                if (vars.choice != null) {
+                    vars.styles[vars.choice] = correct ? "is-valid" : "is-invalid";
+                }
+                if (vars.answer != null) {
+                    vars.styles[0] = correct ? "is-valid" : "is-invalid";
+                }
             }
             ot.updatePage();
         });

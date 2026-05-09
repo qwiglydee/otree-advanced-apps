@@ -18,6 +18,7 @@ In SomePage.html insert at top:
 
 {% block global_styles %}
     <link rel="stylesheet" href="{{ static 'bootstrap-theme.css' }}" />
+    <link rel="stylesheet" href="{{ static 'game-style.css' }}" />
 {% endblock %}
 
 {% block app_styles %}
@@ -31,6 +32,9 @@ In SomePage.html insert at top:
 {% block global_scripts %}
     <script src="{{ static 'otree-front-2.0.b4.js' }}"></script>
     <script src="{{ static 'otree-front-ext.js' }}"></script>
+    {% if has_live_method %}
+        <script src="{{ static 'otree-front-live.js' }}"></script>
+    {% endif %}
 {% endblock %}
 
 {% block app_scripts %}

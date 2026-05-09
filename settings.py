@@ -29,23 +29,25 @@ SESSION_CONFIGS = [
         condition="random",
     ),
     dict(
-        name='h2sequential',
-        app_sequence=['h2sequential'],
-        condition="random",
-    ),
-    dict(
-        name='h2parallel',
-        app_sequence=['h2parallel'],
-        condition="random",
-    ),
-    dict(
         name='lottery1',
         app_sequence=['lottery1'],
         condition="random",
+        disclosure="random",
     ),
     dict(
         name='lottery2s',
         app_sequence=['lottery2s'],
+        condition="random",
+        disclosure="random",
+    ),
+    dict(
+        name='hh2parallel',
+        app_sequence=['hh2parallel'],
+        condition="random",
+    ),
+    dict(
+        name='hh2sequential',
+        app_sequence=['hh2sequential'],
         condition="random",
     ),
 ]

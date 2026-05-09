@@ -44,11 +44,11 @@
     </main>
 
     <footer>
-        <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
+        <div ot-display="vars.result">Score gain: <b ot-text="vars.result.score"></b></div>
         <div class="flex-fill"></div>
-        <div ot-display="vars.responding">Make your choice...</div>
+        <div ot-display="vars.prompting">Make your choice...</div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
-        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-3" autofocus>Continue</button>
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary" autofocus>Continue</button>
     </footer>
 {% endblock content %}
 
@@ -57,9 +57,36 @@
         "use strict";
 
         const BLINK_DELAY = 200;
-        const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
-        const NUM_BUTTONS = 3;
         const AUTO_ADVANCE = true;
+        const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
+
+        function switchState(state) {
+            if (state == "completing") state += AUTO_ADVANCE ? "/AUTO" : "/BTN";
+            // console.debug("switching", state, stage, strategy);
+
+            vars.waiting = false;
+            vars.responding = false;
+            vars.completing = false;
+            vars.prompting = false;
+
+            switch (state) {
+                case "starting":
+                case "processing":
+                case "completing/AUTO":
+                    vars.waiting = true;
+                    break;
+                case "completing/BTN":
+                    vars.completing = true;
+                    break;
+                case "running":
+                    vars.responding = true;
+                    vars.prompting = true;
+                    break;
+                default:
+                    throw Error(`Bogus state switch: ${state}`);
+            }
+            ot.updatePage();
+        }
 
         ot.onLoad(continueRound);
         ot.onLive("progress", liveProgress);
@@ -67,36 +94,6 @@
         ot.onInput("choice", inputResponse);
         ot.onLive("feedback", liveFeedback);
         ot.onInput("continue", continueRound);
-        ot.onUpdate("vars.choice", renderChoice);
-        ot.onUpdate("vars.feedback.outcomes", renderOutcomes);
-        ot.onUpdate("vars.feedback.score", renderResult);
-
-        function switchState(state) {
-            vars.responding = false;
-            vars.completing = false;
-            vars.waiting = false;
-            switch (state) {
-                case "starting":
-                    vars.waiting = true;
-                    break;
-                case "running":
-                    vars.responding = true;
-                    break;
-                case "processing":
-                    vars.waiting = true;
-                    break;
-                case "completing":
-                    if (AUTO_ADVANCE) {
-                        vars.waiting = true;
-                    } else {
-                        vars.completing = true;
-                    }
-                    break;
-                default:
-                    throw Error("Invlid state");
-            }
-            ot.updatePage();
-        }
 
         async function continueRound() {
             resetTrial();
@@ -105,7 +102,7 @@
             ot.sendLive("continue");
         }
 
-        async function liveProgress(progress) {
+        function liveProgress(progress) {
             vars.progress = progress;
             if (progress.finished) ot.completePage();
         }
@@ -114,13 +111,36 @@
             vars.trial = null;
             vars.choice = null;
             vars.feedback = null;
+            vars.labels = {};
+            vars.styles = {};
+            ot.resetInputs();
+        }
+
+        function updateTrial(update) {
+            Object.assign(vars.trial, update);
+        }
+
+        function resetResponse() {
+            vars.choice = null;
+            vars.feedback = null;
+            vars.labels = { ...vars.trial.labels }; // copy
+            vars.styles = { 1: "closed", 2: "closed", 3: "closed" };
             ot.resetInputs();
         }
 
         function startTrial(trial) {
             vars.trial = trial;
-            vars.labels = trial.labels;
+            resetResponse();
+            switchState("running");
             ot.beginTimeMeasurement();
+        }
+
+        async function restartTrial() {
+            resetResponse();
+            switchState("running");
+        }
+
+        async function continueTrial() {
             switchState("running");
         }
 
@@ -134,9 +154,10 @@
             });
         }
 
-        async function liveFeedback(feedback) {
+        function liveFeedback(feedback) {
             vars.feedback = feedback;
-            completeTrial();
+            if (feedback.completed) completeTrial();
+            else restartTrial();
         }
 
         async function completeTrial() {
@@ -147,10 +168,24 @@
             }
         }
 
-        function renderOutcomes(outcomes) {
+        ot.onUpdate("vars.feedback.score", function renderResult(score) {
+            if (score != null) {
+                vars.result = { score: format_number(score, "+.2") };
+            } else {
+                vars.result = null;
+            }
+            ot.updatePage();
+        });
+
+        ot.onUpdate("vars.choice", function renderChoice(choice) {
+            vars.selected = { 1: false, 2: false, 3: false };
+            if (choice != null) vars.selected[choice] = true;
+            ot.updatePage();
+        });
+
+        ot.onUpdate("vars.feedback.outcomes", function renderOutcomes(outcomes) {
             if (outcomes != null) {
-                // updating labels and styles for each button
-                // only when a corresponding outcome provided
+                // only open cards where outcome is provided
                 for (let i in outcomes) {
                     let val = outcomes[i];
                     if (val != null) {
@@ -158,25 +193,8 @@
                         vars.styles[i] = "opened";
                     }
                 }
-            } else {
-                vars.styles = { 1: "closed", 2: "closed", 3: "closed" };
             }
             ot.updatePage();
-        }
-
-        function renderChoice(choice) {
-            vars.selected = { 1: false, 2: false, 3: false };
-            if (choice != null) vars.selected[choice] = true;
-            ot.updatePage();
-        }
-
-        function renderResult(score) {
-            if (score != null) {
-                vars.result = { score: format_number(score, "+.2") };
-            } else {
-                vars.result = null;
-            }
-            ot.updatePage();
-        }
+        });
     </script>
 {% endblock scripts %}

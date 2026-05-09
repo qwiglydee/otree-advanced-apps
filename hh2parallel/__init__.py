@@ -1,9 +1,8 @@
 from otree.views import Page
 
 from _stuff.live import live_page
-from _stuff.config import get_session_param
 
-from .const import C
+from .conf import C, config_condition  # noqa
 from .models import Subsession, Group, Player, Round, Trial, Response  # noqa
 from .models import custom_export_trials, custom_export_responses  # noqa
 from .progress import Progress
@@ -13,7 +12,7 @@ from . import progress
 def creating_session(subsession: Subsession):
     session = subsession.session
     for group in subsession.get_groups():
-        group.condition = get_session_param(session, 'condition', choices=C.CONDITIONS)
+        group.condition = config_condition(session)
 
 
 def set_payoff(player: Player):
@@ -41,39 +40,39 @@ class LiveMethods:
             yield group, "progress", page.display_progress(current)
             yield group, "trial", page.display_trial(current)
         else:
-            # pending
+            # pending state
             yield player, "progress", page.display_progress(current)
 
     @classmethod
-    def live_response(page, player: Player, message: dict):
+    def live_response(page, player: Player, data: dict):
         group = player.group
         current = progress.current(player)
-        assert current.trial and current.trial.id == message['id'], "mismatched response"
+        assert current.trial and current.trial.id == data['id'], "mismatched response"
 
-        progress.respond(current, response_time=message['time'], answer=message['answer'])
+        answer = str(data['answer'])
+        progress.respond(current, answer, response_time=data['time'])
 
         yield group, "progress", page.display_progress(current)
-        for response in Response.allast(current.trial):
-            yield response.player, "feedback", page.display_feedback(current, response)
+        for p in group.get_players():
+            yield p, "feedback", page.display_feedback(current, Response.last(current.trial, player=p))
         yield group, "update", page.display_trial(current)
 
 
 @live_page
 class Practice(LiveMethods, Page):
-    page_styles = ['game-style.css', 'ot-progress.css', 'ot-pulse.css']
-    page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
+    page_styles = ['ot-progress.css', 'ot-pulse.css']
+    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
 
     @staticmethod
     def display_progress(current: Progress):
         assert current.iteround
         return {
-            "finished": current.iteround.is_completed,
+            "finished": current.iteround.is_closed,
             "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
             "pending": not current.is_running,
             "current": current.trial.iteration if current.trial else None,
-            "turn": current.turn,
         }
 
     @staticmethod
@@ -83,13 +82,13 @@ class Practice(LiveMethods, Page):
         return {
             "id": current.trial.id,
             "task": current.trial.task,
-            "answers": {r.player.role: r.answer for r in responses},
+            "answers": {r.player.role: r.answer for r in responses} if current.trial.is_completed else {},
         }
 
     @staticmethod
     def display_feedback(current: Progress, response: Response):
         return {
-            "completed": current.trial.is_completed,
+            "completed": current.trial.is_closed,
             "correct": response.correct if current.trial.is_completed else None,
             "score": current.trial.score if current.trial.is_completed else None,
             "truth": current.trial.truth if current.trial.is_completed else None,
@@ -98,8 +97,8 @@ class Practice(LiveMethods, Page):
 
 @live_page
 class Main(LiveMethods, Page):
-    page_styles = ['game-style.css', 'ot-progress.css', 'ot-pulse.css']
-    page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
+    page_styles = ['ot-progress.css', 'ot-pulse.css']
+    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
 
     @staticmethod
     def display_progress(current: Progress):
@@ -111,7 +110,6 @@ class Main(LiveMethods, Page):
             "score": current.iteround.total_score,
             "pending": not current.is_running,
             "current": current.trial.iteration if current.trial else None,
-            "turn": current.turn,
         }
 
     @staticmethod
@@ -121,7 +119,7 @@ class Main(LiveMethods, Page):
         return {
             "id": current.trial.id,
             "task": current.trial.task,
-            "answers": {r.player.role: r.answer for r in responses},
+            "answers": {r.player.role: r.answer for r in responses} if current.trial.is_completed else {},
         }
 
     @staticmethod
@@ -138,11 +136,11 @@ class Main(LiveMethods, Page):
 
 
 class Intro(Page):
-    page_styles = ['game-style.css']
+    pass
 
 
 class Results(Page):
-    page_styles = ['game-style.css']
+    pass
 
 
 page_sequence = [

@@ -6,20 +6,7 @@ from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Partici
 from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 from _stuff.dictprop import dictprop
 
-from .const import C, Points
-
-
-def init_params(config):
-    "Initialize trial parameters from config"
-    num1, num2 = config.samples(2)
-    result = num1 + num2
-    options = [result, result + 10, result - 10]
-    random.shuffle(options)
-    return {
-        'task': f"{num1} + {num2}",
-        'truth': str(result),
-        'options': [str(v) for v in options]
-    }
+from .conf import C, Points
 
 
 class Subsession(BaseSubsession):
@@ -53,7 +40,7 @@ class Round(BaseRoundModel):
         pass
 
     def complete(self):
-        super().complete()
+        self.close('COMPLETED')
         if not self.is_practice:
             self.player.total_score = self.total_score
 
@@ -80,40 +67,51 @@ class Trial(BaseTrialModel):
         return self.iteround.player.condition
 
     def init(self, **kwargs):
-        params = init_params(C.NUMBERS[self.condition])
-        self.task = params['task']
-        self.truth = params['truth']
-        self.option_1 = params['options'][0]
-        self.option_2 = params['options'][1]
-        self.option_3 = params['options'][2]
+        config = C.NUMBERS[self.condition]
+        num1, num2 = config.samples(2)
+        result = num1 + num2
+
+        self.task = f"{num1} + {num2}"
+        self.truth = result
+
+        options = [result, result + 10, result - 10]
+        random.shuffle(options)
+
+        self.option_1 = options[0]
+        self.option_2 = options[1]
+        self.option_3 = options[2]
 
     def update(self):
-        """Update something after a response"""
-        response = Response.last(self)
-        self.success = response and response.correct
+        response = Response.last(self, stage='DECISION')
+        self.strategy = response.decision if response else None
+        response = Response.last(self, stage='ANSWER')
+        self.success = response.correct if response else None
 
     def complete(self):
-        super().complete()
+        self.close('COMPLETED')
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
 
+    progress_stage = database.StringField()
     progress_retries = database.IntegerField()
 
 
 class Response(BaseResponseModel):
+    """Both for decisions and answers"""
     trial: Trial = database.Link(Trial)
     player: Player = database.Link(Player)
-
+    stage = database.StringField()
     response_time = database.IntegerField()
+
+    decision = database.StringField()
     button = database.StringField()
     answer = database.StringField()
     correct = database.BooleanField()
 
-    def respond(self, response_time: int, button: str | None, answer: str):
-        self.response_time = response_time
-        self.button = button
-        self.answer = answer
-        self.correct = self.answer == self.trial.truth
+    def evaluate(self):
+        if self.stage == 'ANSWER':
+            assert self.answer is not None
+            self.correct = self.answer == self.trial.truth
 
 
 def custom_export_trials(_: list[Player]):
@@ -144,9 +142,10 @@ def custom_export_trials(_: list[Player]):
         "trial.strategy",
         "trial.success",
         "trial.score",
+        "trial.retries",
     ]
 
-    for trial in Trial.objects_filter().order_by('player_id', 'iteration'):
+    for trial in Trial.objects_filter().order_by('iteround_id', 'iteration'):
         iteround: Round = trial.iteround
         player: Player = iteround.player
         session: Session = player.session
@@ -179,6 +178,7 @@ def custom_export_trials(_: list[Player]):
             trial.strategy,
             trial.success,
             trial.score,
+            trial.progress_retries
         ]
 
 
@@ -210,9 +210,12 @@ def custom_export_responses(_: list[Player]):
         "trial.strategy",
         "trial.success",
         "trial.score",
+        "trial.retries",
         #
         "response.iteration",
+        "response.stage",
         "response.time",
+        "response.decision",
         "response.button",
         "response.answer",
         "response.correct",
@@ -252,9 +255,12 @@ def custom_export_responses(_: list[Player]):
             trial.strategy,
             trial.success,
             trial.score,
+            trial.progress_retries,
             #
             response.iteration,
+            response.stage,
             response.response_time,
+            response.decision,
             response.button,
             response.answer,
             response.correct,

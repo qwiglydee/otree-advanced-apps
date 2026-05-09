@@ -1,9 +1,8 @@
 from otree.views import Page
 
 from _stuff.live import live_page
-from _stuff.config import get_session_param
 
-from .const import C
+from .conf import C, config_condition  # noqa
 from .models import Subsession, Group, Player, Round, Trial, Response  # noqa
 from .models import create_trials, custom_export_trials, custom_export_responses  # noqa
 from .source import load_source, sample_data
@@ -17,7 +16,7 @@ def creating_session(subsession: Subsession):
     sourcedata = load_source(sourcefile)
 
     for player in subsession.get_players():
-        player.condition = get_session_param(session, 'condition', choices=C.CONDITIONS)
+        player.condition = config_condition(session)
         round1 = Round.create_new('Practice', player=player)
         create_trials(round1, sample_data(sourcedata, C.NUM_TRIALS['Practice'], category='practice'))
         round2 = Round.create_new('Main', player=player)
@@ -52,9 +51,10 @@ class LiveMethods:
         current = progress.current(player)
         assert current.trial and current.trial.id == data['id'], "mismatched response"
 
+        assert 'choice' in data
         button = str(data['choice'])
         answer = current.trial.options[button]
-        response = progress.respond(current, response_time=data['time'], button=button, answer=answer)
+        response = progress.respond(current, answer, response_time=data['time'], button=button)
 
         yield "progress", page.display_progress(current)
         yield "feedback", page.display_feedback(current, response)
@@ -62,18 +62,19 @@ class LiveMethods:
 
 @live_page
 class Practice(LiveMethods, Page):
-    page_styles = ['game-style.css', 'ot-progress.css', 'ot-pulse.css']
-    page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
+    page_styles = ['ot-progress.css', 'ot-pulse.css']
+    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
 
     @staticmethod
     def display_progress(current: Progress):
         assert current.iteround
         return {
-            "finished": current.iteround.is_completed,
+            "finished": current.iteround.is_closed,
             "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
-            "current": current.trial.iteration if current.trial else None
+            "current": current.trial.iteration if current.trial else None,
+            "retries": current.retries_left if current.trial else None,
         }
 
     @staticmethod
@@ -87,19 +88,19 @@ class Practice(LiveMethods, Page):
 
     @staticmethod
     def display_feedback(current: Progress, response: Response):
-        assert response
+        assert current.trial and response
         return {
-            "completed": current.trial.is_completed,
-            "score": current.trial.score if current.trial.is_completed else None,
+            "completed": current.trial.is_closed,
             "correct": response.correct,
+            "score": current.trial.score if current.trial.is_completed else None,
             "truth": current.trial.truth if current.trial.is_completed else None,
         }
 
 
 @live_page
 class Main(LiveMethods, Page):
-    page_styles = ['game-style.css', 'ot-progress.css', 'ot-pulse.css']
-    page_scripts = ['otree-front-live.js', 'ot-progress.js', 'ot-pulse.js', "format.js"]
+    page_styles = ['ot-progress.css', 'ot-pulse.css']
+    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
 
     @staticmethod
     def display_progress(current: Progress):
@@ -109,7 +110,7 @@ class Main(LiveMethods, Page):
             "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
-            "current": current.trial.iteration if current.trial else None
+            "current": current.trial.iteration if current.trial else None,
         }
 
     @staticmethod
@@ -136,11 +137,11 @@ class Main(LiveMethods, Page):
 
 
 class Intro(Page):
-    page_styles = ['game-style.css']
+    pass
 
 
 class Results(Page):
-    page_styles = ['game-style.css']
+    pass
 
 
 page_sequence = [

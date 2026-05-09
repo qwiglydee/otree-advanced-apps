@@ -3,12 +3,7 @@ from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Partici
 
 from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 
-from .const import C, Points
-
-
-def init_params(config):
-    "Initialize trial parameters from config"
-    return config.samples(2)
+from .conf import C, Points
 
 
 class Subsession(BaseSubsession):
@@ -43,7 +38,7 @@ class Round(BaseRoundModel):
         pass
 
     def complete(self):
-        super().complete()
+        self.close('COMPLETED')
         if not self.is_practice:
             self.group.total_score = self.total_score
 
@@ -63,19 +58,23 @@ class Trial(BaseTrialModel):
         return self.iteround.group.condition
 
     def init(self, **kwargs):
-        params = init_params(C.NUMBERS[self.condition])
-        [num1, num2] = params
+        config = C.NUMBERS[self.condition]
+        num1, num2 = config.samples(2)
+        result = num1 + num2
+
         self.task = f"{num1} + {num2}"
-        self.truth = str(num1 + num2)
+        self.truth = str(result)
 
     def update(self):
         responses = [r for r in Response.allast(self) if r.correct]
         self.success = len(responses)
 
     def complete(self):
-        super().complete()
+        self.close('COMPLETED')
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
+
+    progress_turn = database.StringField()
 
 
 class Response(BaseResponseModel):
@@ -86,14 +85,13 @@ class Response(BaseResponseModel):
     answer = database.StringField()
     correct = database.BooleanField()
 
-    def respond(self, response_time: int, answer: str):
-        self.response_time = response_time
-        self.answer = answer
+    def evaluate(self):
+        assert self.answer is not None
         self.correct = self.answer == self.trial.truth
 
     @classmethod
     def allast(cls, trial: Trial):
-        """Last responses of each player"""
+        """Last responses of each player in group"""
         # supporting multiple retries / subiterations
         players = trial.iteround.group.get_players()
         responses = [cls.last(trial, player=p) for p in players]

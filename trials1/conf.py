@@ -2,6 +2,7 @@ from otree.constants import BaseConstants
 from otree.decimal import DecimalUnit
 
 from _stuff import rand
+from _stuff.config import get_session_param
 
 
 class Points(DecimalUnit):
@@ -22,7 +23,7 @@ class C(BaseConstants):
     }
 
     NUM_RETRIES = {
-        'Practice': 3,
+        'Practice': 2,
     }
 
     CONDITIONS = ["C0", "C1", "C2"]
@@ -39,3 +40,7 @@ class C(BaseConstants):
 
     RETRY_DELAY = 1
     TRIAL_DELAY = 2
+
+
+def config_condition(session):
+    return get_session_param(session, 'condition', C.CONDITIONS)

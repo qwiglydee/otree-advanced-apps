@@ -2,28 +2,8 @@ from typing import NamedTuple
 
 from _stuff.participant import current_pagename
 
-from .const import C  # noqa
+from .conf import C  # noqa
 from .models import Player, Round, Trial, Response
-
-
-def max_trials(iteround: Round):
-    return C.NUM_TRIALS[iteround.pagename]
-
-
-def track_round(iteround: Round):
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-
-
-def track_players_round(player: Player, iteround: Round) -> bool:
-    player.progress_round = iteround.id
-    players = player.group.get_players()
-    return all(p.field_maybe_none('progress_round') == iteround.id for p in players)
-
-
-def track_players_trial(player: Player, trial: Trial) -> bool:
-    player.progress_trial = trial.id
-    players = player.group.get_players()
-    return all(p.field_maybe_none('progress_trial') == trial.id for p in players)
 
 
 class Progress(NamedTuple):
@@ -39,6 +19,35 @@ class Progress(NamedTuple):
     @property
     def is_running(self):
         return self.trial and self.trial.is_running
+
+    @property
+    def turn(self):
+        return self.trial.progress_turn if self.trial else None
+
+
+def max_trials(iteround: Round):
+    return C.NUM_TRIALS[iteround.pagename]
+
+
+def track_round(iteround: Round):
+    iteround.update()
+    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
+
+
+def track_trial(trial: Trial):
+    trial.update()
+
+
+def track_players_around(player: Player, iteround: Round) -> bool:
+    player.progress_round = iteround.id
+    players = player.group.get_players()
+    return all(p.field_maybe_none('progress_round') == iteround.id for p in players)
+
+
+def track_players_atrial(player: Player, trial: Trial) -> bool:
+    player.progress_trial = trial.id
+    players = player.group.get_players()
+    return all(p.field_maybe_none('progress_trial') == trial.id for p in players)
 
 
 def current(player: Player):
@@ -57,11 +66,10 @@ def advance(current: Progress) -> Progress:
         iteround = Round.advance(pagename, group=group)
         trial = None
 
-    all_around = track_players_round(player, iteround)
+    all_around = track_players_around(player, iteround)
     if iteround.is_pristine and all_around:
         iteround.start()
 
-    iteround.update()
     track_round(iteround)
 
     if iteround.progress_trials >= max_trials(iteround):
@@ -73,31 +81,32 @@ def advance(current: Progress) -> Progress:
     if trial is None:
         trial = Trial.advance_next(iteround)
 
-    all_around = track_players_trial(player, trial)
+    all_around = track_players_atrial(player, trial)
     if trial.is_pristine and all_around:
         trial.start()
-        trial.update()
+        track_trial(trial)
+        trial.progress_turn = C.TURNS[0]
 
     return Progress(pagename, player, iteround, trial)
 
 
-def respond(current: Progress, **kwargs) -> Response:
+def respond(current: Progress, answer: str, **kwargs) -> Response:
     assert current.is_valid
     pagename, player, iteround, trial = current
+    turn = current.turn
 
-    responded = set(resp.player.role for resp in Response.allast(trial))
+    assert player.role == current.turn
+    response = Response.create_next(trial, player, answer=answer, **kwargs)
+    response.evaluate()
+    track_trial(trial)
 
-    assert player.role not in responded
-    responded.add(player.role)
-    response = Response.create_next(trial, player)
-    response.respond(**kwargs)
-
-    trial.update()
-
-    if len(responded) == len(C.TURNS):
+    if turn == C.TURNS[-1]:
         trial.complete()
-
-    iteround.update()
-    track_round(iteround)
+        track_round(iteround)
+        trial.progress_turn = None
+    else:
+        # next turn
+        turn_idx = C.TURNS.index(turn)
+        trial.progress_turn = C.TURNS[turn_idx + 1]
 
     return response
