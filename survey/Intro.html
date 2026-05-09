@@ -31,3 +31,17 @@
         {{ next_button }}
     </section>
 {% endblock content %}
+
+{% block scripts %}
+    <script>
+        ot.onLoad(function () {
+            // auto-preselect gender='other'
+            if (forminputs.gender.value == "") forminputs.gender.value = "O";
+        });
+
+        ot.onSubmit(function () {
+            // auto fill the field when the form ubmitted
+            forminputs.localtime.value = new Date().toString();
+        });
+    </script>
+{% endblock scripts %}
