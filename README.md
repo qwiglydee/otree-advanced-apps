@@ -48,10 +48,12 @@ Example content and calculations are intentionally dull so they can be easily re
     - each player answers in turn
     - page updates to display answers of partners
     - practice and main rounds on different pages with different feedback
+    - tracking 'pending' state to make sure all players reached the same round and trial
 - [Parallel](h2parallel): two-player trials with parallel answering
     - each player answers on their own
     - feedback provided when everyone answered
     - practice and main rounds on different pages with different feedback
+    - tracking 'pending' state to make sure all players reached the same round and trial
 - [Lottery 1](lottery1): lottery with cards-like buttons with different outcomes
     - lottery parameters are geneated on the fly according to configuration
     - layout of the buttons is randomized for each player
@@ -61,6 +63,9 @@ Example content and calculations are intentionally dull so they can be easily re
     - 2 phases in each trial: sampling and final
     - multiple responses in sampling phase + last final response
     - outcomes of the cards are resolved for each response
+- [Ultimatum](ultimatum): classic ultimatum game, multiple rounds
+    - 2 stages of each trial: proposing, deciding
+    - tracking 'pending' state to make sure all players reached the same round and trial
 
 ## Usage
 

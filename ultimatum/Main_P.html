@@ -1,0 +1,211 @@
+{% extends "FullPage.html" %}
+{% block content %}
+    <header>
+        <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
+        <section class="paper" ot-visible="vars.trial">
+            <ul class="m-0">
+                <li>Endowment = <b ot-text="vars.trial.endowment"></b></li>
+                <li ot-visible="vars.trial.proposal">You shared: <b ot-text="vars.trial.proposal"></b></li>
+                <li ot-visible="vars.trial.decision">Your partner decded: <b ot-text="vars.decision_label"></b></li>
+            </ul>
+        </section>
+    </header>
+
+    <main ot-visible="vars.trial">
+        <section class="form w-50">
+            <h4>Your proposal:</h4>
+            <input
+                ot-input
+                type="range"
+                min="0"
+                ot-max="vars.trial.endowment"
+                name="proposal"
+                class="form-range"
+                ot-key-input="Enter"
+                ot-enable="vars.responding"
+                autofocus
+            />
+
+            <hr />
+            <p>You're sharing: <b ot-text="vars.account.R"></b></p>
+            <p>You're keeping: <b ot-text="vars.account.P"></b></p>
+
+            <button ot-click-input type="button" name="confirm" class="btn btn-primary" ot-enable="vars.confirming">Confirm</button>
+        </section>
+    </main>
+
+    <footer>
+        <section class="info" ot-display="vars.result">
+            <h4>Final result:</h4>
+            <ul class="m-0">
+                <li>Your payoff: <b ot-text="vars.result.P"></b></li>
+                <li>Your partner's payoff: <b ot-text="vars.result.R"></b></li>
+            </ul>
+        </section>
+        <div class="flex-fill"></div>
+        <div ot-display="vars.prompting">Adjust your proposal and <kbd>Confirm</kbd>...</div>
+        <div ot-display="vars.pending">Waiting for your partner...</div>
+        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary" autofocus>Continue</button>
+    </footer>
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+        "use strict";
+
+        const MYSTAGE = "PROPOSING";
+        const BLINK_DELAY = 200;
+        const AUTO_ADVANCE = false;
+        // const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
+
+        function switchState(state) {
+            let stage = vars.progress ? vars.progress.stage : null;
+            if (state == "completing") state += AUTO_ADVANCE ? "/AUTO" : "/BTN";
+            // console.debug("switching", state, stage, strategy);
+
+            vars.waiting = false;
+            vars.pending = false;
+            vars.responding = false;
+            vars.confirming = false;
+            vars.completing = false;
+            vars.prompting = false;
+
+            switch (state) {
+                case "pending":
+                    vars.pending = true;
+                    vars.waiting = true;
+                    break;
+                case "starting":
+                case "processing":
+                case "completing/AUTO":
+                    vars.waiting = true;
+                    break;
+                case "completing/BTN":
+                    vars.completing = true;
+                    break;
+                case "running":
+                    vars.responding = stage == MYSTAGE;
+                    vars.confirming = vars.responding && vars.proposal != null;
+                    vars.pending = !vars.responding;
+                    vars.waiting = vars.pending;
+                    break;
+                default:
+                    throw Error(`Bogus state switch: ${state}`);
+            }
+            ot.updatePage();
+        }
+
+        ot.onLoad(continueRound);
+        ot.onLive("progress", liveProgress);
+        ot.onLive("trial", startTrial);
+        ot.onLive("update", updateTrial);
+        ot.onInput("proposal", inputProposal);
+        ot.onInput("confirm", confirmProposal);
+        ot.onLive("feedback", liveFeedback);
+        ot.onInput("continue", continueRound);
+
+        async function continueRound() {
+            resetTrial();
+            switchState("starting");
+            await ot.delay(BLINK_DELAY);
+            ot.sendLive("continue");
+        }
+
+        function liveProgress(progress) {
+            vars.progress = progress;
+            if (progress.finished) ot.completePage();
+            if (progress.pending) switchState("pending");
+        }
+
+        function resetTrial() {
+            vars.trial = null;
+            vars.proposal = null;
+            vars.feedback = null;
+            ot.resetInputs();
+        }
+
+        function resetResponse() {
+            vars.proposal = null;
+            vars.feedback = null;
+            ot.resetInputs();
+        }
+
+        function updateTrial(update) {
+            Object.assign(vars.trial, update);
+            if (vars.progress.stage != null) switchState("running");
+        }
+
+        function startTrial(trial) {
+            vars.trial = trial;
+            resetResponse();
+            switchState("running");
+            ot.beginTimeMeasurement();
+        }
+
+        async function continueTrial() {
+            switchState("running");
+        }
+
+        function inputProposal(proposal) {
+            vars.proposal = proposal;
+            switchState("running");
+        }
+
+        function confirmProposal() {
+            switchState("processing");
+            ot.sendLive("proposal", {
+                id: vars.trial.id,
+                time: ot.getTimeMeasurement(),
+                proposal: vars.proposal,
+            });
+        }
+
+        function liveFeedback(feedback) {
+            vars.feedback = feedback;
+            if (feedback.completed) completeTrial();
+            else continueTrial();
+        }
+
+        async function completeTrial() {
+            switchState("completing");
+            if (AUTO_ADVANCE) {
+                await ot.delay(TRIAL_DELAY);
+                continueRound();
+            }
+        }
+
+        function format_score(value) {
+            return format_number(value, ".2");
+        }
+
+        ot.onUpdate("vars.feedback.scores", function renderResult(scores) {
+            if (scores != null) {
+                vars.result = {
+                    P: format_score(scores.P),
+                    R: format_score(scores.R),
+                };
+            } else {
+                vars.result = null;
+            }
+            ot.updatePage();
+        });
+
+        ot.onUpdate("vars.proposal", function (proposed) {
+            if (proposed == null) {
+                vars.account = null;
+            } else {
+                vars.account = {
+                    P: format_score(vars.trial.endowment - proposed),
+                    R: format_score(proposed),
+                };
+            }
+        });
+
+        ot.onUpdate("vars.trial.decision", function (decided) {
+            if (decided == null) vars.decision_label = null;
+            if (decided == "ACCEPT") vars.decision_label = "Accept";
+            if (decided == "REJECT") vars.decision_label = "Reject";
+        });
+    </script>
+{% endblock scripts %}
