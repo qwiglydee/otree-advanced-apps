@@ -37,12 +37,8 @@ class LiveMethods:
 
         yield "progress", page.display_progress(current)
         yield "feedback", page.display_feedback(current, response)
-
-
-@live_page
-class Practice(LiveMethods, Page):
-    page_styles = ['ot-progress.css', 'ot-pulse.css']
-    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
+        if current.trial.is_completed:
+            yield "result", page.display_result(current)
 
     @staticmethod
     def display_progress(current: Progress):
@@ -65,14 +61,26 @@ class Practice(LiveMethods, Page):
             "options": current.trial.options,
         }
 
+
+@live_page
+class Practice(LiveMethods, Page):
+    page_styles = ['ot-progress.css', 'ot-pulse.css']
+    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
+
     @staticmethod
     def display_feedback(current: Progress, response: Response):
         assert current.trial and response
         return {
-            "completed": current.trial.is_closed,
+            "final": current.trial.is_completed,
             "correct": response.correct,
-            "score": current.trial.score if current.trial.is_completed else None,
-            "truth": current.trial.truth if current.trial.is_completed else None,
+        }
+
+    @staticmethod
+    def display_result(current: Progress):
+        assert current.trial and current.trial.is_completed
+        return {
+            "score": current.trial.score,
+            "truth": current.trial.truth,
         }
 
 
@@ -82,31 +90,17 @@ class Main(LiveMethods, Page):
     page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
 
     @staticmethod
-    def display_progress(current: Progress):
-        assert current.iteround
-        return {
-            "total": C.NUM_TRIALS[current.pagename],
-            "finished": current.iteround.is_completed,
-            "passed": current.iteround.progress_trials,
-            "score": current.iteround.total_score,
-            "current": current.trial.iteration if current.trial else None,
-        }
-
-    @staticmethod
-    def display_trial(current: Progress):
-        assert current.trial
-        return {
-            "id": current.trial.id,
-            "task": current.trial.task,
-            "options": current.trial.options,
-        }
-
-    @staticmethod
     def display_feedback(current: Progress, response: Response):
-        assert response
+        assert current.trial and response
         return {
-            "completed": current.trial.is_completed,
-            "score": current.trial.score if current.trial.is_completed else None,
+            "final": True,
+        }
+
+    @staticmethod
+    def display_result(current: Progress):
+        assert current.trial and current.trial.is_completed
+        return {
+            "score": current.trial.score,
         }
 
 

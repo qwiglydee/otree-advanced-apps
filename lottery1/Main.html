@@ -44,9 +44,9 @@
     </main>
 
     <footer>
-        <div ot-display="vars.result">Score gain: <b ot-text="vars.result.score"></b></div>
+        <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
+        <!-- <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button> -->
         <div class="flex-fill"></div>
-        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
         <div ot-display="vars.prompting">Make your choice...</div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
     </footer>
@@ -61,7 +61,7 @@
         const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
 
         function switchState(state) {
-            // console.debug("switching", state, stage, strategy);
+            console.debug("switching", state);
 
             vars.waiting = false;
             vars.responding = false;
@@ -92,6 +92,7 @@
         ot.onLive("trial", startTrial);
         ot.onInput("choice", inputResponse);
         ot.onLive("feedback", liveFeedback);
+        ot.onLive("result", liveResult);
         ot.onInput("continue", continueRound);
 
         async function continueRound() {
@@ -110,33 +111,17 @@
             vars.trial = null;
             vars.choice = null;
             vars.feedback = null;
+            vars.result = null;
             vars.labels = {};
-            vars.styles = {};
-            ot.resetInputs();
-        }
-
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
-        }
-
-        function resetResponse() {
-            vars.choice = null;
-            vars.feedback = null;
-            vars.labels = { ...vars.trial.labels }; // copy
             vars.styles = { 1: "closed", 2: "closed", 3: "closed" };
             ot.resetInputs();
         }
 
         function startTrial(trial) {
             vars.trial = trial;
-            resetResponse();
+            vars.labels = { ...vars.trial.labels }; // copy
             switchState("running");
             ot.beginTimeMeasurement();
-        }
-
-        async function restartTrial() {
-            resetResponse();
-            switchState("running");
         }
 
         function inputResponse(choice) {
@@ -151,8 +136,12 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (feedback.completed) completeTrial();
-            else restartTrial();
+        }
+
+        function liveResult(result) {
+            vars.result = result;
+            result.score = formatGain(result.score);
+            completeTrial();
         }
 
         async function completeTrial() {
@@ -162,15 +151,6 @@
                 continueRound();
             }
         }
-
-        ot.onUpdate("vars.feedback.score", function renderResult(score) {
-            if (score != null) {
-                vars.result = { score: format_number(score, "+.2") };
-            } else {
-                vars.result = null;
-            }
-            ot.updatePage();
-        });
 
         ot.onUpdate("vars.choice", function renderChoice(choice) {
             vars.selected = { 1: false, 2: false, 3: false };
@@ -184,12 +164,20 @@
                 for (let i in outcomes) {
                     let val = outcomes[i];
                     if (val != null) {
-                        vars.labels[i] = format_number(val, ".2");
+                        vars.labels[i] = formatScore(val);
                         vars.styles[i] = "opened";
                     }
                 }
             }
             ot.updatePage();
         });
+
+        function formatScore(value) {
+            return format_number(value, ".2");
+        }
+
+        function formatGain(value) {
+            return format_number(value, "+.2");
+        }
     </script>
 {% endblock scripts %}

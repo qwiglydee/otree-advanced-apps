@@ -49,7 +49,7 @@
 
     <footer>
         <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
-        <!-- <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button> -->
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
         <div class="flex-fill"></div>
         <div ot-display="vars.prompting.sample">Make your <b>sampling</b> choice or <kbd>Finalize</kbd> to proceed to final stage...</div>
         <div ot-display="vars.prompting.final">Make your <b>final</b> choice...</div>
@@ -63,7 +63,7 @@
 
         const BLINK_DELAY = 200;
         const SAMPLING_DELAY = 1000 * "{{C.SAMPLING_DELAY}}";
-        const AUTO_ADVANCE = true;
+        const AUTO_ADVANCE = false;
         const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
 
         function switchState(state) {

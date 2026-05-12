@@ -40,7 +40,7 @@ def track_round(iteround: Round) -> bool:
 def track_trial(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
     trial.update()
-    return Response.count(trial) > 0
+    return Response.count(trial) == 0
 
 
 def advance(curr: Progress) -> Progress:

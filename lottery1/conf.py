@@ -20,6 +20,7 @@ class C(BaseConstants):
     PLAYERS_PER_GROUP = None
 
     NUM_TRIALS = {
+        'Practice': 3,
         'Main': 5,
     }
 

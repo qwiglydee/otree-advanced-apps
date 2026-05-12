@@ -79,7 +79,7 @@
     </main>
 
     <footer>
-        <div ot-display="vars.feedback.truth">Correct answer: <b ot-text="vars.feedback.truth"></b></div>
+        <div ot-display="vars.result.truth">Correct answer: <b ot-text="vars.result.truth"></b></div>
         <div ot-display="vars.result">Score would be: <b ot-text="vars.result.score"></b></div>
         <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
         <div class="flex-fill"></div>
@@ -150,6 +150,7 @@
         ot.onInput("choice", inputChoice);
         ot.onInput("confirm", confirmChoice);
         ot.onLive("feedback", liveFeedback);
+        ot.onLive("result", liveResult);
         ot.onInput("continue", continueRound);
 
         async function continueRound() {
@@ -170,30 +171,29 @@
             vars.choice = null;
             vars.answer = null;
             vars.feedback = null;
+            vars.result = null;
             vars.styles = {};
             ot.resetInputs();
         }
 
         function updateTrial(update) {
             Object.assign(vars.trial, update);
-            // after `decision`
-            if (vars.progress.stage != null) switchState("running");
+            switchState("running");
+        }
+
+        function startTrial(trial) {
+            vars.trial = trial;
+            switchState("running");
+            ot.beginTimeMeasurement(); // NB: restarts on page reload
         }
 
         function resetResponse() {
             vars.choice = null;
             vars.answer = null;
             vars.feedback = null;
+            vars.result = null;
             vars.styles = {};
             ot.resetInputs(["choice", "answer"]); // keep 'decision'
-        }
-
-        function startTrial(trial) {
-            vars.trial = trial;
-            // TODO: restore decision inputs on reload
-            resetResponse();
-            switchState("running");
-            ot.beginTimeMeasurement();
         }
 
         async function restartTrial() {
@@ -238,8 +238,13 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (feedback.completed) completeTrial();
-            else restartTrial();
+            if (!feedback.final) restartTrial();
+        }
+
+        function liveResult(result) {
+            vars.result = result;
+            result.score = formatScore(result.score);
+            completeTrial();
         }
 
         async function completeTrial() {
@@ -249,15 +254,6 @@
                 continueRound();
             }
         }
-
-        ot.onUpdate("vars.feedback.score", function renderResult(score) {
-            if (score != null) {
-                vars.result = { score: format_number(score, "+.2") };
-            } else {
-                vars.result = null;
-            }
-            ot.updatePage();
-        });
 
         ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {
             if (correct != null) {
@@ -270,5 +266,9 @@
             }
             ot.updatePage();
         });
+
+        function formatScore(value) {
+            return format_number(value, "+.1");
+        }
     </script>
 {% endblock scripts %}

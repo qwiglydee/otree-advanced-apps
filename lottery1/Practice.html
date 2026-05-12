@@ -41,18 +41,13 @@
                 ot-class="vars.styles.3"
             ></button>
         </div>
-
-        <button ot-click-input type="button" name="finalize" ot-enable="vars.progress.finalizable" ot-visible="vars.prompting.sample" class="btn btn-primary">
-            Finalize
-        </button>
     </main>
 
     <footer>
         <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
-        <!-- <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button> -->
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
         <div class="flex-fill"></div>
-        <div ot-display="vars.prompting.sample">Make your <b>sampling</b> choice or <kbd>Finalize</kbd> to proceed to final stage...</div>
-        <div ot-display="vars.prompting.final">Make your <b>final</b> choice...</div>
+        <div ot-display="vars.prompting">Make your choice...</div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
     </footer>
 {% endblock content %}
@@ -62,18 +57,16 @@
         "use strict";
 
         const BLINK_DELAY = 200;
-        const SAMPLING_DELAY = 1000 * "{{C.SAMPLING_DELAY}}";
-        const AUTO_ADVANCE = true;
+        const AUTO_ADVANCE = false;
         const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
 
         function switchState(state) {
-            let stage = vars.stage;
-            console.debug("switching", state, stage);
+            console.debug("switching", state);
 
             vars.waiting = false;
             vars.responding = false;
             vars.completing = false;
-            vars.prompting = {};
+            vars.prompting = false;
 
             switch (state) {
                 case "starting":
@@ -86,10 +79,7 @@
                     break;
                 case "running":
                     vars.responding = true;
-                    vars.prompting = {
-                        sample: stage == "SAMPLING",
-                        final: stage == "FINAL",
-                    };
+                    vars.prompting = true;
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
@@ -102,7 +92,6 @@
         ot.onLive("trial", startTrial);
         ot.onInput("choice", inputResponse);
         ot.onLive("feedback", liveFeedback);
-        ot.onInput("finalize", finalizeTrial);
         ot.onLive("result", liveResult);
         ot.onInput("continue", continueRound);
 
@@ -128,39 +117,11 @@
             ot.resetInputs();
         }
 
-        function resetResponse() {
-            vars.choice = null;
-            vars.feedback = null;
-            vars.labels = { ...vars.trial.labels }; // copy
-            vars.styles = { 1: "closed", 2: "closed", 3: "closed" };
-            ot.resetInputs();
-        }
-
         function startTrial(trial) {
             vars.trial = trial;
-            vars.stage = "SAMPLING";
-            resetResponse();
+            vars.labels = { ...vars.trial.labels }; // copy
             switchState("running");
             ot.beginTimeMeasurement();
-        }
-
-        async function restartTrial(stage) {
-            vars.stage = stage;
-            if (stage == "SAMPLING") {
-                // soft reset
-                await ot.delay(SAMPLING_DELAY);
-                resetResponse();
-                switchState("running");
-            }
-            if (stage == "FINAL") {
-                // hard reset
-                resetResponse();
-                let bak = vars.trial;
-                vars.trial = null;
-                await ot.delay(BLINK_DELAY);
-                vars.trial = bak;
-                switchState("running");
-            }
         }
 
         function inputResponse(choice) {
@@ -169,18 +130,12 @@
             ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
-                stage: vars.stage,
                 button: vars.choice,
             });
         }
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (!feedback.final) restartTrial("SAMPLING");
-        }
-
-        function finalizeTrial() {
-            restartTrial("FINAL");
         }
 
         function liveResult(result) {
@@ -209,7 +164,7 @@
                 for (let i in outcomes) {
                     let val = outcomes[i];
                     if (val != null) {
-                        vars.labels[i] = format_number(val, ".2");
+                        vars.labels[i] = formatScore(val);
                         vars.styles[i] = "opened";
                     }
                 }
@@ -217,12 +172,12 @@
             ot.updatePage();
         });
 
-        function formatScore(value) {
-            return format_number(value, ".2");
-        }
-
         function formatGain(value) {
             return format_number(value, "+.2");
+        }
+
+        function formatScore(value) {
+            return format_number(value, ".2");
         }
     </script>
 {% endblock scripts %}

@@ -38,12 +38,8 @@ class LiveMethods:
 
         yield "progress", page.display_progress(current)
         yield "feedback", page.display_feedback(current, response)
-
-
-@live_page
-class Main(LiveMethods, Page):
-    page_styles = ['ot-progress.css', 'ot-pulse.css', 'cards.css']
-    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
+        if current.trial.is_completed:
+            yield "result", page.display_result(current)
 
     @staticmethod
     def display_progress(current: Progress):
@@ -66,13 +62,28 @@ class Main(LiveMethods, Page):
 
     @staticmethod
     def display_feedback(current: Progress, response: Response):
-        assert response
-
         return {
-            "completed": current.trial.is_completed,
-            "outcomes": arrange(current.trial.layout, response.outcomes) if response else None,
-            "score": current.trial.score if current.trial.is_completed else None,
+            "final": current.trial.is_completed,
+            "outcomes": arrange(current.trial.layout, response.outcomes),
         }
+
+    @staticmethod
+    def display_result(current: Progress):
+        return {
+            "score": current.trial.score,
+        }
+
+
+@live_page
+class Practice(LiveMethods, Page):
+    page_styles = ['ot-progress.css', 'ot-pulse.css', 'cards.css']
+    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
+
+
+@live_page
+class Main(LiveMethods, Page):
+    page_styles = ['ot-progress.css', 'ot-pulse.css', 'cards.css']
+    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
 
 
 class Intro(Page):
@@ -85,6 +96,7 @@ class Results(Page):
 
 page_sequence = [
     Intro,
+    Practice,
     Main,
     Results,
 ]
