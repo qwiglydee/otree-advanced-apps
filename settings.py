@@ -2,44 +2,44 @@ from os import environ
 
 
 SESSION_CONFIGS = [
-    # dict(
-    #     name='survey',
-    #     app_sequence=['survey'],
-    #     condition="random",
-    # ),
-    # dict(
-    #     name='quiz',
-    #     app_sequence=['quiz'],
-    #     condition="random",
-    #     source="questions.csv",
-    # ),
-    # dict(
-    #     name='trials1',
-    #     app_sequence=['trials1'],
-    #     condition="random",
-    # ),
-    # dict(
-    #     name='trials2',
-    #     app_sequence=['trials2'],
-    #     condition="random",
-    # ),
-    # dict(
-    #     name='trials3',
-    #     app_sequence=['trials3'],
-    #     condition="random",
-    # ),
-    # dict(
-    #     name='lottery1',
-    #     app_sequence=['lottery1'],
-    #     condition="random",
-    #     disclosure="random",
-    # ),
-    # dict(
-    #     name='lottery2s',
-    #     app_sequence=['lottery2s'],
-    #     condition="random",
-    #     disclosure="random",
-    # ),
+    dict(
+        name='survey',
+        app_sequence=['survey'],
+        condition="random",
+    ),
+    dict(
+        name='quiz',
+        app_sequence=['quiz'],
+        condition="random",
+        source="questions.csv",
+    ),
+    dict(
+        name='trials1',
+        app_sequence=['trials1'],
+        condition="random",
+    ),
+    dict(
+        name='trials2',
+        app_sequence=['trials2'],
+        condition="random",
+    ),
+    dict(
+        name='trials3',
+        app_sequence=['trials3'],
+        condition="random",
+    ),
+    dict(
+        name='lottery1',
+        app_sequence=['lottery1'],
+        condition="random",
+        disclosure="random",
+    ),
+    dict(
+        name='lottery2s',
+        app_sequence=['lottery2s'],
+        condition="random",
+        disclosure="random",
+    ),
     dict(
         name='party3async',
         app_sequence=['party3async'],
