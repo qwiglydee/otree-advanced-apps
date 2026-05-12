@@ -43,7 +43,7 @@
         function switchState(state) {
             let turn = vars.progress ? vars.progress.turn : null;
             let committed = vars.feedback != null;
-            console.debug(`switching: ${state}/${turn}/${committed}`, `/${MYTURN}/`);
+            // console.debug(`switching: ${state}/${turn}/${committed}`, `/${MYTURN}/`);
 
             vars.waiting = false;
             vars.pending = false;
@@ -57,8 +57,11 @@
                     break;
                 case "starting":
                 case "processing":
-                case "completing/AUTO":
                     vars.waiting = true;
+                    break;
+                case "completing":
+                    vars.completing = true;
+                    vars.waiting = AUTO_ADVANCE;
                     break;
                 case "running":
                     vars.responding = !committed && turn == MYTURN;
@@ -109,15 +112,11 @@
 
         function updateTrial(update) {
             Object.assign(vars.trial, update);
-            continueTrial();
+            switchState("running");
         }
 
         function startTrial(trial) {
             vars.trial = trial;
-            switchState("running");
-        }
-
-        async function continueTrial() {
             switchState("running");
         }
 
@@ -133,7 +132,7 @@
         function liveFeedback(feedback) {
             vars.feedback = feedback;
             vars.response = feedback.response;
-            continueTrial();
+            switchState("running");
         }
 
         function liveResult(result) {
@@ -143,7 +142,7 @@
         }
 
         async function completeTrial() {
-            switchState("completing/AUTO");
+            switchState("completing");
             await ot.delay(TRIAL_DELAY);
             continueRound();
         }

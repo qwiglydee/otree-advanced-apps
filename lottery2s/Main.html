@@ -49,12 +49,11 @@
 
     <footer>
         <div ot-display="vars.result">Score gain: <b ot-text="vars.result.score"></b></div>
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
         <div class="flex-fill"></div>
-
         <div ot-display="vars.prompting.sample">Make your <b>sampling</b> choice or <kbd>Finalize</kbd> to proceed to final stage...</div>
         <div ot-display="vars.prompting.final">Make your <b>final</b> choice...</div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
-        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary" autofocus>Continue</button>
     </footer>
 {% endblock content %}
 
@@ -69,7 +68,6 @@
 
         function switchState(state) {
             let stage = vars.stage;
-            if (state == "completing") state += AUTO_ADVANCE ? "/AUTO" : "/BTN";
             // console.debug("switching", state, stage, strategy);
 
             vars.waiting = false;
@@ -80,11 +78,11 @@
             switch (state) {
                 case "starting":
                 case "processing":
-                case "completing/AUTO":
                     vars.waiting = true;
                     break;
-                case "completing/BTN":
+                case "completing":
                     vars.completing = true;
+                    vars.waiting = AUTO_ADVANCE;
                     break;
                 case "running":
                     vars.responding = true;
@@ -158,10 +156,6 @@
                 await ot.delay(BLINK_DELAY);
                 vars.trial = bak;
             }
-            switchState("running");
-        }
-
-        async function continueTrial() {
             switchState("running");
         }
 

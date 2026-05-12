@@ -81,12 +81,12 @@
     <footer>
         <div ot-display="vars.feedback.truth">Correct answer: <b ot-text="vars.feedback.truth"></b></div>
         <div ot-display="vars.result">Score gain: <b ot-text="vars.result.score"></b></div>
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
         <div class="flex-fill"></div>
         <div ot-display="vars.prompting.deciding">Choose your strategy to solve the task...</div>
         <div ot-display="vars.prompting.choosing">Select and <kbd>Confirm</kbd> your answer...</div>
         <div ot-display="vars.prompting.inputing">Enter your answer and press <kbd>Enter</kbd>...</div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
-        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary" autofocus>Continue</button>
     </footer>
 {% endblock content %}
 
@@ -102,7 +102,6 @@
             let stage = vars.progress ? vars.progress.stage : null;
             let strategy = vars.trial ? vars.trial.strategy : null;
             if (state == "running") state += `/${stage}`;
-            if (state == "completing") state += AUTO_ADVANCE ? "/AUTO" : "/BTN";
             // console.debug("switching", state, stage, strategy);
 
             // display in all states
@@ -119,11 +118,11 @@
             switch (state) {
                 case "starting":
                 case "processing":
-                case "completing/AUTO":
                     vars.waiting = true;
                     break;
-                case "completing/BTN":
+                case "completing":
                     vars.completing = true;
+                    vars.waiting = AUTO_ADVANCE;
                     break;
                 case "running/DECISION":
                     vars.deciding = true;
@@ -197,10 +196,6 @@
 
         async function restartTrial() {
             resetResponse();
-            switchState("running");
-        }
-
-        async function continueTrial() {
             switchState("running");
         }
 
