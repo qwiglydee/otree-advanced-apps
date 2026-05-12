@@ -28,4 +28,4 @@ class C(BaseConstants):
         3: Points(10.0),
     }
 
-    TRIAL_DELAY = 2
+    ITER_DELAY = 2

@@ -42,7 +42,6 @@
                 <li>Your partner's payoff: <b ot-text="vars.result.scores.R"></b></li>
             </ul>
         </section>
-        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
         <div class="flex-fill"></div>
         <div ot-display="vars.prompting">Adjust your proposal and <kbd>Confirm</kbd></div>
         <div ot-display="vars.pending">Waiting for your partner</div>
@@ -56,8 +55,7 @@
 
         const MYTURN = "{{player.role}}";
         const BLINK_DELAY = 200;
-        const AUTO_ADVANCE = false;
-        const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
+        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
 
         function switchState(state) {
             let turn = vars.progress ? vars.progress.turn : null;
@@ -67,7 +65,6 @@
             vars.pending = false;
             vars.responding = false;
             vars.confirming = false;
-            vars.completing = false;
             vars.prompting = false;
 
             switch (state) {
@@ -80,8 +77,7 @@
                     vars.waiting = true;
                     break;
                 case "completing":
-                    vars.completing = true;
-                    vars.waiting = AUTO_ADVANCE;
+                    vars.waiting = true;
                     break;
                 case "running":
                     vars.responding = turn == MYTURN;
@@ -167,10 +163,8 @@
 
         async function completeTrial() {
             switchState("completing");
-            if (AUTO_ADVANCE) {
-                await ot.delay(TRIAL_DELAY);
-                continueRound();
-            }
+            await ot.delay(ITER_DELAY);
+            continueRound();
         }
 
         ot.onUpdate("vars.response", function (proposed) {

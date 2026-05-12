@@ -38,7 +38,7 @@
 
         const MYID = "{{player.id}}";
         const BLINK_DELAY = 200;
-        const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
+        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
 
         function switchState(state) {
             let committed = vars.feedback != null;
@@ -59,8 +59,7 @@
                     vars.waiting = true;
                     break;
                 case "completing":
-                    vars.completing = true;
-                    vars.waiting = AUTO_ADVANCE;
+                    vars.waiting = true;
                     break;
                 case "running":
                     vars.responding = !committed;
@@ -143,7 +142,7 @@
 
         async function completeTrial() {
             switchState("completing");
-            await ot.delay(TRIAL_DELAY);
+            await ot.delay(ITER_DELAY);
             continueRound();
         }
 

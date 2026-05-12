@@ -55,7 +55,7 @@ class C(BaseConstants):
     MIN_SAMPLES = 3
 
     SAMPLING_DELAY = 1
-    TRIAL_DELAY = 1
+    ITER_DELAY = 1
 
 
 def config_condition(session):

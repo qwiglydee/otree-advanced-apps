@@ -33,7 +33,7 @@ class C(BaseConstants):
         'C2': Points(1000)
     }
 
-    TRIAL_DELAY = 2
+    ITER_DELAY = 2
 
 
 def config_condition(session):

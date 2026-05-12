@@ -97,8 +97,6 @@
 
         const BLINK_DELAY = 200;
         const RETRY_DELAY = 1000 * "{{C.RETRY_DELAY}}";
-        const AUTO_ADVANCE = false;
-        const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
 
         function switchState(state) {
             let stage = vars.progress ? vars.progress.stage : null;
@@ -124,7 +122,6 @@
                     break;
                 case "completing":
                     vars.completing = true;
-                    vars.waiting = AUTO_ADVANCE;
                     break;
                 case "running/DECISION":
                     vars.deciding = true;
@@ -249,10 +246,6 @@
 
         async function completeTrial() {
             switchState("completing");
-            if (AUTO_ADVANCE) {
-                await ot.delay(TRIAL_DELAY);
-                continueRound();
-            }
         }
 
         ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {

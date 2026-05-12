@@ -57,7 +57,6 @@
 
     <footer>
         <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
-        <!-- <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button> -->
         <div class="flex-fill"></div>
         <div ot-display="vars.prompting">Select and <kbd>Confirm</kbd> your answer...</div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
@@ -69,8 +68,7 @@
         "use strict";
 
         const BLINK_DELAY = 200;
-        const AUTO_ADVANCE = true;
-        const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
+        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
 
         function switchState(state) {
             // console.debug("switching", state);
@@ -78,7 +76,6 @@
             vars.waiting = false;
             vars.responding = false;
             vars.confirming = false;
-            vars.completing = false;
             vars.prompting = false;
 
             switch (state) {
@@ -87,8 +84,7 @@
                     vars.waiting = true;
                     break;
                 case "completing":
-                    vars.completing = true;
-                    vars.waiting = AUTO_ADVANCE;
+                    vars.waiting = true;
                     break;
                 case "running":
                     vars.responding = true;
@@ -183,10 +179,8 @@
 
         async function completeTrial() {
             switchState("completing");
-            if (AUTO_ADVANCE) {
-                await ot.delay(TRIAL_DELAY);
-                continueRound();
-            }
+            await ot.delay(ITER_DELAY);
+            continueRound();
         }
 
         ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {

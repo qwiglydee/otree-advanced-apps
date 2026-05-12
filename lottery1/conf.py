@@ -51,7 +51,7 @@ class C(BaseConstants):
         },
     }
 
-    TRIAL_DELAY = 1
+    ITER_DELAY = 1
 
 
 def config_condition(session):
