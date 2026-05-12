@@ -32,10 +32,6 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
-    def complete(self):
-        self.close('COMPLETED')
-        set_payoffs(self.group, self)
-
     progress_trials = database.IntegerField()
 
 

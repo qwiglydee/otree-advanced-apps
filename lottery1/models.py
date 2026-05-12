@@ -39,11 +39,6 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
-    def complete(self):
-        self.close('COMPLETED')
-        if not self.is_practice:
-            self.player.total_score = self.total_score
-
     progress_trials = database.IntegerField()
 
 
@@ -134,6 +129,13 @@ class Response(BaseResponseModel):
             self.outcome_c = Points(c) if self.choice == 'C' else None
 
         self.result = self.outcomes[self.choice]
+
+
+def set_payoff(player: Player, iteround: Round):
+    if iteround.is_practice:
+        return
+    player.total_score = iteround.total_score
+    player.payoff = player.total_score
 
 
 def custom_export_trials(_: list[Player]):

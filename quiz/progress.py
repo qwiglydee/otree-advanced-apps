@@ -4,6 +4,7 @@ from _stuff.participant import current_pagename
 
 from .conf import C  # noqa
 from .models import Player, Round, Trial, Response
+from .models import set_payoff
 
 
 class Progress(NamedTuple):
@@ -51,8 +52,8 @@ def current(player: Player) -> Progress:
     return Progress(pagename, player, iteround, trial)
 
 
-def advance(current: Progress) -> Progress:
-    pagename, player, iteround, trial = current
+def advance(curr: Progress) -> Progress:
+    pagename, player, iteround, trial = curr
 
     if iteround is None:
         iteround = Round.advance(pagename, player=player)
@@ -65,6 +66,7 @@ def advance(current: Progress) -> Progress:
 
     if iteround.progress_trials >= max_trials(iteround):
         iteround.complete()
+        set_payoff(player, iteround)
 
     if iteround.is_closed:
         return Progress(pagename, player, iteround, None)
@@ -79,16 +81,23 @@ def advance(current: Progress) -> Progress:
     return Progress(pagename, player, iteround, trial)
 
 
-def respond(current: Progress, answer: str, **kwargs) -> Response:
-    assert current.is_valid
-    pagename, player, iteround, trial = current
+def advance_trial(curr: Progress):
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
 
-    response = Response.create_next(trial, player, answer=answer, **kwargs)
-    response.evaluate()
     track_trial(trial)
 
     if trial.success or trial.progress_retries >= max_retries(trial):
         trial.complete()
         track_round(iteround)
 
+
+def respond(curr: Progress, answer: str, **kwargs) -> Response:
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
+
+    response = Response.create_next(trial, player, answer=answer, **kwargs)
+    response.evaluate()
+
+    advance_trial(curr)
     return response

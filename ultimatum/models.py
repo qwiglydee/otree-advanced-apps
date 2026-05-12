@@ -47,7 +47,6 @@ class Round(BaseRoundModel):
         trials = Trial.list(self)
         self.total_score_p = sum(t.score_p for t in trials)
         self.total_score_r = sum(t.score_r for t in trials)
-        set_payoffs(self.group, self)
 
     progress_trials = database.IntegerField()
 

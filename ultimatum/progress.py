@@ -4,6 +4,7 @@ from _stuff.participant import current_pagename
 
 from .conf import C, Points
 from .models import Player, Round, Trial, Response
+from .models import set_payoffs
 
 
 class Progress(NamedTuple):
@@ -83,6 +84,7 @@ def advance(curr: Progress) -> Progress:
 
     if iteround.progress_trials >= C.NUM_TRIALS:
         iteround.complete()
+        set_payoffs(group, iteround)
 
     if iteround.is_closed:
         return Progress(pagename, player, iteround, None)
@@ -95,20 +97,6 @@ def advance(curr: Progress) -> Progress:
         track_trial(trial)
 
     return Progress(pagename, player, iteround, trial)
-
-
-def advance_trial(curr: Progress):
-    """Advance current trial
-    Check completeness criteria, complete if needed
-    """
-    assert curr.is_valid
-    pagename, player, iteround, trial = curr
-
-    track_trial(trial)
-
-    if trial.progress_stage is None:
-        trial.complete()
-        track_round(iteround)
 
 
 def respond_proposal(curr: Progress, proposal: Points, **kwargs) -> Response:
@@ -131,3 +119,17 @@ def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
 
     advance_trial(curr)
     return response
+
+
+def advance_trial(curr: Progress):
+    """Advance current trial
+    Check completeness criteria, complete if needed
+    """
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
+
+    track_trial(trial)
+
+    if trial.progress_stage is None:
+        trial.complete()
+        track_round(iteround)

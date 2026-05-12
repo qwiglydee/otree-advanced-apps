@@ -4,6 +4,7 @@ from _stuff.participant import current_pagename
 
 from .conf import C  # noqa
 from .models import Player, Round, Trial, Response
+from .models import set_payoff
 
 
 class Progress(NamedTuple):
@@ -70,6 +71,7 @@ def advance(current: Progress) -> Progress:
 
     if iteround.progress_trials >= max_trials(iteround):
         iteround.complete()
+        set_payoff(player, iteround)
 
     if iteround.is_closed:
         return Progress(pagename, player, iteround, None)

@@ -30,17 +30,10 @@ class Round(BaseRoundModel):
         return self.pagename == 'Practice'
 
     def init(self, **kwargs):
-        """Init sometthing when created"""
         pass
 
     def update(self):
-        """Update something when started or after a trial completed"""
         pass
-
-    def complete(self):
-        self.close('COMPLETED')
-        if not self.is_practice:
-            self.player.total_score = self.total_score
 
     progress_trials = database.IntegerField()
 
@@ -109,6 +102,13 @@ class Response(BaseResponseModel):
     def evaluate(self):
         assert self.answer is not None
         self.correct = self.answer == self.trial.truth
+
+
+def set_payoff(player: Player, iteround: Round):
+    if iteround.is_practice:
+        return
+    player.total_score = iteround.total_score
+    player.payoff = player.total_score
 
 
 def custom_export_trials(_: list[Player]):
