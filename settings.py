@@ -2,53 +2,63 @@ from os import environ
 
 
 SESSION_CONFIGS = [
+    # dict(
+    #     name='survey',
+    #     app_sequence=['survey'],
+    #     condition="random",
+    # ),
+    # dict(
+    #     name='quiz',
+    #     app_sequence=['quiz'],
+    #     condition="random",
+    #     source="questions.csv",
+    # ),
+    # dict(
+    #     name='trials1',
+    #     app_sequence=['trials1'],
+    #     condition="random",
+    # ),
+    # dict(
+    #     name='trials2',
+    #     app_sequence=['trials2'],
+    #     condition="random",
+    # ),
+    # dict(
+    #     name='trials3',
+    #     app_sequence=['trials3'],
+    #     condition="random",
+    # ),
+    # dict(
+    #     name='lottery1',
+    #     app_sequence=['lottery1'],
+    #     condition="random",
+    #     disclosure="random",
+    # ),
+    # dict(
+    #     name='lottery2s',
+    #     app_sequence=['lottery2s'],
+    #     condition="random",
+    #     disclosure="random",
+    # ),
     dict(
-        name='survey',
-        app_sequence=['survey'],
-        condition="random",
+        name='party3async',
+        app_sequence=['party3async'],
+        num_demo_participants=3
     ),
     dict(
-        name='quiz',
-        app_sequence=['quiz'],
-        condition="random",
-        source="questions.csv",
+        name='party3parallel',
+        app_sequence=['party3parallel'],
+        num_demo_participants=3
     ),
     dict(
-        name='trials1',
-        app_sequence=['trials1'],
-        condition="random",
+        name='party3serial',
+        app_sequence=['party3serial'],
+        num_demo_participants=3
     ),
     dict(
-        name='trials2',
-        app_sequence=['trials2'],
-        condition="random",
-    ),
-    dict(
-        name='trials3',
-        app_sequence=['trials3'],
-        condition="random",
-    ),
-    dict(
-        name='lottery1',
-        app_sequence=['lottery1'],
-        condition="random",
-        disclosure="random",
-    ),
-    dict(
-        name='lottery2s',
-        app_sequence=['lottery2s'],
-        condition="random",
-        disclosure="random",
-    ),
-    dict(
-        name='hh2parallel',
-        app_sequence=['hh2parallel'],
-        condition="random",
-    ),
-    dict(
-        name='hh2sequential',
-        app_sequence=['hh2sequential'],
-        condition="random",
+        name='party3sequential',
+        app_sequence=['party3sequential'],
+        num_demo_participants=3
     ),
     dict(
         name='ultimatum',

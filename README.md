@@ -44,16 +44,6 @@ Example content and calculations are intentionally dull so they can be easily re
     - tasks and choices are geneated on the fly according to session condition
     - multiple retries in practice round
     - practice and main rounds on different pages with different feedback
-- [Sequential](h2sequential): two-player trials with sequential answering
-    - each player answers in turn
-    - page updates to display answers of partners
-    - practice and main rounds on different pages with different feedback
-    - tracking 'pending' state to make sure all players reached the same round and trial
-- [Parallel](h2parallel): two-player trials with parallel answering
-    - each player answers on their own
-    - feedback provided when everyone answered
-    - practice and main rounds on different pages with different feedback
-    - tracking 'pending' state to make sure all players reached the same round and trial
 - [Lottery 1](lottery1): lottery with cards-like buttons with different outcomes
     - lottery parameters are geneated on the fly according to configuration
     - layout of the buttons is randomized for each player
@@ -63,9 +53,20 @@ Example content and calculations are intentionally dull so they can be easily re
     - 2 phases in each trial: sampling and final
     - multiple responses in sampling phase + last final response
     - outcomes of the cards are resolved for each response
-- [Ultimatum](ultimatum): classic ultimatum game, multiple rounds
-    - 2 stages of each trial: proposing, deciding
-    - tracking 'pending' state to make sure all players reached the same round and trial
+- [Ultimatum](ultimatum): classic ultimatum game, with 2-staged response s
+- [Async Party](party3async): multiplayer chat-like trials with asyncronous responses
+    - players respond in arbitrary order
+    - they observe partners' responses immediately
+- [Parallel Party](party3parallel): multiplayer chat-like trials with parallel responses
+    - players respond in arbitrary order
+    - but they only observe partners' responses at the end
+- [Serial Party](party3serial): multiplayer chat-like trials with responses in serial order
+    - players respond in turns by their group membership
+    - they observe partners' responses immediately
+- [Sequential Party](party3sequential): multiplayer chat-like trials with responses in order of custom sequence
+    - players respond in turns by a custom sequence, that may contain multiple turns of the same role
+    - they observe partners' responses immediately,
+    - latter responces override former
 
 ## Usage
 

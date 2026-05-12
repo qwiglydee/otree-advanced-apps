@@ -4,7 +4,7 @@ from time import monotonic as now
 from sqlalchemy import desc
 from sqlalchemy.orm.exc import MultipleResultsFound
 
-from otree.models import BasePlayer
+from otree.models import BasePlayer, BaseGroup
 from otree.database import db, ExtraModel
 from otree import database
 
@@ -261,3 +261,13 @@ class BaseResponseModel(ExtraModel):
     @classmethod
     def last(cls, trial: BaseTrialModel, **kwargs) -> Self:
         return cls.objects_filter(trial=trial, **kwargs).order_by(desc("iteration")).first()
+
+    @classmethod
+    def group_last(cls, trial: BaseTrialModel, group: BaseGroup, **kwargs):
+        """All (last) responses from each member of group, ordered by iteration"""
+        # this works for parallel, sequential, asyncronous single- and multi-responding
+        all = list(cls.objects_filter(trial=trial, **kwargs).order_by("iteration"))
+        if len(all) == 0:
+            return []
+        pids = [r.player.id for r in all]
+        return [r for i, r in enumerate(all) if r.player.id not in pids[i + 1:]]
