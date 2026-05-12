@@ -38,13 +38,13 @@
         <section class="info" ot-display="vars.result">
             <h4>Final result:</h4>
             <ul class="m-0">
-                <li>Your payoff: <b ot-text="vars.result.P"></b></li>
-                <li>Your partner's payoff: <b ot-text="vars.result.R"></b></li>
+                <li>Your payoff: <b ot-text="vars.result.scores.P"></b></li>
+                <li>Your partner's payoff: <b ot-text="vars.result.scores.R"></b></li>
             </ul>
         </section>
         <div class="flex-fill"></div>
-        <div ot-display="vars.prompting">Adjust your proposal and <kbd>Confirm</kbd>...</div>
-        <div ot-display="vars.pending">Waiting for your partner...</div>
+        <div ot-display="vars.prompting">Adjust your proposal and <kbd>Confirm</kbd></div>
+        <div ot-display="vars.pending">Waiting for your partner</div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
         <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary" autofocus>Continue</button>
     </footer>
@@ -54,15 +54,14 @@
     <script>
         "use strict";
 
-        const MYSTAGE = "PROPOSING";
+        const MYTURN = "{{player.role}}";
         const BLINK_DELAY = 200;
         const AUTO_ADVANCE = false;
-        // const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
+        const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
 
         function switchState(state) {
-            let stage = vars.progress ? vars.progress.stage : null;
-            if (state == "completing") state += AUTO_ADVANCE ? "/AUTO" : "/BTN";
-            // console.debug("switching", state, stage, strategy);
+            let turn = vars.progress ? vars.progress.turn : null;
+            console.debug(`switching: ${state}/${turn}`, `/${MYTURN}/`);
 
             vars.waiting = false;
             vars.pending = false;
@@ -85,8 +84,8 @@
                     vars.completing = true;
                     break;
                 case "running":
-                    vars.responding = stage == MYSTAGE;
-                    vars.confirming = vars.responding && vars.proposal != null;
+                    vars.responding = turn == MYTURN;
+                    vars.confirming = vars.responding && vars.response != null;
                     vars.pending = !vars.responding;
                     vars.waiting = vars.pending;
                     break;
@@ -100,9 +99,9 @@
         ot.onLive("progress", liveProgress);
         ot.onLive("trial", startTrial);
         ot.onLive("update", updateTrial);
-        ot.onInput("proposal", inputProposal);
-        ot.onInput("confirm", confirmProposal);
-        ot.onLive("feedback", liveFeedback);
+        ot.onInput("proposal", inputResponse);
+        ot.onInput("confirm", confirmResponse);
+        ot.onLive("result", liveResult);
         ot.onInput("continue", continueRound);
 
         async function continueRound() {
@@ -120,92 +119,90 @@
 
         function resetTrial() {
             vars.trial = null;
-            vars.proposal = null;
+            vars.response = null;
             vars.feedback = null;
+            vars.result = null;
             ot.resetInputs();
         }
 
         function resetResponse() {
-            vars.proposal = null;
+            vars.response = null;
             vars.feedback = null;
             ot.resetInputs();
         }
 
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
-            if (vars.progress.stage != null) switchState("running");
-        }
-
         function startTrial(trial) {
             vars.trial = trial;
-            resetResponse();
-            switchState("running");
             ot.beginTimeMeasurement();
-        }
-
-        async function continueTrial() {
             switchState("running");
         }
 
-        function inputProposal(proposal) {
-            vars.proposal = proposal;
+        function updateTrial(update) {
+            Object.assign(vars.trial, update);
             switchState("running");
         }
 
-        function confirmProposal() {
+        function inputResponse(response) {
+            vars.response = response;
+            switchState("running");
+        }
+
+        function confirmResponse() {
             switchState("processing");
             ot.sendLive("proposal", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
-                proposal: vars.proposal,
+                proposal: vars.response,
             });
         }
 
-        function liveFeedback(feedback) {
-            vars.feedback = feedback;
-            if (feedback.completed) completeTrial();
-            else continueTrial();
+        function liveResult(result) {
+            vars.result = result;
+            result.scores = {
+                P: formatScore(result.scores.P),
+                R: formatScore(result.scores.R),
+            };
+            completeTrial();
         }
 
         async function completeTrial() {
-            switchState("completing");
             if (AUTO_ADVANCE) {
+                switchState("completing/AUTO");
                 await ot.delay(TRIAL_DELAY);
                 continueRound();
+            } else {
+                switchState("completing/BTN");
             }
         }
 
-        function format_score(value) {
-            return format_number(value, ".2");
+        ot.onUpdate("vars.response", function (proposed) {
+            if (!vars.trial) return;
+            vars.account = precalcResult(vars.trial.endowment, proposed, "ACCEPT");
+        });
+
+        function precalcResult(endowment, proposed, decided) {
+            if (proposed == null || decided == null) return null;
+            if (decided == "ACCEPT")
+                return {
+                    P: formatScore(vars.trial.endowment - proposed),
+                    R: formatScore(proposed),
+                };
+            if (decided == "REJECT")
+                return {
+                    P: 0,
+                    R: 0,
+                };
         }
 
-        ot.onUpdate("vars.feedback.scores", function renderResult(scores) {
-            if (scores != null) {
-                vars.result = {
-                    P: format_score(scores.P),
-                    R: format_score(scores.R),
-                };
-            } else {
-                vars.result = null;
-            }
-            ot.updatePage();
-        });
-
-        ot.onUpdate("vars.proposal", function (proposed) {
-            if (proposed == null) {
-                vars.account = null;
-            } else {
-                vars.account = {
-                    P: format_score(vars.trial.endowment - proposed),
-                    R: format_score(proposed),
-                };
-            }
-        });
+        const DECISION_LABELS = { ACCEPT: "Accept", REJECT: "Reject" };
 
         ot.onUpdate("vars.trial.decision", function (decided) {
             if (decided == null) vars.decision_label = null;
-            if (decided == "ACCEPT") vars.decision_label = "Accept";
-            if (decided == "REJECT") vars.decision_label = "Reject";
+            vars.decision_label = DECISION_LABELS[decided];
         });
+
+        function formatScore(value) {
+            return format_number(value, ".2");
+        }
     </script>
 {% endblock scripts %}

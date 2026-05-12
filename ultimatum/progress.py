@@ -24,9 +24,9 @@ class Progress(NamedTuple):
     def stage(self):
         return self.trial.progress_stage if self.trial else None
 
-
-def max_trials(iteround: Round):
-    return C.NUM_TRIALS
+    @property
+    def turn(self) -> int:
+        return C.STAGEROLES[self.trial.progress_stage] if self.is_running else None
 
 
 def track_round(iteround: Round):
@@ -45,18 +45,19 @@ def track_trial(trial: Trial):
 
 
 def track_players_around(player: Player, iteround: Round) -> bool:
+    """Check if all players reached the round"""
     player.progress_round = iteround.id
-    players = player.group.get_players()
-    return all(p.field_maybe_none('progress_round') == iteround.id for p in players)
+    return all(p.field_maybe_none('progress_round') == iteround.id for p in player.group.get_players())
 
 
 def track_players_atrial(player: Player, trial: Trial) -> bool:
+    """Check if all players reached the trial"""
     player.progress_trial = trial.id
-    players = player.group.get_players()
-    return all(p.field_maybe_none('progress_trial') == trial.id for p in players)
+    return all(p.field_maybe_none('progress_trial') == trial.id for p in player.group.get_players())
 
 
 def current(player: Player):
+    """Get current round and trial (maybe none yet)"""
     group = player.group
     pagename = current_pagename(player.participant)
     iteround = Round.current(pagename, group=group)
@@ -64,21 +65,23 @@ def current(player: Player):
     return Progress(pagename, player, iteround, trial)
 
 
-def advance(current: Progress) -> Progress:
-    pagename, player, iteround, trial = current
+def advance(curr: Progress) -> Progress:
+    """Advance current round
+    create/start/track round/trial
+    """
+    pagename, player, iteround, trial = curr
     group = player.group
 
     if iteround is None:
         iteround = Round.advance(pagename, group=group)
         trial = None
 
-    all_around = track_players_around(player, iteround)
-    if iteround.is_pristine and all_around:
+    if iteround.is_pristine and track_players_around(player, iteround):
         iteround.start()
 
     track_round(iteround)
 
-    if iteround.progress_trials >= max_trials(iteround):
+    if iteround.progress_trials >= C.NUM_TRIALS:
         iteround.complete()
 
     if iteround.is_closed:
@@ -87,34 +90,44 @@ def advance(current: Progress) -> Progress:
     if trial is None:
         trial = Trial.advance_next(iteround)
 
-    all_around = track_players_atrial(player, trial)
-    if trial.is_pristine and all_around:
+    if trial.is_pristine and track_players_atrial(player, trial):
         trial.start()
         track_trial(trial)
 
     return Progress(pagename, player, iteround, trial)
 
 
-def respond_proposal(current: Progress, proposal: Points, **kwargs) -> Response:
-    pagename, player, iteround, trial = current
-    assert current.is_valid
-    assert trial.progress_stage == 'PROPOSING' and player.role == "P"
+def advance_trial(curr: Progress):
+    """Advance current trial
+    Check completeness criteria, complete if needed
+    """
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
 
-    response = Response.create_next(trial, player, stage='PROPOSING', p_proposal=proposal, **kwargs)
     track_trial(trial)
 
+    if trial.progress_stage is None:
+        trial.complete()
+        track_round(iteround)
+
+
+def respond_proposal(curr: Progress, proposal: Points, **kwargs) -> Response:
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
+    assert player.role == curr.turn
+
+    response = Response.create_next(trial, player, stage='PROPOSING', p_proposal=proposal, **kwargs)
+
+    advance_trial(curr)
     return response
 
 
-def respond_decision(current: Progress, decision: str, **kwargs) -> Response:
-    pagename, player, iteround, trial = current
-    assert current.is_valid
-    assert trial.progress_stage == 'DECIDING' and player.role == "R"
+def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
+    assert player.role == curr.turn
 
     response = Response.create_next(trial, player, stage='DECIDING', r_decision=decision, **kwargs)
-    track_trial(trial)
 
-    trial.complete()
-    track_round(iteround)
-
+    advance_trial(curr)
     return response

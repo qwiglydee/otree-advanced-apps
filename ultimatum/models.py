@@ -1,5 +1,5 @@
 from otree import database
-from otree.models import BaseSubsession, BaseGroup, BasePlayer
+from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
 
 from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 from _stuff.dictprop import dictprop
@@ -47,6 +47,7 @@ class Round(BaseRoundModel):
         trials = Trial.list(self)
         self.total_score_p = sum(t.score_p for t in trials)
         self.total_score_r = sum(t.score_r for t in trials)
+        set_payoffs(self.group, self)
 
     progress_trials = database.IntegerField()
 
@@ -98,130 +99,138 @@ class Response(BaseResponseModel):
     r_decision = database.StringField(choices=C.DECISIONS)
 
 
-# def custom_export_trials(_: list[Player]):
-#     yield [
-#         "session.code",
-#         "session.label",
-#         "participant.code",
-#         "participant.label",
-#         "condition",
-#         #
-#         "iteround.pagename",
-#         "iteround.is_practice",
-#         "iteround.status",
-#         "iteround.completion",
-#         "iteround.processing_time",
-#         "iteround.total_trials",
-#         "iteround.total_score",
-#         #
-#         "trial.iteration",
-#         "trial.status",
-#         "trial.completion",
-#         "trial.processing_time",
-#         "trial.task",
-#         "trial.truth",
-#         "trial.success",
-#         "trial.score",
-#     ]
-
-#     for trial in Trial.objects_filter().order_by('group_id', 'iteration'):
-#         iteround: Round = trial.iteround
-#         group: Group = iteround.group
-#         session: Session = group.session
-
-#         yield [
-#             session.code,
-#             session.label,
-#             None,
-#             None,
-#             group.condition,
-#             #
-#             iteround.pagename,
-#             iteround.is_practice,
-#             iteround.status,
-#             iteround.completion,
-#             f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
-#             iteround.progress_trials,
-#             iteround.total_score,
-#             #
-#             trial.iteration,
-#             trial.status,
-#             trial.completion,
-#             f"{trial.processing_time:.01f}" if trial.processing_time else None,
-#             trial.task,
-#             trial.truth,
-#             trial.success,
-#             trial.score,
-#         ]
+def set_payoffs(group: Group, iteround: Round):
+    scores = iteround.total_scores
+    for player in group.get_players():
+        player.total_score = scores[player.role]
+        player.payoff = player.total_score
 
 
-# def custom_export_responses(_: list[Player]):
-#     yield [
-#         "session.code",
-#         "session.label",
-#         "participant.code",
-#         "participant.label",
-#         "condition",
-#         #
-#         "iteround.pagename",
-#         "iteround.is_practice",
-#         "iteround.status",
-#         "iteround.completion",
-#         "iteround.processing_time",
-#         "iteround.total_trials",
-#         "iteround.total_score",
-#         #
-#         "trial.iteration",
-#         "trial.status",
-#         "trial.completion",
-#         "trial.processing_time",
-#         "trial.task",
-#         "trial.truth",
-#         "trial.success",
-#         "trial.score",
-#         #
-#         "player.role",
-#         "response.iteration",
-#         "response.time",
-#         "response.answer",
-#         "response.correct",
-#     ]
+def custom_export_responses(_):
+    yield [
+        "session.code",
+        "session.label",
+        "participant.code",
+        "participant.label",
+        #
+        "iteround.pagename",
+        "iteround.status",
+        "iteround.completion",
+        "iteround.processing_time",
+        "iteround.total_trials",
+        "iteround.total_score.P",
+        "iteround.total_score.R",
+        #
+        "trial.iteration",
+        "trial.status",
+        "trial.completion",
+        "trial.processing_time",
+        "trial.endowment",
+        "trial.proposal",
+        "trial.decision",
+        "trial.score.P",
+        "trial.score.R",
+        #
+        "response.iteration",
+        "response.stage",
+        "player.role",
+        "response.response_time",
+        "response.proposal",
+        "response.decision",
+    ]
 
-#     for response in Response.objects_filter().order_by('trial_id', 'iteration'):
-#         trial: Trial = response.trial
-#         iteround: Round = trial.iteround
-#         group: Group = iteround.group
-#         player: Player = response.player
-#         session: Session = player.session
-#         participant: Participant = player.participant
+    for response in Response.objects_filter().order_by('trial_id', 'iteration'):
+        trial: Trial = response.trial
+        iteround: Round = trial.iteround
+        player: Player = response.player
+        session: Session = player.session
+        participant: Participant = player.participant
 
-#         yield [
-#             session.code,
-#             session.label,
-#             participant.code,
-#             participant.label,
-#             group.condition,
-#             #
-#             iteround.pagename,
-#             iteround.is_practice,
-#             iteround.status,
-#             iteround.completion,
-#             f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
-#             iteround.progress_trials,
-#             iteround.total_score,
-#             #
-#             trial.iteration,
-#             trial.status,
-#             trial.completion,
-#             f"{trial.processing_time:.01f}" if trial.processing_time else None,
-#             trial.task,
-#             trial.truth,
-#             trial.success,
-#             trial.score,
-#             #
-#             player.role,
-#             response.iteration,
-#             response.response_time,
-#             response.answer,
-#             response.correct,
-#         ]
+        yield [
+            session.code,
+            session.label,
+            participant.code,
+            participant.label,
+            #
+            iteround.pagename,
+            iteround.status,
+            iteround.completion,
+            f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
+            iteround.progress_trials,
+            iteround.total_score_p,
+            iteround.total_score_r,
+            #
+            trial.iteration,
+            trial.status,
+            trial.completion,
+            f"{trial.processing_time:.01f}" if trial.processing_time else None,
+            trial.endowment,
+            trial.proposal,
+            trial.decision,
+            trial.score_p,
+            trial.score_r,
+            #
+            response.iteration,
+            response.stage,
+            player.role,
+            response.response_time,
+            response.p_proposal,
+            response.r_decision
+        ]
+
+
+def custom_export_trials(_):
+    yield [
+        "session.code",
+        "session.label",
+        "participant.code",
+        "participant.label",
+        #
+        "iteround.pagename",
+        "iteround.status",
+        "iteround.completion",
+        "iteround.processing_time",
+        "iteround.total_trials",
+        "iteround.total_score.P",
+        "iteround.total_score.R",
+        #
+        "trial.iteration",
+        "trial.status",
+        "trial.completion",
+        "trial.processing_time",
+        "trial.endowment",
+        "trial.proposal",
+        "trial.decision",
+        "trial.score.P",
+        "trial.score.R",
+    ]
+
+    for trial in Trial.objects_filter().order_by('iteround_id', 'iteration'):
+        iteround: Round = trial.iteround
+        group: Group = iteround.group
+        session: Session = group.session
+
+        yield [
+            session.code,
+            session.label,
+            None,
+            None,
+            #
+            iteround.pagename,
+            iteround.status,
+            iteround.completion,
+            f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
+            iteround.progress_trials,
+            iteround.total_score_p,
+            iteround.total_score_r,
+            #
+            trial.iteration,
+            trial.status,
+            trial.completion,
+            f"{trial.processing_time:.01f}" if trial.processing_time else None,
+            trial.endowment,
+            trial.proposal,
+            trial.decision,
+            trial.score_p,
+            trial.score_r,
+        ]

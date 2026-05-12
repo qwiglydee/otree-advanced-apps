@@ -8,7 +8,15 @@ from .progress import Progress
 from . import progress
 
 
-class LiveMethods:
+@live_page
+class Main(Page):
+    page_styles = ['ot-progress.css', 'ot-pulse.css']  # noqa
+    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]  # noqa
+
+    def get_template_name(self):
+        # different page templates by role
+        return f"{__package__}/Main_{self.player.role}.html"
+
     @classmethod
     def live_continue(page, player: Player, _):
         group = player.group
@@ -56,18 +64,18 @@ class LiveMethods:
         yield group, "progress", page.display_progress(current)
         yield group, "update", page.display_trial(current)
         if current.trial.is_completed:
-            yield group, "feedback", page.display_feedback(current)
+            yield group, "result", page.display_result(current)
 
     @staticmethod
     def display_progress(current: Progress):
         assert current.iteround
         return {
+            "total": C.NUM_TRIALS,
             "finished": current.iteround.is_completed,
-            "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "pending": not current.is_running,
             "current": current.trial.iteration if current.trial else None,
-            "stage": current.stage,
+            "turn": current.turn,
         }
 
     @staticmethod
@@ -81,26 +89,11 @@ class LiveMethods:
         }
 
     @staticmethod
-    def display_feedback(current: Progress):
+    def display_result(current: Progress):
         assert current.trial.is_completed
         return {
-            "completed": current.trial.is_completed,
             "scores": current.trial.scores
         }
-
-    # def before_next_page(player: Player, timeout_happened: bool):
-    #     if not timeout_happened:
-    #         set_payoff(player)
-
-
-@live_page
-class Main(LiveMethods, Page):
-    page_styles = ['ot-progress.css', 'ot-pulse.css']  # noqa
-    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]  # noqa
-
-    def get_template_name(self):
-        # different page templates by role
-        return f"{__package__}/Main_{self.player.role}.html"
 
 
 class Intro(Page):

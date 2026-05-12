@@ -19,9 +19,10 @@ class C(BaseConstants):
     P_ROLE = "P"
     R_ROLE = "R"
 
-    NUM_TRIALS = 10
+    NUM_TRIALS = 5
 
     STAGES = ['PROPOSING', 'DECIDING']
+    STAGEROLES = {'PROPOSING': P_ROLE, 'DECIDING': R_ROLE}
     DECISIONS = ['ACCEPT', 'REJECT']
 
     CONDITIONS = ["C0", "C1", "C2"]
