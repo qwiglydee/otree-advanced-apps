@@ -28,37 +28,37 @@ class Progress(NamedTuple):
     @property
     def retries_left(self):
         assert self.trial
-        return max_retries(self.trial) - self.trial.progress_retries
-
-
-def max_trials(iteround: Round):
-    return C.NUM_TRIALS[iteround.pagename]
-
-
-def max_retries(trial):
-    return C.NUM_RETRIES.get(trial.iteround.pagename, 1)
-
-
-def track_round(iteround: Round):
-    iteround.update()
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-
-
-def track_trial(trial: Trial):
-    trial.update()
-    trial.progress_retries = Response.count(trial, stage='ANSWER')
-    trial.progress_stage = 'ANSWER' if trial.strategy else 'DECISION'
+        return C.NUM_RETRIES.get(self.pagename, 1) - self.trial.progress_retries
 
 
 def current(player: Player) -> Progress:
+    """Get current round and trial (maybe none yet)"""
     pagename = current_pagename(player.participant)
     iteround = Round.current(pagename, player=player)
     trial = Trial.current(iteround) if iteround else None
     return Progress(pagename, player, iteround, trial)
 
 
-def advance(current: Progress) -> Progress:
-    pagename, player, iteround, trial = current
+def track_round(iteround: Round) -> bool:
+    """Track round progress state and decide if to continue"""
+    iteround.update()
+    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
+    return iteround.progress_trials < C.NUM_TRIALS[iteround.pagename]
+
+
+def track_trial(trial: Trial) -> bool:
+    """Track trial progress state and decide if to continue"""
+    trial.update()
+    trial.progress_retries = Response.count(trial, stage='ANSWER')
+    trial.progress_stage = 'ANSWER' if trial.strategy else 'DECISION'
+    return trial.progress_retries < C.NUM_RETRIES.get(trial.iteround.pagename, 1) and not trial.success
+
+
+def advance(curr: Progress) -> Progress:
+    """Advance current round
+    create/start/track round/trial
+    """
+    pagename, player, iteround, trial = curr
 
     if iteround is None:
         iteround = Round.advance(pagename, player=player)
@@ -67,9 +67,7 @@ def advance(current: Progress) -> Progress:
     if iteround.is_pristine:
         iteround.start()
 
-    track_round(iteround)
-
-    if iteround.progress_trials >= max_trials(iteround):
+    if not track_round(iteround):
         iteround.complete()
         set_payoff(player, iteround)
 
@@ -86,26 +84,35 @@ def advance(current: Progress) -> Progress:
     return Progress(pagename, player, iteround, trial)
 
 
-def respond_decision(current: Progress, decision: str, **kwargs):
-    assert current.is_valid and current.stage == 'DECISION'
-    pagename, player, iteround, trial = current
+def respond_decision(curr: Progress, decision: str, **kwargs):
+    assert curr.is_valid and curr.stage == 'DECISION'
+    pagename, player, iteround, trial = curr
 
     response = Response.create_next(trial, player, stage='DECISION', decision=decision, **kwargs)
     track_trial(trial)
 
+    advance_trial(curr)
     return response
 
 
-def respond_answer(current: Progress, answer: str, **kwargs) -> Response:
-    assert current.is_valid and current.stage == 'ANSWER'
-    pagename, player, iteround, trial = current
+def respond_answer(curr: Progress, answer: str, **kwargs) -> Response:
+    assert curr.is_valid and curr.stage == 'ANSWER'
+    pagename, player, iteround, trial = curr
 
     response = Response.create_next(trial, player, stage='ANSWER', answer=answer, **kwargs)
     response.evaluate()
-    track_trial(trial)
 
-    if trial.success or trial.progress_retries >= max_retries(trial):
+    advance_trial(curr)
+    return response
+
+
+def advance_trial(curr: Progress):
+    """Advance current trial
+    Check completeness criteria, complete if needed
+    """
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
+
+    if not track_trial(trial):
         trial.complete()
         track_round(iteround)
-
-    return response

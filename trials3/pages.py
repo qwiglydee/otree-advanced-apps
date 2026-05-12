@@ -66,8 +66,8 @@ class Practice(LiveMethods, Page):
     def display_progress(current: Progress):
         assert current.iteround
         return {
+            "total": C.NUM_TRIALS[current.pagename],
             "finished": current.iteround.is_closed,
-            "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
             "current": current.trial.iteration if current.trial else None,
@@ -105,8 +105,8 @@ class Main(LiveMethods, Page):
     def display_progress(current: Progress):
         assert current.iteround
         return {
+            "total": C.NUM_TRIALS[current.pagename],
             "finished": current.iteround.is_completed,
-            "total": progress.max_trials(current.iteround),
             "passed": current.iteround.progress_trials,
             "score": current.iteround.total_score,
             "current": current.trial.iteration if current.trial else None,

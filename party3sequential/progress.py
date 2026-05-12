@@ -30,28 +30,6 @@ class Progress(NamedTuple):
         return C.SEQUENCE[self.trial.progress_turn - 1] if self.is_running else None
 
 
-def track_round(iteround: Round):
-    iteround.update()
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-
-
-def track_trial(trial: Trial):
-    trial.update()
-    trial.progress_turn = Response.count(trial) + 1
-
-
-def track_players_around(player: Player, iteround: Round) -> bool:
-    """Check if all players reached the round"""
-    player.progress_round = iteround.id
-    return all(p.field_maybe_none('progress_round') == iteround.id for p in player.group.get_players())
-
-
-def track_players_atrial(player: Player, trial: Trial) -> bool:
-    """Check if all players reached the trial"""
-    player.progress_trial = trial.id
-    return all(p.field_maybe_none('progress_trial') == trial.id for p in player.group.get_players())
-
-
 def current(player: Player) -> Progress:
     """Get current round and trial (maybe none yet)"""
     group = player.group
@@ -59,6 +37,32 @@ def current(player: Player) -> Progress:
     iteround = Round.current(pagename, group=group)
     trial = Trial.current(iteround) if iteround else None
     return Progress(pagename, player, iteround, trial)
+
+
+def track_round(iteround: Round) -> bool:
+    """Track round progress state and decide if to continue"""
+    iteround.update()
+    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
+    return iteround.progress_trials < C.NUM_TRIALS
+
+
+def track_trial(trial: Trial) -> bool:
+    """Track trial progress state and decide if to continue"""
+    trial.update()
+    trial.progress_turn = Response.count(trial) + 1
+    return trial.progress_turn <= len(C.SEQUENCE)
+
+
+def track_players_around(player: Player, iteround: Round) -> bool:
+    """Track players to check they reached the round and indicate if to continue"""
+    player.progress_round = iteround.id
+    return all(p.field_maybe_none('progress_round') == iteround.id for p in player.group.get_players())
+
+
+def track_players_atrial(player: Player, trial: Trial) -> bool:
+    """Track players to check they reached the trial and indicate if to continue"""
+    player.progress_trial = trial.id
+    return all(p.field_maybe_none('progress_trial') == trial.id for p in player.group.get_players())
 
 
 def advance(curr: Progress) -> Progress:
@@ -75,9 +79,7 @@ def advance(curr: Progress) -> Progress:
     if iteround.is_pristine and track_players_around(player, iteround):
         iteround.start()
 
-    track_round(iteround)
-
-    if iteround.progress_trials >= C.NUM_TRIALS:
+    if not track_round(iteround):
         iteround.complete()
         set_payoffs(group, iteround)
 
@@ -94,20 +96,6 @@ def advance(curr: Progress) -> Progress:
     return Progress(pagename, player, iteround, trial)
 
 
-def advance_trial(curr: Progress):
-    """Advance current trial
-    Check completeness criteria, complete if needed
-    """
-    assert curr.is_valid
-    pagename, player, iteround, trial = curr
-
-    track_trial(trial)
-
-    if trial.progress_turn > len(C.SEQUENCE):
-        trial.complete()
-        track_round(iteround)
-
-
 def respond(curr: Progress, utterance: str, **kwargs) -> Response:
     assert curr.is_valid
     pagename, player, iteround, trial = curr
@@ -117,3 +105,15 @@ def respond(curr: Progress, utterance: str, **kwargs) -> Response:
 
     advance_trial(curr)
     return response
+
+
+def advance_trial(curr: Progress):
+    """Advance current trial
+    Check completeness criteria, complete if needed
+    """
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
+
+    if not track_trial(trial):
+        trial.complete()
+        track_round(iteround)

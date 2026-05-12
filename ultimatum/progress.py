@@ -3,7 +3,7 @@ from typing import NamedTuple
 from _stuff.participant import current_pagename
 
 from .conf import C, Points
-from .models import Player, Round, Trial, Response
+from .models import Player, Group, Round, Trial, Response
 from .models import set_payoffs
 
 
@@ -14,11 +14,15 @@ class Progress(NamedTuple):
     trial: Trial | None
 
     @property
-    def is_valid(self):
+    def group(self) -> Group:
+        return self.iteround.group
+
+    @property
+    def is_valid(self) -> bool:
         return self.iteround and self.trial
 
     @property
-    def is_running(self):
+    def is_running(self) -> bool:
         return self.trial and self.trial.is_running
 
     @property
@@ -30,12 +34,24 @@ class Progress(NamedTuple):
         return C.STAGEROLES[self.trial.progress_stage] if self.is_running else None
 
 
-def track_round(iteround: Round):
+def current(player: Player) -> Progress:
+    """Get current round and trial (maybe none yet)"""
+    group = player.group
+    pagename = current_pagename(player.participant)
+    iteround = Round.current(pagename, group=group)
+    trial = Trial.current(iteround) if iteround else None
+    return Progress(pagename, player, iteround, trial)
+
+
+def track_round(iteround: Round) -> bool:
+    """Track round progress state and decide if to continue"""
     iteround.update()
     iteround.progress_trials = Trial.count(iteround, status='CLOSED')
+    return iteround.progress_trials < C.NUM_TRIALS
 
 
-def track_trial(trial: Trial):
+def track_trial(trial: Trial) -> bool:
+    """Track trial progress state and decide if to continue"""
     trial.update()
     if trial.proposal is None:
         trial.progress_stage = "PROPOSING"
@@ -43,27 +59,19 @@ def track_trial(trial: Trial):
         trial.progress_stage = "DECIDING"
     else:
         trial.progress_stage = None
+    return trial.progress_stage is not None
 
 
 def track_players_around(player: Player, iteround: Round) -> bool:
-    """Check if all players reached the round"""
+    """Track players to check they reached the round and indicate if to continue"""
     player.progress_round = iteround.id
     return all(p.field_maybe_none('progress_round') == iteround.id for p in player.group.get_players())
 
 
 def track_players_atrial(player: Player, trial: Trial) -> bool:
-    """Check if all players reached the trial"""
+    """Track players to check they reached the trial and indicate if to continue"""
     player.progress_trial = trial.id
     return all(p.field_maybe_none('progress_trial') == trial.id for p in player.group.get_players())
-
-
-def current(player: Player):
-    """Get current round and trial (maybe none yet)"""
-    group = player.group
-    pagename = current_pagename(player.participant)
-    iteround = Round.current(pagename, group=group)
-    trial = Trial.current(iteround) if iteround else None
-    return Progress(pagename, player, iteround, trial)
 
 
 def advance(curr: Progress) -> Progress:
@@ -80,9 +88,7 @@ def advance(curr: Progress) -> Progress:
     if iteround.is_pristine and track_players_around(player, iteround):
         iteround.start()
 
-    track_round(iteround)
-
-    if iteround.progress_trials >= C.NUM_TRIALS:
+    if not track_round(iteround):
         iteround.complete()
         set_payoffs(group, iteround)
 
@@ -128,8 +134,6 @@ def advance_trial(curr: Progress):
     assert curr.is_valid
     pagename, player, iteround, trial = curr
 
-    track_trial(trial)
-
-    if trial.progress_stage is None:
+    if not track_trial(trial):
         trial.complete()
         track_round(iteround)

@@ -22,28 +22,32 @@ class Progress(NamedTuple):
         return self.trial and self.trial.is_running
 
 
-def max_trials(iteround: Round):
-    return C.NUM_TRIALS[iteround.pagename]
-
-
-def track_round(iteround: Round):
-    iteround.update()
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-
-
-def track_trial(trial: Trial):
-    trial.update()
-
-
 def current(player: Player) -> Progress:
+    """Get current round and trial (maybe none yet)"""
     pagename = current_pagename(player.participant)
     iteround = Round.current(pagename, player=player)
     trial = Trial.current(iteround) if iteround else None
     return Progress(pagename, player, iteround, trial)
 
 
-def advance(current: Progress) -> Progress:
-    pagename, player, iteround, trial = current
+def track_round(iteround: Round) -> bool:
+    """Track round progress state and decide if to continue"""
+    iteround.update()
+    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
+    return iteround.progress_trials < C.NUM_TRIALS[iteround.pagename]
+
+
+def track_trial(trial: Trial) -> bool:
+    """Track trial progress state and decide if to continue"""
+    trial.update()
+    return Response.count(trial) > 0
+
+
+def advance(curr: Progress) -> Progress:
+    """Advance current round
+    create/start/track round/trial
+    """
+    pagename, player, iteround, trial = curr
 
     if iteround is None:
         iteround = Round.advance(pagename, player=player)
@@ -52,9 +56,7 @@ def advance(current: Progress) -> Progress:
     if iteround.is_pristine:
         iteround.start()
 
-    track_round(iteround)
-
-    if iteround.progress_trials >= max_trials(iteround):
+    if not track_round(iteround):
         iteround.complete()
         set_payoff(player, iteround)
 
@@ -71,14 +73,24 @@ def advance(current: Progress) -> Progress:
     return Progress(pagename, player, iteround, trial)
 
 
-def respond(current: Progress, choice: str, **kwargs) -> Response:
-    assert current.is_valid
-    pagename, player, iteround, trial = current
+def respond(curr: Progress, choice: str, **kwargs) -> Response:
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
 
     response = Response.create_next(trial, player, choice=choice, **kwargs)
     response.evaluate()
-    track_trial(trial)
-    trial.complete()
-    track_round(iteround)
 
+    advance_trial(curr)
     return response
+
+
+def advance_trial(curr: Progress):
+    """Advance current trial
+    Check completeness criteria, complete if needed
+    """
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
+
+    if not track_trial(trial):
+        trial.complete()
+        track_round(iteround)
