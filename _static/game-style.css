@@ -30,7 +30,7 @@ body {
 
 section {
     padding: 1rem;
-    margin: 1.5rem 0;
+    margin-bottom: 1.5rem;
     color: #212529;
     box-shadow: var(--bs-box-shadow-sm);
     border-radius: var(--gm-border-radius-sect);

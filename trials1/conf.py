@@ -19,7 +19,7 @@ class C(BaseConstants):
 
     NUM_TRIALS = {
         'Practice': 3,
-        'Main': 10,
+        'Main': 5,
     }
 
     NUM_RETRIES = {

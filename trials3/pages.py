@@ -2,6 +2,7 @@ from otree.views import Page
 
 from _stuff.live import live_page
 
+from .conf import C
 from .models import Player, Response
 from .progress import Progress
 from . import progress
