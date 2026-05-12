@@ -4,11 +4,9 @@
 
 {% block content %}
     <section class="info">
-        <h3>Instructions</h3>
-
         <p>...</p>
 
-        <p>Just answer some questions.</p>
+        <p>...</p>
 
         <p>...</p>
     </section>
@@ -20,7 +18,8 @@
     <section class="form">
         <p>Please fill information below</p>
 
-        {{ formfields }}
+        {{ formfield 'age' }}
+        {{ formfield 'gender' }}
     </section>
 
     <section class="info">
@@ -28,8 +27,12 @@
 
         <p>By clicking the "Next" button, you provide your informed consent to proceed with the experiment.</p>
 
+        {{ formfield 'agreement' }}
+
         {{ next_button }}
     </section>
+
+    {{ formfield 'localtime' }}
 {% endblock content %}
 
 {% block scripts %}

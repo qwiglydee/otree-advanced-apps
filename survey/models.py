@@ -23,6 +23,10 @@ class Player(BasePlayer):
         widget=widgets.RadioSelect
     )
     localtime = database.StringField(label="", blank=True, widget=HiddenWidget)
+    agreement = database.BooleanField(label="I agree with something something", widget=widgets.Checkbox)
+
+    dropout = database.BooleanField(initial=False)
+    misfit = database.BooleanField(initial=False)
 
     q_range = database.IntegerField(
         label="How much do you something?",
