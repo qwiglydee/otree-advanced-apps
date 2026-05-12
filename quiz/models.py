@@ -80,8 +80,6 @@ class Trial(BaseTrialModel):
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
 
-    progress_retries = database.IntegerField()
-
 
 def create_trials(iteround: Round, data: list[dict]):
     count = len(data)
@@ -139,7 +137,6 @@ def custom_export_trials(_: list[Player]):
         "trial.option_3",
         "trial.success",
         "trial.score",
-        "trial.retries",
     ]
 
     for trial in Trial.objects_filter().order_by('iteround_id', 'iteration'):
@@ -175,7 +172,6 @@ def custom_export_trials(_: list[Player]):
             trial.option_3,
             trial.success,
             trial.score,
-            trial.progress_retries
         ]
 
 
@@ -207,7 +203,6 @@ def custom_export_responses(_: list[Player]):
         "trial.option_3",
         "trial.success",
         "trial.score",
-        "trial.retries",
         #
         "response.iteration",
         "response.time",
@@ -250,7 +245,6 @@ def custom_export_responses(_: list[Player]):
             trial.option_3,
             trial.success,
             trial.score,
-            trial.progress_retries,
             #
             response.iteration,
             response.response_time,

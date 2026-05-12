@@ -78,7 +78,7 @@
         const TRIAL_DELAY = 1000 * "{{C.TRIAL_DELAY}}";
 
         function switchState(state) {
-            // console.debug("switching", state, stage, strategy);
+            // console.debug("switching", state);
 
             vars.waiting = false;
             vars.responding = false;
@@ -112,6 +112,7 @@
         ot.onInput("choice", inputChoice);
         ot.onInput("confirm", confirmChoice);
         ot.onLive("feedback", liveFeedback);
+        ot.onLive("result", liveResult);
         ot.onInput("continue", continueRound);
 
         async function continueRound() {
@@ -130,6 +131,7 @@
             vars.trial = null;
             vars.choice = null;
             vars.feedback = null;
+            vars.result = null;
             vars.styles = {};
             ot.resetInputs();
         }
@@ -138,23 +140,10 @@
             Object.assign(vars.trial, update);
         }
 
-        function resetResponse() {
-            vars.choice = null;
-            vars.feedback = null;
-            vars.styles = {};
-            ot.resetInputs();
-        }
-
         function startTrial(trial) {
             vars.trial = trial;
-            resetResponse();
             switchState("running");
-            ot.beginTimeMeasurement();
-        }
-
-        async function restartTrial() {
-            resetResponse();
-            switchState("running");
+            ot.beginTimeMeasurement(); // NB: restarts on page reload
         }
 
         function inputChoice(choice) {
@@ -173,8 +162,12 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (feedback.completed) completeTrial();
-            else restartTrial();
+        }
+
+        function liveResult(result) {
+            vars.result = result;
+            result.score = formatScore(result.score);
+            completeTrial();
         }
 
         async function completeTrial() {
@@ -185,15 +178,6 @@
             }
         }
 
-        ot.onUpdate("vars.feedback.score", function renderResult(score) {
-            if (score != null) {
-                vars.result = { score: format_number(score, "+.2") };
-            } else {
-                vars.result = null;
-            }
-            ot.updatePage();
-        });
-
         ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {
             if (correct != null) {
                 if (vars.choice != null) {
@@ -202,5 +186,9 @@
             }
             ot.updatePage();
         });
+
+        function formatScore(value) {
+            return format_number(value, "+.2");
+        }
     </script>
 {% endblock scripts %}

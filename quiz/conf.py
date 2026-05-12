@@ -21,10 +21,6 @@ class C(BaseConstants):
         'Main': 5,
     }
 
-    NUM_RETRIES = {
-        'Practice': 2,
-    }
-
     CONDITIONS = ["C0", "C1", "C2"]
 
     SCORING = {
@@ -33,7 +29,7 @@ class C(BaseConstants):
     }
 
     RETRY_DELAY = 1
-    TRIAL_DELAY = 2
+    TRIAL_DELAY = 1
 
 
 def config_condition(session):

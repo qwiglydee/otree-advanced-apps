@@ -21,11 +21,6 @@ class Progress(NamedTuple):
     def is_running(self):
         return self.trial and self.trial.is_running
 
-    @property
-    def retries_left(self):
-        assert self.trial
-        return C.NUM_RETRIES.get(self.pagename, 1) - self.trial.progress_retries
-
 
 def current(player: Player) -> Progress:
     """Get current round and trial (maybe none yet)"""
@@ -45,8 +40,7 @@ def track_round(iteround: Round) -> bool:
 def track_trial(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
     trial.update()
-    trial.progress_retries = Response.count(trial)
-    return trial.progress_retries < C.NUM_RETRIES.get(trial.iteround.pagename, 1) and not trial.success
+    return Response.count(trial) == 0
 
 
 def advance(curr: Progress) -> Progress:
