@@ -1,7 +1,5 @@
 from typing import NamedTuple
 
-from _stuff.participant import current_pagename
-
 from .conf import C  # noqa
 from .models import Player, Round, Trial, Response
 from .models import set_payoff
@@ -22,9 +20,9 @@ class Progress(NamedTuple):
         return self.trial and self.trial.is_running
 
 
-def current(player: Player) -> Progress:
+def current(page, player: Player) -> Progress:
     """Get current round and trial (maybe none yet)"""
-    pagename = current_pagename(player.participant)
+    pagename = page.__name__
     iteround = Round.current(pagename, player=player)
     trial = Trial.current(iteround) if iteround else None
     return Progress(pagename, player, iteround, trial)

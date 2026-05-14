@@ -20,8 +20,12 @@
      * @param {object} [data] message payload
      */
     function sendLive(type, data) {
-        if (data) liveSend({ type, ...data });
-        else liveSend({ type });
+        if (data === undefined) {
+            liveSend({ type });
+        } else {
+            if (!ot.isObject(data)) throw Error("sendLive: invalid payload, expected object");
+            liveSend({ type, ...data });
+        }
     }
 
     /**

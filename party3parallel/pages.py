@@ -1,6 +1,6 @@
 from otree.views import Page
 
-from _stuff.live import live_page
+from _stuff.livepage import LivePage
 
 from .conf import C
 from .models import Group, Player, Trial, Response  # noqa
@@ -8,91 +8,83 @@ from .progress import Progress
 from . import progress
 
 
-class LiveMethods:
+class Main(LivePage):
+    page_styles = ['ot-progress.css', 'ot-pulse.css']
+    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
+
     @classmethod
-    def live_continue(page, player: Player, _):
+    def live_continue(page, player: Player):
         group: Group = player.group
-        current = progress.current(player)
+        current = progress.current(page, player)
 
         # restoring incomplete trial when page occasionally reloaded
         if current.is_running:
-            yield player, "progress", page.display_progress(current)
-            yield player, "trial", page.display_trial(current)
+            yield player, "progress", page.output_progress(current)
+            yield player, "trial", page.output_trial(current.trial)
             resp = Response.last(current.trial, player=player)
             if resp:
-                yield player, "feedback", page.display_feedback(current, resp)
+                yield player, "feedback", page.output_feedback(current, resp)
             return
 
         current = progress.advance(current)
 
         if current.is_running:
             # synchronize progress and trial
-            yield group, "progress", page.display_progress(current)
-            yield group, "trial", page.display_trial(current)
+            yield group, "progress", page.output_progress(current)
+            yield group, "trial", page.output_trial(current.trial)
         else:
             # pending state
-            yield player, "progress", page.display_progress(current)
+            yield player, "progress", page.output_progress(current)
 
     @classmethod
-    def live_response(page, player: Player, data: dict):
+    def live_response(page, player: Player, *, id: int, utterance: str, time: int):
         group = player.group
-        current = progress.current(player)
-        assert current.trial and current.trial.id == data['id'], "mismatched response"
+        current = progress.current(page, player)
+        assert current.trial and current.trial.id == id, "mismatched response"
 
-        utterance = str(data['utterance'])
         response = progress.respond(current, utterance)
 
-        yield group, "progress", page.display_progress(current)
-        yield group, "update", page.display_trial(current)
-        yield player, "feedback", page.display_feedback(current, response)
+        yield group, "progress", page.output_progress(current)
+        yield group, "update", page.output_trial(current.trial)
+        yield player, "feedback", page.output_feedback(current.trial, response)
         if current.trial.is_completed:
-            yield group, "result", page.display_result(current)
+            yield group, "result", page.output_result(current.trial)
 
-
-@live_page
-class Main(LiveMethods, Page):
-    page_styles = ['ot-progress.css', 'ot-pulse.css']
-    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
-
-    @staticmethod
-    def display_progress(current: Progress):
-        assert current.iteround
+    @classmethod
+    def output_progress(page, current: Progress):
+        pagename, player, iteround, trial = current
         return {
-            "finished": current.iteround.is_completed,
+            "finished": iteround.is_completed,
             "total": C.NUM_TRIALS,
-            "passed": current.iteround.progress_trials,
-            "current": current.trial.iteration if current.trial else None,
+            "passed": iteround.progress_trials,
+            "current": trial.iteration if trial else None,
             "pending": not current.is_running,
-            "score": current.iteround.total_score,
+            "score": iteround.total_score,
         }
 
-    @staticmethod
-    def display_trial(current: Progress):
-        assert current.trial
-
-        if current.trial.is_completed:
-            responses = Response.group_last(current.trial, current.group)
+    @classmethod
+    def output_trial(page, trial: Trial):
+        if trial.is_completed:
+            responses = Response.group_last(trial, trial.iteround.group)
             chat = [{'id': r.player.id, 'response': r.utterance} for r in responses]
         else:
             chat = None
 
         return {
-            "id": current.trial.id,
+            "id": trial.id,
             "responses": chat
         }
 
-    @staticmethod
-    def display_feedback(current: Progress, response: Response):
-        assert response
+    @classmethod
+    def output_feedback(page, trial: Trial, response: Response):
         return {
             "response": response.utterance
         }
 
-    @staticmethod
-    def display_result(current: Progress):
-        assert current.trial.is_completed
+    @classmethod
+    def output_result(page, trial: Trial):
         return {
-            "score": current.trial.score,
+            "score": trial.score,
         }
 
 

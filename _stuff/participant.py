@@ -11,7 +11,3 @@ def clone_fields(dst: BasePlayer, src: BasePlayer, fields: list[str]):
     """Copy some fields from a player of another app"""
     for fld in fields:
         setattr(dst, fld, getattr(src, fld))
-
-
-def current_pagename(participant: Participant):
-    return participant._current_page_name

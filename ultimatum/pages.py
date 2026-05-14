@@ -1,15 +1,14 @@
 from otree.views import Page
 
-from _stuff.live import live_page
+from _stuff.livepage import LivePage
 
 from .conf import C, Points
-from .models import Player
+from .models import Player, Trial
 from .progress import Progress
 from . import progress
 
 
-@live_page
-class Main(Page):
+class Main(LivePage):
     page_styles = ['ot-progress.css', 'ot-pulse.css']  # noqa
     page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]  # noqa
 
@@ -18,81 +17,77 @@ class Main(Page):
         return f"{__package__}/Main_{self.player.role}.html"
 
     @classmethod
-    def live_continue(page, player: Player, _):
+    def live_continue(page, player: Player):
         group = player.group
-        current = progress.current(player)
+        current = progress.current(page, player)
 
         # restore trial on page reloading
         if current.is_running:
-            yield player, "progress", page.display_progress(current)
-            yield player, "trial", page.display_trial(current)
+            yield player, "progress", page.output_progress(current)
+            yield player, "trial", page.output_trial(current.trial)
             return
 
         current = progress.advance(current)
 
         if current.is_running:
             # synchronize progress and trial
-            yield group, "progress", page.display_progress(current)
-            yield group, "trial", page.display_trial(current)
+            yield group, "progress", page.output_progress(current)
+            yield group, "trial", page.output_trial(current.trial)
         else:
             # pending state
-            yield player, "progress", page.display_progress(current)
+            yield player, "progress", page.output_progress(current)
 
     @classmethod
-    def live_proposal(page, player: Player, data: dict):
+    def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
         group = player.group
-        current = progress.current(player)
-        assert current.trial and current.trial.id == data['id'], "mismatched response"
+        current = progress.current(page, player)
+        assert current.trial and current.trial.id == id, "mismatched response"
 
-        assert 'proposal' in data
-        proposal = Points(data['proposal'])
-        progress.respond_proposal(current, proposal, response_time=data['time'])
+        proposal = Points(proposal)
+        progress.respond_proposal(current, proposal, response_time=time)
 
-        yield group, "progress", page.display_progress(current)
-        yield group, "update", page.display_trial(current)
+        yield group, "progress", page.output_progress(current)
+        yield group, "update", page.output_trial(current.trial)
 
     @classmethod
-    def live_decision(page, player: Player, data: dict):
+    def live_decision(page, player: Player, *, id: int, decision: str, time: int):
         group = player.group
-        current = progress.current(player)
-        assert current.trial and current.trial.id == data['id'], "mismatched response"
+        current = progress.current(page, player)
+        assert current.trial and current.trial.id == id, "mismatched response"
 
-        assert 'decision' in data and data['decision'] in C.DECISIONS
-        decision = data['decision']
-        progress.respond_decision(current, decision, response_time=data['time'])
+        assert decision in C.DECISIONS
+        progress.respond_decision(current, decision, response_time=time)
 
-        yield group, "progress", page.display_progress(current)
-        yield group, "update", page.display_trial(current)
+        yield group, "progress", page.output_progress(current)
+        yield group, "update", page.output_trial(current.trial)
         if current.trial.is_completed:
-            yield group, "result", page.display_result(current)
+            yield group, "result", page.output_result(current.trial)
 
-    @staticmethod
-    def display_progress(current: Progress):
-        assert current.iteround
+    @classmethod
+    def output_progress(page, current: Progress):
+        pagename, player, iteround, trial = current
         return {
             "total": C.NUM_TRIALS,
-            "finished": current.iteround.is_completed,
-            "passed": current.iteround.progress_trials,
+            "finished": iteround.is_completed,
+            "passed": iteround.progress_trials,
             "pending": not current.is_running,
-            "current": current.trial.iteration if current.trial else None,
+            "current": trial.iteration if trial else None,
             "turn": current.turn,
         }
 
-    @staticmethod
-    def display_trial(current: Progress):
-        assert current.trial
+    @classmethod
+    def output_trial(page, trial: Trial):
         return {
-            "id": current.trial.id,
-            "endowment": current.trial.endowment,
-            "proposal": current.trial.proposal,
-            "decision": current.trial.decision,
+            "id": trial.id,
+            "endowment": trial.endowment,
+            "proposal": trial.proposal,
+            "decision": trial.decision,
         }
 
-    @staticmethod
-    def display_result(current: Progress):
-        assert current.trial.is_completed
+    @classmethod
+    def output_result(page, trial: Trial):
         return {
-            "scores": current.trial.scores
+            "scores": trial.scores
         }
 
 

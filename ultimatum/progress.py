@@ -1,6 +1,5 @@
 from typing import NamedTuple
 
-from _stuff.participant import current_pagename
 
 from .conf import C, Points
 from .models import Player, Group, Round, Trial, Response
@@ -34,10 +33,10 @@ class Progress(NamedTuple):
         return C.STAGEROLES[self.trial.progress_stage] if self.is_running else None
 
 
-def current(player: Player) -> Progress:
+def current(page, player: Player) -> Progress:
     """Get current round and trial (maybe none yet)"""
     group = player.group
-    pagename = current_pagename(player.participant)
+    pagename = page.__name__
     iteround = Round.current(pagename, group=group)
     trial = Trial.current(iteround) if iteround else None
     return Progress(pagename, player, iteround, trial)
