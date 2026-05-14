@@ -28,7 +28,7 @@ class C(BaseConstants):
     DISCLOSURES = ['FULL', 'CHOICE']
 
     CHOICES = ["A", "B", "C"]
-    LABELS = {1: 'foo', 2: 'bar', 3: 'baz'}  # by screen position
+    LABELS = {'1': 'foo', '2': 'bar', '3': 'baz'}  # by screen position
 
     PARAMS = {
         "C0": {

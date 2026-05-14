@@ -161,7 +161,7 @@
         }
 
         function inputResponse(choice) {
-            vars.choice = Number(choice);
+            vars.choice = choice;
             switchState("processing");
             ot.sendLive("response", {
                 id: vars.trial.id,

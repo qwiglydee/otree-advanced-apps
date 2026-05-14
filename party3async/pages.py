@@ -37,7 +37,7 @@ class Main(LivePage):
             yield player, "progress", page.output_progress(current)
 
     @classmethod
-    def live_response(page, player: Player, *, id: int, utterance: str, time: int):
+    def live_response(page, player: Player, *, id: int, utterance: str):
         group = player.group
         current = progress.current(page, player)
         assert current.trial and current.trial.id == id, "mismatched response"

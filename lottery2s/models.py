@@ -100,7 +100,7 @@ class Response(BaseResponseModel):
     stage = database.StringField()
 
     response_time = database.IntegerField()
-    button = database.IntegerField()
+    button = database.StringField()
     choice = database.StringField()
 
     outcome_a = database.DecimalField(unit=Points)

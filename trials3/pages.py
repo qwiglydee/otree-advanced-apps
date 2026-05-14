@@ -40,7 +40,7 @@ class TrialsPage(LivePage):
         yield "update", page.output_trial(current.trial)
 
     @classmethod
-    def live_response(page, player: Player, *, id: int, time: int, answer: str = None, button: int = None):
+    def live_response(page, player: Player, *, id: int, time: int, answer: str = None, button: str = None):
         current = progress.current(page, player)
         assert current.trial and current.trial.id == id, "mismatched response"
 
@@ -50,7 +50,7 @@ class TrialsPage(LivePage):
 
         if current.trial.strategy == 'CHOOSE':
             assert button is not None and answer is None
-            answer = current.trial.options[str(button)]
+            answer = current.trial.options[button]
             response = progress.respond_answer(current, answer, response_time=time, button=button)
 
         yield "progress", page.output_progress(current)

@@ -206,12 +206,12 @@
         }
 
         function inputResponse(answer) {
-            vars.answer = answer;
+            vars.answer = String(answer);
             switchState("processing");
             ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
-                answer: String(answer),
+                answer: vars.answer,
             });
         }
 
@@ -225,7 +225,7 @@
             ot.sendLive("response", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
-                choice: vars.choice,
+                button: vars.choice,
             });
         }
 

@@ -29,13 +29,13 @@ class TrialsPage(LivePage):
             yield "trial", page.output_trial(current.trial)
 
     @classmethod
-    def live_response(page, player: Player, *, id: int, time: int, choice: str):
+    def live_response(page, player: Player, *, id: int, time: int, button: str):
         current = progress.current(page, player)
         pagename, player, iteround, trial = current
         assert trial and trial.id == id, "mismatched response"
 
-        answer = trial.options[choice]
-        response = progress.respond(current, answer, response_time=time, button=choice)
+        answer = trial.options[button]
+        response = progress.respond(current, answer, response_time=time, button=button)
 
         yield "progress", page.output_progress(current)
         yield "feedback", page.output_feedback(trial, response)

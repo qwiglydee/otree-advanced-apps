@@ -97,7 +97,7 @@ class Response(BaseResponseModel):
     player: Player = database.Link(Player)
 
     response_time = database.IntegerField()
-    button = database.IntegerField()
+    button = database.StringField()
     choice = database.StringField()
 
     outcome_a = database.DecimalField(unit=Points)

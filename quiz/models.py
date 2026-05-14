@@ -48,7 +48,7 @@ class Trial(BaseTrialModel):
     option_1 = database.StringField()
     option_2 = database.StringField()
     option_3 = database.StringField()
-    options = dictprop('option_', '123')
+    options = dictprop('option_', "123")
 
     success = database.IntegerField()
     score = database.DecimalField(unit=Points, initial=0)
