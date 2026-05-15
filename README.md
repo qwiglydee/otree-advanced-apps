@@ -66,9 +66,14 @@ Example content and calculations are intentionally dull so they can be easily re
     - players respond in turns by a custom sequence, that may contain multiple turns of the same role
     - they observe partners' responses immediately,
     - latter responces override former
-- [Ultimatum 1](ultimatum1): classic ultimatum game, with participant pre-grouping
+- [Ultimatum 1](ultimatum1): classic ultimatum game, with pre-grouping of participants
     - participants are grouped on session initialization, like in a lab environment
     - assuming they won't drop out
+    - condition can be assigned randomly to each group
+- [Ultimatum 2](ultimatum2): classic ultimatum game, with pre-recruiting of participants
+    - participants are grouped on arrival, like in online recruiting
+    - assuming they can drop out during their game session
+    - when one of participants does not respond, the game is cancelled
     - condition can be assigned randomly to each group
 
 ## Usage

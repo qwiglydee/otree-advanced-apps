@@ -1,0 +1,17 @@
+{% extends "ExtPage.html" %}
+
+{% block title %}Instructions [{{ player.role }}]{% endblock %}
+
+{% block content %}
+    <section class="info">
+        <p>You've been assigned the role of Receiver.</p>
+
+        <p>Your partner is endowed with {{ group.endowment }} points.</p>
+
+        <p>...</p>
+        <p>...</p>
+        <p>...</p>
+    </section>
+
+    {{ next_button }}
+{% endblock content %}

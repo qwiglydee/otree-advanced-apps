@@ -65,6 +65,11 @@ SESSION_CONFIGS = [
         app_sequence=['ultimatum1'],
         condition="random",
     ),
+    dict(
+        name='ultimatum2',
+        app_sequence=['ultimatum2'],
+        condition="random",
+    ),
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
