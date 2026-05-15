@@ -31,7 +31,6 @@ class Player(BasePlayer):
 
     total_score = database.DecimalField(unit=Points, initial=0)
 
-    dropout = database.BooleanField(initial=False)
     progress_round = database.IntegerField()
     progress_trial = database.IntegerField()
 
@@ -124,7 +123,7 @@ def set_payoffs(group: Group, iteround: Round):
     scores = iteround.total_scores
     for player in group.get_players():
         player.total_score = scores[player.role]
-        if not player.dropout:
+        if player.participant.status != 'dropout':
             player.payoff = player.total_score
 
 

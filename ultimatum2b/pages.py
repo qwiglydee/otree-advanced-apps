@@ -133,7 +133,7 @@ class Results(Page):
 class Dropout(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.dropout
+        return player.participant.status == 'dropout'
 
 
 page_sequence = [

@@ -57,15 +57,17 @@ def track_trial_running(trial: Trial) -> bool:
 
 
 def track_players_around(player: Player, iteround: Round) -> bool:
-    """Track players to check they reached the round and indicate if to continue"""
+    """Track players to check if they all reached the round"""
     player.progress_round = iteround.id
-    return all(p.field_maybe_none('progress_round') == iteround.id for p in player.group.get_players() if not p.dropout)
+    others = [p for p in player.get_others_in_group() if p.participant.status != 'dropout']
+    return all(p.field_maybe_none('progress_round') == iteround.id for p in others)
 
 
 def track_players_atrial(player: Player, trial: Trial) -> bool:
-    """Track players to check they reached the trial and indicate if to continue"""
+    """Track players to check if they all reached the trial"""
     player.progress_trial = trial.id
-    return all(p.field_maybe_none('progress_trial') == trial.id for p in player.group.get_players() if not p.dropout)
+    others = [p for p in player.get_others_in_group() if p.participant.status != 'dropout']
+    return all(p.field_maybe_none('progress_trial') == trial.id for p in others)
 
 
 def advance(curr: Progress) -> Progress:
@@ -142,7 +144,7 @@ def timeout(curr: Progress):
     pagename, player, iteround, trial = curr
 
     other = player.get_partner()
-    other.dropout = True
+    other.participant.status = 'dropout'
     iteround.autoresponding = other.role
 
     advance_trial(player, iteround, trial)
