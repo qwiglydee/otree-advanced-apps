@@ -112,6 +112,10 @@ class Intro(Page):
     form_model = "player"
     form_fields = ["age", "gender"]
 
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {'endowment': C.ENDOWMENT[player.group.condition]}
+
 
 class Instructions(Page):
     def get_template_name(self):
@@ -119,6 +123,10 @@ class Instructions(Page):
         pagename = self.__class__.__name__
         role = self.player.role
         return f"{__package__}/{pagename}_{role}.html"
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {'endowment': C.ENDOWMENT[player.group.condition]}
 
 
 class Results(Page):

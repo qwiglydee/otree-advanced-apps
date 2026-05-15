@@ -116,6 +116,15 @@ def advance_trial(player: Player, iteround: Round, trial: Trial) -> Progress:
     return trial
 
 
+def autorespond(player: Player, iteround: Round, trial: Trial):
+    curr_turn = C.STAGEROLES[trial.progress_stage] if trial.progress_stage else None
+    print("autoresponding:", trial, curr_turn == iteround.autoresponding)
+    if curr_turn == iteround.autoresponding:
+        response = Response.create_next(trial, player, stage=trial.progress_stage)
+        response.autorespond()
+        return response
+
+
 def respond_proposal(curr: Progress, proposal: Points, **kwargs) -> Response:
     assert curr.is_valid
     pagename, player, iteround, trial = curr
@@ -145,15 +154,6 @@ def timeout(curr: Progress):
 
     other = player.get_partner()
     other.participant.status = 'dropout'
+
     iteround.autoresponding = other.role
-
     advance_trial(player, iteround, trial)
-
-
-def autorespond(player: Player, iteround: Round, trial: Trial):
-    curr_turn = C.STAGEROLES[trial.progress_stage] if trial.progress_stage else None
-    print("autoresponding:", trial, curr_turn == iteround.autoresponding)
-    if curr_turn == iteround.autoresponding:
-        response = Response.create_next(trial, player, stage=trial.progress_stage)
-        response.autorespond()
-        return response

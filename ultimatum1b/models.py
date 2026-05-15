@@ -27,10 +27,6 @@ class Player(BasePlayer):
 
     condition = database.StringField()
 
-    @property
-    def endowment(self):
-        return C.ENDOWMENT[self.condition]
-
     total_score = database.DecimalField(unit=Points, initial=0)
 
     def get_partner_role(self):
@@ -53,12 +49,6 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
-    def complete(self):
-        self.close('COMPLETED')
-        trials = Trial.list(self)
-        self.total_score_p = sum(t.score_p for t in trials)
-        self.total_score_r = sum(t.score_r for t in trials)
-
     autoresponding = database.StringField()
     progress_trials = database.IntegerField()
 
@@ -73,10 +63,6 @@ class Trial(BaseTrialModel):
     score_p = database.DecimalField(unit=Points, initial=0)
     score_r = database.DecimalField(unit=Points, initial=0)
     scores = dictprop("score_", ('P', 'R'))
-
-    @property
-    def outcomes(self):
-        return {'P': self.score_p, 'R': self.score_r}
 
     @property
     def condition(self) -> str:
@@ -96,6 +82,8 @@ class Trial(BaseTrialModel):
         if self.decision == 'ACCEPT':
             self.score_p = self.endowment - self.proposal
             self.score_r = self.proposal
+            self.iteround.total_score_p += self.score_p
+            self.iteround.total_score_r += self.score_r
 
     progress_stage = database.StringField()
 
@@ -122,7 +110,8 @@ class Response(BaseResponseModel):
 def set_payoffs(player: Player, iteround: Round):
     scores = iteround.total_scores
     player.total_score = scores[player.role]
-    player.payoff = player.total_score
+    if player.participant.status != 'dropout':
+        player.payoff = player.total_score
 
 
 def custom_export_responses(_):
@@ -131,7 +120,7 @@ def custom_export_responses(_):
         "session.label",
         "participant.code",
         "participant.label",
-        "player.condition",
+        "condition",
         "player.role",
         #
         "iteround.pagename",
@@ -210,7 +199,7 @@ def custom_export_trials(_):
         "session.label",
         "participant.code",
         "participant.label",
-        "player.condition",
+        "condition",
         "player.role",
         #
         "iteround.pagename",

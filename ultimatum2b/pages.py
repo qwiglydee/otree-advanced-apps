@@ -79,11 +79,11 @@ class Main(LivePage):
         yield from page.continue_trial(current, player)
 
     @classmethod
-    def continue_trial(page, current: Progress, rcpt: Player | Group):
-        yield rcpt, "progress", page.output_progress(current)
-        yield rcpt, "update", page.output_trial(current.trial)
+    def continue_trial(page, current: Progress, whom: Player | Group):
+        yield whom, "progress", page.output_progress(current)
+        yield whom, "update", page.output_trial(current.trial)
         if current.trial.is_completed:
-            yield rcpt, "result", page.output_result(current.trial)
+            yield whom, "result", page.output_result(current.trial)
 
     @classmethod
     def output_progress(page, current: Progress):
@@ -117,6 +117,10 @@ class Intro(Page):
     form_model = "player"
     form_fields = ["age", "gender"]
 
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {'endowment': C.ENDOWMENT[player.group.condition]}
+
 
 class Instructions(Page):
     def get_template_name(self):
@@ -124,6 +128,10 @@ class Instructions(Page):
         pagename = self.__class__.__name__
         role = self.player.role
         return f"{__package__}/{pagename}_{role}.html"
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {'endowment': C.ENDOWMENT[player.group.condition]}
 
 
 class Results(Page):
@@ -138,8 +146,8 @@ class Dropout(Page):
 
 page_sequence = [
     Gather,
-    # Intro,
-    # Instructions,
+    Intro,
+    Instructions,
     Main,
     Dropout,
     Results,

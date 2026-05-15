@@ -17,10 +17,6 @@ class Subsession(BaseSubsession):
 class Group(BaseGroup):
     condition = database.StringField()
 
-    @property
-    def endowment(self):
-        return C.ENDOWMENT[self.condition]
-
 
 class Player(BasePlayer):
     age = database.IntegerField()
@@ -31,14 +27,14 @@ class Player(BasePlayer):
 
     total_score = database.DecimalField(unit=Points, initial=0)
 
-    progress_round = database.IntegerField()
-    progress_trial = database.IntegerField()
-
     def get_partner(self):
         if self.role == 'P':
             return self.group.get_player_by_role('R')
         if self.role == 'R':
             return self.group.get_player_by_role('P')
+
+    progress_round = database.IntegerField()
+    progress_trial = database.IntegerField()
 
 
 class Round(BaseRoundModel):
@@ -68,10 +64,6 @@ class Trial(BaseTrialModel):
     score_p = database.DecimalField(unit=Points, initial=0)
     score_r = database.DecimalField(unit=Points, initial=0)
     scores = dictprop("score_", ('P', 'R'))
-
-    @property
-    def outcomes(self):
-        return {C.P_ROLE: self.score_p, C.R_ROLE: self.score_r}
 
     @property
     def condition(self) -> str:
@@ -133,6 +125,7 @@ def custom_export_responses(_):
         "session.label",
         "participant.code",
         "participant.label",
+        "condition",
         #
         "iteround.pagename",
         "iteround.status",
@@ -163,6 +156,7 @@ def custom_export_responses(_):
     for response in Response.objects_filter().order_by('trial_id', 'iteration'):
         trial: Trial = response.trial
         iteround: Round = trial.iteround
+        group: Group = iteround.group
         player: Player = response.player
         session: Session = player.session
         participant: Participant = player.participant
@@ -172,6 +166,7 @@ def custom_export_responses(_):
             session.label,
             participant.code,
             participant.label,
+            group.condition,
             #
             iteround.pagename,
             iteround.status,
@@ -206,6 +201,7 @@ def custom_export_trials(_):
         "session.label",
         "participant.code",
         "participant.label",
+        "condition",
         #
         "iteround.pagename",
         "iteround.status",
@@ -236,6 +232,7 @@ def custom_export_trials(_):
             session.label,
             None,
             None,
+            group.condition,
             #
             iteround.pagename,
             iteround.status,

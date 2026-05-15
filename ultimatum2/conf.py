@@ -22,7 +22,7 @@ class C(BaseConstants):
     NUM_TRIALS = 5
 
     STAGES = ['PROPOSING', 'DECIDING']
-    STAGEROLES = {'PROPOSING': P_ROLE, 'DECIDING': R_ROLE}
+    STAGEROLES = {'PROPOSING': 'P', 'DECIDING': 'R'}
     DECISIONS = ['ACCEPT', 'REJECT']
 
     CONDITIONS = ["C0", "C1", "C2"]

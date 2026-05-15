@@ -3,7 +3,7 @@ from otree.views import Page, WaitPage
 from _stuff.livepage import LivePage
 
 from .conf import C, Points
-from .models import Player, Trial
+from .models import Player, Group, Trial
 from .progress import Progress
 from . import progress
 
@@ -24,8 +24,8 @@ class Main(LivePage):
 
     @classmethod
     def live_continue(page, player: Player):
-        group = player.group
         current = progress.current(page, player)
+        group: Group = player.group
 
         # restore trial on page reloading
         if current.is_running:
@@ -45,8 +45,8 @@ class Main(LivePage):
 
     @classmethod
     def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
-        group = player.group
         current = progress.current(page, player)
+        group: Group = player.group
         assert current.trial and current.trial.id == id, "mismatched response"
 
         proposal = Points(proposal)
@@ -57,8 +57,8 @@ class Main(LivePage):
 
     @classmethod
     def live_decision(page, player: Player, *, id: int, decision: str, time: int):
-        group = player.group
         current = progress.current(page, player)
+        group: Group = player.group
         assert current.trial and current.trial.id == id, "mismatched response"
 
         assert decision in C.DECISIONS
@@ -74,7 +74,7 @@ class Main(LivePage):
         pagename, player, iteround, trial = current
         return {
             "total": C.NUM_TRIALS,
-            "terminated": iteround.is_completed,
+            "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
             "pending": not current.is_running,
             "current": trial.iteration if trial else None,
@@ -101,6 +101,10 @@ class Intro(Page):
     form_model = "player"
     form_fields = ["age", "gender"]
 
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {'endowment': C.ENDOWMENT[player.group.condition]}
+
 
 class Instructions(Page):
     def get_template_name(self):
@@ -108,6 +112,10 @@ class Instructions(Page):
         pagename = self.__class__.__name__
         role = self.player.role
         return f"{__package__}/{pagename}_{role}.html"
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {'endowment': C.ENDOWMENT[player.group.condition]}
 
 
 class Results(Page):

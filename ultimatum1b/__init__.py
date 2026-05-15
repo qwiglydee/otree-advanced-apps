@@ -8,4 +8,4 @@ def creating_session(subsession: Subsession):
     session = subsession.session
     for player in subsession.get_players():
         player.condition = config_condition(session)
-        player._role = config_role(session)
+        player._role = config_role(session)  # noqa
