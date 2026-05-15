@@ -183,8 +183,8 @@
         }
 
         ot.onUpdate("vars.response", function (proposed) {
-            if (!vars.trial) return;
-            vars.account = precalcResult(vars.trial.endowment, Number(proposed), "ACCEPT");
+            if (!vars.trial) vars.account = null;
+            else vars.account = precalcResult(vars.trial.endowment, Number(proposed), "ACCEPT");
         });
 
         function precalcResult(endowment, proposed, decided) {
