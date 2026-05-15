@@ -2,7 +2,7 @@ from typing import NamedTuple
 
 
 from .conf import C, Points
-from .models import Player, Group, Round, Trial, Response
+from .models import Player, Round, Trial, Response
 from .models import set_payoffs
 
 
@@ -32,7 +32,7 @@ class Progress(NamedTuple):
 def current(page, player: Player) -> Progress:
     """Get current round and trial (maybe none yet)"""
     pagename = page.__name__
-    iteround = Round.current(pagename, group=player.group)
+    iteround = Round.current(pagename, player=player)
     trial = Trial.current(iteround) if iteround else None
     return Progress(pagename, player, iteround, trial)
 
@@ -56,18 +56,6 @@ def track_trial_running(trial: Trial) -> bool:
     return trial.progress_stage is not None
 
 
-def track_players_around(player: Player, iteround: Round) -> bool:
-    """Track players to check they reached the round and indicate if to continue"""
-    player.progress_round = iteround.id
-    return all(p.field_maybe_none('progress_round') == iteround.id for p in player.group.get_players())
-
-
-def track_players_atrial(player: Player, trial: Trial) -> bool:
-    """Track players to check they reached the trial and indicate if to continue"""
-    player.progress_trial = trial.id
-    return all(p.field_maybe_none('progress_trial') == trial.id for p in player.group.get_players())
-
-
 def advance(curr: Progress) -> Progress:
     """Advance current round one iteration further"""
     pagename, player, iteround, trial = curr
@@ -82,17 +70,15 @@ def advance(curr: Progress) -> Progress:
 
 
 def advance_round(pagename: str, player: Player, iteround: Round) -> Round:
-    group: Group = player.group
-
     if iteround is None:
-        iteround = Round.advance(pagename, group=group)
+        iteround = Round.advance(pagename, player=player)
 
-    if iteround.is_pristine and track_players_around(player, iteround):
+    if iteround.is_pristine:
         iteround.start()
 
     if iteround.is_running and not track_round_running(iteround):
         iteround.complete()
-        set_payoffs(group, iteround)
+        set_payoffs(player, iteround)
 
     return iteround
 
@@ -101,8 +87,11 @@ def advance_trial(player: Player, iteround: Round, trial: Trial) -> Progress:
     if trial is None:
         trial = Trial.advance_next(iteround)
 
-    if trial.is_pristine and track_players_atrial(player, trial):
+    if trial.is_pristine:
         trial.start()
+
+    if trial.is_running and track_trial_running(trial):
+        autorespond(player, iteround, trial)
 
     if trial.is_running and not track_trial_running(trial):
         trial.complete()
@@ -131,3 +120,12 @@ def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
 
     advance_trial(player, iteround, trial)
     return response
+
+
+def autorespond(player: Player, iteround: Round, trial: Trial):
+    curr_turn = C.STAGEROLES[trial.progress_stage] if trial.progress_stage else None
+    print("autoresponding:", trial, curr_turn == iteround.autoresponding)
+    if curr_turn == iteround.autoresponding:
+        response = Response.create_next(trial, player, stage=trial.progress_stage)
+        response.autorespond()
+        return response

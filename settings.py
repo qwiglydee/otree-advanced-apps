@@ -66,6 +66,12 @@ SESSION_CONFIGS = [
         condition="random",
     ),
     dict(
+        name='ultimatum1b',
+        app_sequence=['ultimatum1b'],
+        condition="random",
+        role="random",
+    ),
+    dict(
         name='ultimatum2',
         app_sequence=['ultimatum2'],
         condition="random",

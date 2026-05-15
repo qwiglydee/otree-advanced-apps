@@ -70,6 +70,9 @@ Example content and calculations are intentionally dull so they can be easily re
     - participants are grouped on session initialization, like in a lab environment
     - assuming they won't drop out
     - condition can be assigned randomly to each group
+- [Ultimatum 1b](ultimatum1b): the ultimatum game, with one player replaced with bot
+    - role of the only participant is pre-configured or selected at random
+    - another role is played automatically with random answers
 - [Ultimatum 2](ultimatum2): classic ultimatum game, with pre-recruiting of participants
     - participants are grouped on arrival, like in online recruiting
     - assuming they can drop out during their game session
