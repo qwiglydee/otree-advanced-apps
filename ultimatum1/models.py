@@ -1,5 +1,6 @@
 from otree import database
 from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
+from otree.forms import widgets
 
 from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 from _stuff.dictprop import dictprop
@@ -21,8 +22,18 @@ class Group(BaseGroup):
             C.R_ROLE: self.get_player_by_role(C.R_ROLE),
         }
 
+    @property
+    def endowment(self):
+        return C.ENDOWMENT[self.condition]
+
 
 class Player(BasePlayer):
+    age = database.IntegerField()
+    gender = database.StringField(
+        choices=[("M", "Male"), ("F", "Female"), ("O", "Other")],
+        widget=widgets.RadioSelect
+    )
+
     total_score = database.DecimalField(unit=Points, initial=0)
 
     progress_round = database.IntegerField()

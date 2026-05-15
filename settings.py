@@ -61,8 +61,8 @@ SESSION_CONFIGS = [
         num_demo_participants=3
     ),
     dict(
-        name='ultimatum',
-        app_sequence=['ultimatum'],
+        name='ultimatum1',
+        app_sequence=['ultimatum1'],
         condition="random",
     ),
 ]

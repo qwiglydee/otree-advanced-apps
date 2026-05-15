@@ -2,7 +2,7 @@
 {% block content %}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
-        <section class="paper" ot-visible="vars.trial">
+        <section class="paper m-3" ot-visible="vars.trial">
             <ul class="m-0">
                 <li>Endowment = <b ot-text="vars.trial.endowment"></b></li>
                 <li ot-visible="vars.trial.proposal">You shared: <b ot-text="vars.trial.proposal"></b></li>
@@ -82,6 +82,7 @@
                 case "running":
                     vars.responding = turn == MYTURN;
                     vars.confirming = vars.responding && vars.response != null;
+                    vars.prompting = vars.responding;
                     vars.pending = !vars.responding;
                     vars.waiting = vars.pending;
                     break;
@@ -169,7 +170,7 @@
 
         ot.onUpdate("vars.response", function (proposed) {
             if (!vars.trial) return;
-            vars.account = precalcResult(vars.trial.endowment, proposed, "ACCEPT");
+            vars.account = precalcResult(vars.trial.endowment, Number(proposed), "ACCEPT");
         });
 
         function precalcResult(endowment, proposed, decided) {
@@ -194,7 +195,7 @@
         });
 
         function formatScore(value) {
-            return format_number(value, ".2");
+            return format_number(Number(value), ".2");
         }
     </script>
 {% endblock scripts %}

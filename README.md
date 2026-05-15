@@ -53,7 +53,6 @@ Example content and calculations are intentionally dull so they can be easily re
     - 2 phases in each trial: sampling and final
     - multiple responses in sampling phase + last final response
     - outcomes of the cards are resolved for each response
-- [Ultimatum](ultimatum): classic ultimatum game, with 2-staged response s
 - [Async Party](party3async): multiplayer chat-like trials with asyncronous responses
     - players respond in arbitrary order
     - they observe partners' responses immediately
@@ -67,6 +66,10 @@ Example content and calculations are intentionally dull so they can be easily re
     - players respond in turns by a custom sequence, that may contain multiple turns of the same role
     - they observe partners' responses immediately,
     - latter responces override former
+- [Ultimatum 1](ultimatum1): classic ultimatum game, with participant pre-grouping
+    - participants are grouped on session initialization, like in a lab environment
+    - assuming they won't drop out
+    - condition can be assigned randomly to each group
 
 ## Usage
 

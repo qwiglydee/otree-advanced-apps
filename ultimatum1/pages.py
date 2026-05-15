@@ -1,4 +1,4 @@
-from otree.views import Page
+from otree.views import Page, WaitPage
 
 from _stuff.livepage import LivePage
 
@@ -8,13 +8,19 @@ from .progress import Progress
 from . import progress
 
 
+class Gather(WaitPage):
+    template_name = "WaitPage.html"
+
+
 class Main(LivePage):
     page_styles = ['ot-progress.css', 'ot-pulse.css']  # noqa
     page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]  # noqa
 
     def get_template_name(self):
-        # different page templates by role
-        return f"{__package__}/Main_{self.player.role}.html"
+        # different page templates by players role
+        pagename = self.__class__.__name__
+        role = self.player.role
+        return f"{__package__}/{pagename}_{role}.html"
 
     @classmethod
     def live_continue(page, player: Player):
@@ -92,7 +98,16 @@ class Main(LivePage):
 
 
 class Intro(Page):
-    pass
+    form_model = "player"
+    form_fields = ["age", "gender"]
+
+
+class Instructions(Page):
+    def get_template_name(self):
+        # different page templates by players role
+        pagename = self.__class__.__name__
+        role = self.player.role
+        return f"{__package__}/{pagename}_{role}.html"
 
 
 class Results(Page):
@@ -100,7 +115,9 @@ class Results(Page):
 
 
 page_sequence = [
+    Gather,
     Intro,
+    Instructions,
     Main,
     Results,
 ]
