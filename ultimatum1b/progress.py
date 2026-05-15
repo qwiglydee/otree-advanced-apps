@@ -72,6 +72,7 @@ def advance(curr: Progress) -> Progress:
 def advance_round(pagename: str, player: Player, iteround: Round) -> Round:
     if iteround is None:
         iteround = Round.advance(pagename, player=player)
+        iteround.autoresponding = player.get_partner_role()
 
     if iteround.is_pristine:
         iteround.start()

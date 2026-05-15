@@ -28,12 +28,6 @@ class Progress(NamedTuple):
     def turn(self) -> int:
         return C.STAGEROLES[self.trial.progress_stage] if self.is_running else None
 
-    @property
-    def is_dropout(self) -> bool:
-        if not self.is_valid:
-            return None
-        return self.iteround.group.progress_dropout
-
 
 def current(page, player: Player) -> Progress:
     """Get current round and trial (maybe none yet)"""
@@ -144,8 +138,8 @@ def timeout(curr: Progress):
     assert curr.is_valid
     pagename, player, iteround, trial = curr
 
-    for other in player.get_others_in_group():
-        other.progress_dropout = True
+    other = player.get_partner()
+    other.dropout = True
 
     iteround.close('TIMEOUTED')
     set_payoffs(iteround.group, iteround)

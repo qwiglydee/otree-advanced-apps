@@ -74,7 +74,7 @@ class Main(LivePage):
         pagename, player, iteround, trial = current
         return {
             "total": C.NUM_TRIALS,
-            "finished": iteround.is_completed,
+            "terminated": iteround.is_completed,
             "passed": iteround.progress_trials,
             "pending": not current.is_running,
             "current": trial.iteration if trial else None,

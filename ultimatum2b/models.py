@@ -35,7 +35,7 @@ class Player(BasePlayer):
     progress_round = database.IntegerField()
     progress_trial = database.IntegerField()
 
-    def get_patner(self):
+    def get_partner(self):
         if self.role == 'P':
             return self.group.get_player_by_role('R')
         if self.role == 'R':

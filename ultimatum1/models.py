@@ -16,13 +16,6 @@ class Group(BaseGroup):
     condition = database.StringField()
 
     @property
-    def get_players_by_role(self):
-        return {
-            C.P_ROLE: self.get_player_by_role(C.P_ROLE),
-            C.R_ROLE: self.get_player_by_role(C.R_ROLE),
-        }
-
-    @property
     def endowment(self):
         return C.ENDOWMENT[self.condition]
 
@@ -38,6 +31,12 @@ class Player(BasePlayer):
 
     progress_round = database.IntegerField()
     progress_trial = database.IntegerField()
+
+    def get_partner(self):
+        if self.role == 'P':
+            return self.group.get_player_by_role('R')
+        if self.role == 'R':
+            return self.group.get_player_by_role('P')
 
 
 class Round(BaseRoundModel):

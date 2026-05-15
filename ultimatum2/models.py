@@ -16,17 +16,8 @@ class Group(BaseGroup):
     condition = database.StringField()
 
     @property
-    def get_players_by_role(self):
-        return {
-            C.P_ROLE: self.get_player_by_role(C.P_ROLE),
-            C.R_ROLE: self.get_player_by_role(C.R_ROLE),
-        }
-
-    @property
     def endowment(self):
         return C.ENDOWMENT[self.condition]
-
-    progress_dropout = database.BooleanField(initial=False)
 
 
 class Player(BasePlayer):
@@ -38,9 +29,15 @@ class Player(BasePlayer):
 
     total_score = database.DecimalField(unit=Points, initial=0)
 
+    dropout = database.BooleanField(initial=False)
     progress_round = database.IntegerField()
     progress_trial = database.IntegerField()
-    progress_dropout = database.BooleanField(initial=False)
+
+    def get_partner(self):
+        if self.role == 'P':
+            return self.group.get_player_by_role('R')
+        if self.role == 'R':
+            return self.group.get_player_by_role('P')
 
 
 class Round(BaseRoundModel):
@@ -116,7 +113,7 @@ def set_payoffs(group: Group, iteround: Round):
     scores = iteround.total_scores
     for player in group.get_players():
         player.total_score = scores[player.role]
-        if not player.progress_dropout:
+        if not player.dropout:
             player.payoff = player.total_score
 
 

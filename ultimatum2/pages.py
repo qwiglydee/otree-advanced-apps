@@ -28,7 +28,6 @@ class Main(LivePage):
     def live_continue(page, player: Player):
         current = progress.current(page, player)
         group: Group = player.group
-        assert not current.is_dropout
 
         # restore trial on page reloading
         if current.is_running:
@@ -50,7 +49,6 @@ class Main(LivePage):
     def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
         current = progress.current(page, player)
         group: Group = player.group
-        assert not current.is_dropout
         assert current.trial and current.trial.id == id, "mismatched response"
 
         proposal = Points(proposal)
@@ -63,7 +61,6 @@ class Main(LivePage):
     def live_decision(page, player: Player, *, id: int, decision: str, time: int):
         current = progress.current(page, player)
         group: Group = player.group
-        assert not current.is_dropout
         assert current.trial and current.trial.id == id, "mismatched response"
 
         assert decision in C.DECISIONS
@@ -88,7 +85,7 @@ class Main(LivePage):
         pagename, player, iteround, trial = current
         return {
             "total": C.NUM_TRIALS,
-            "finished": iteround.is_closed,
+            "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
             "pending": not current.is_running,
             "current": trial.iteration if trial else None,
@@ -131,7 +128,7 @@ class Results(Page):
 class Dropout(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.progress_dropout
+        return player.dropout
 
 
 page_sequence = [

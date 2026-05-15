@@ -33,6 +33,12 @@ class Player(BasePlayer):
 
     total_score = database.DecimalField(unit=Points, initial=0)
 
+    def get_partner_role(self):
+        if self.role == 'P':
+            return 'R'
+        if self.role == 'R':
+            return 'P'
+
 
 class Round(BaseRoundModel):
     player: Player = database.Link(Player)
@@ -42,10 +48,7 @@ class Round(BaseRoundModel):
     total_scores = dictprop("total_score_", ('P', 'R'))
 
     def init(self, **kwargs):
-        if self.player.role == 'P':
-            self.autoresponding = 'R'
-        if self.player.role == 'R':
-            self.autoresponding = 'P'
+        pass
 
     def update(self):
         pass

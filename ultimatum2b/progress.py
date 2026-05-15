@@ -141,7 +141,7 @@ def timeout(curr: Progress):
     assert curr.is_valid
     pagename, player, iteround, trial = curr
 
-    other = player.get_patner()
+    other = player.get_partner()
     other.dropout = True
     iteround.autoresponding = other.role
 

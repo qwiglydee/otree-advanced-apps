@@ -73,7 +73,7 @@ class Main(LivePage):
 
         progress.timeout(current)
 
-        other = player.get_patner()
+        other = player.get_partner()
         yield other, "progress", {'terminated': True}
 
         yield from page.continue_trial(current, player)
