@@ -81,6 +81,12 @@ SESSION_CONFIGS = [
         app_sequence=['ultimatum2b'],
         condition="random",
     ),
+    dict(
+        name='ultimatum3',
+        app_sequence=['ultimatum3_screener', 'ultimatum3'],
+        condition="random",
+        num_demo_participants=6,
+    ),
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
@@ -94,7 +100,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     real_world_currency_per_point=0.10,
 )
 
-PARTICIPANT_FIELDS = []
+PARTICIPANT_FIELDS = ['assignment']
 SESSION_FIELDS = []
 
 # ISO-639 code
