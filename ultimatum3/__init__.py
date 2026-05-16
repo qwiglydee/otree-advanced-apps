@@ -11,9 +11,16 @@ def creating_session(subsession: Subsession):
 
 
 def group_by_arrival_time_method(subsession: Subsession, waiting_players: list[Player]):
+    from ultimatum3_screener import Subsession as ScrSubsession
+    scrsubsession = ScrSubsession.get_matching(subsession)
+
     queues = waiting_queues(waiting_players, C.ROLES)
 
-    if any(len(q) == 0 for q in queues.values()):
-        return None
+    if all(len(q) > 0 for q in queues.values()):
+        players = [q.pop(0) for q in queues.values()]
+    else:
+        players = None
 
-    return [q.pop(0) for q in queues.values()]
+    scrsubsession.track_queues(queues)
+
+    return players

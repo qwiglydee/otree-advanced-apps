@@ -11,8 +11,18 @@ class C(BaseConstants):
     PLAYERS_PER_GROUP = None
 
     ROLES = mainapp.C.ROLES
+    PARTNEROLES = mainapp.C.PARTNEROLES
     CONDITIONS = mainapp.C.CONDITIONS
     ENDOWMENT = mainapp.C.ENDOWMENT
+
+    """Balancing factor
+    see models.py:preassign_role
+     
+    0: roles assigned equiprobably
+    1: all new participants assigned pairing role
+    0 < 0.5 < 1: somewhat exponential
+    """
+    BALANCING = 0.7
 
 
 def config_condition(session):

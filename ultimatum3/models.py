@@ -10,6 +10,9 @@ from .conf import C, Points
 
 class Subsession(BaseSubsession):
     condition = database.StringField()
+    quelen_p = database.IntegerField(initial=0)
+    quelen_r = database.IntegerField(initial=0)
+    quelen = database.IntegerField(initial=0)
 
 
 class Group(BaseGroup):
