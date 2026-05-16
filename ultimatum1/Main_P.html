@@ -169,12 +169,11 @@
         }
 
         ot.onUpdate("vars.response", function (proposed) {
-            if (!vars.trial) vars.account = null;
+            if (vars.trial == null || proposed == null) vars.account = null;
             else vars.account = precalcResult(vars.trial.endowment, Number(proposed), "ACCEPT");
         });
 
         function precalcResult(endowment, proposed, decided) {
-            if (proposed == null || decided == null) return null;
             if (decided == "ACCEPT")
                 return {
                     P: formatScore(vars.trial.endowment - proposed),

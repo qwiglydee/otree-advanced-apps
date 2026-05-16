@@ -14,13 +14,15 @@ class Points(DecimalUnit):
 class C(BaseConstants):
     NAME_IN_URL = __package__
     NUM_ROUNDS = 1  # should be =1
+    NUM_TRIALS = 5
 
     PLAYERS_PER_GROUP = None
     ROLES = ["P", "R"]
-    NUM_TRIALS = 5
+    PARTNEROLES = {'P': 'R', 'R': 'P'}
 
     STAGES = ['PROPOSING', 'DECIDING']
     STAGEROLES = {'PROPOSING': "P", 'DECIDING': "R"}
+
     DECISIONS = ['ACCEPT', 'REJECT']
 
     CONDITIONS = ["C0", "C1", "C2"]

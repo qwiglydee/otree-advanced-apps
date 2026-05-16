@@ -48,24 +48,26 @@ class Main(LivePage):
     @classmethod
     def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
         current = progress.current(page, player)
-        group: Group = player.group
         assert current.trial and current.trial.id == id, "mismatched response"
 
         proposal = Points(proposal)
         progress.respond_proposal(current, proposal, response_time=time)
 
-        yield group, "progress", page.output_progress(current)
-        yield group, "update", page.output_trial(current.trial)
+        yield from page.continue_trial(current)
 
     @classmethod
     def live_decision(page, player: Player, *, id: int, decision: str, time: int):
         current = progress.current(page, player)
-        group: Group = player.group
         assert current.trial and current.trial.id == id, "mismatched response"
 
         assert decision in C.DECISIONS
         progress.respond_decision(current, decision, response_time=time)
 
+        yield from page.continue_trial(current)
+
+    @classmethod
+    def continue_trial(page, current: Progress):
+        group = current.player.group
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
         if current.trial.is_completed:

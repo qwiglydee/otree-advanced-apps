@@ -2,7 +2,7 @@ import random
 
 from otree import database
 from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
-from otree.forms import widgets
+# from otree.forms import widgets
 
 from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 from _stuff.dictprop import dictprop
@@ -19,21 +19,9 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    age = database.IntegerField()
-    gender = database.StringField(
-        choices=[("M", "Male"), ("F", "Female"), ("O", "Other")],
-        widget=widgets.RadioSelect
-    )
-
     condition = database.StringField()
 
     total_score = database.DecimalField(unit=Points, initial=0)
-
-    def get_partner_role(self):
-        if self.role == 'P':
-            return 'R'
-        if self.role == 'R':
-            return 'P'
 
 
 class Round(BaseRoundModel):

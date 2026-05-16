@@ -27,12 +27,6 @@ class Player(BasePlayer):
 
     total_score = database.DecimalField(unit=Points, initial=0)
 
-    def get_partner(self):
-        if self.role == 'P':
-            return self.group.get_player_by_role('R')
-        if self.role == 'R':
-            return self.group.get_player_by_role('P')
-
     progress_round = database.IntegerField()
     progress_trial = database.IntegerField()
 

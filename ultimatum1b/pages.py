@@ -42,10 +42,7 @@ class Main(LivePage):
         proposal = Points(proposal)
         progress.respond_proposal(current, proposal, response_time=time)
 
-        yield "progress", page.output_progress(current)
-        yield "update", page.output_trial(current.trial)
-        if current.trial.is_completed:
-            yield "result", page.output_result(current.trial)
+        yield from page.continue_trial(current)
 
     @classmethod
     def live_decision(page, player: Player, *, id: int, decision: str, time: int):
@@ -55,6 +52,10 @@ class Main(LivePage):
         assert decision in C.DECISIONS
         progress.respond_decision(current, decision, response_time=time)
 
+        yield from page.continue_trial(current)
+
+    @classmethod
+    def continue_trial(page, current: Progress):
         yield "progress", page.output_progress(current)
         yield "update", page.output_trial(current.trial)
         if current.trial.is_completed:
@@ -89,9 +90,6 @@ class Main(LivePage):
 
 
 class Intro(Page):
-    form_model = "player"
-    form_fields = ["age", "gender"]
-
     @staticmethod
     def vars_for_template(player: Player):
         return {'endowment': C.ENDOWMENT[player.condition]}

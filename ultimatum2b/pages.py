@@ -48,24 +48,22 @@ class Main(LivePage):
     @classmethod
     def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
         current = progress.current(page, player)
-        group: Group = player.group
         assert current.trial and current.trial.id == id, "mismatched response"
 
         proposal = Points(proposal)
         progress.respond_proposal(current, proposal, response_time=time)
 
-        yield from page.continue_trial(current, group)
+        yield from page.continue_trial(current)
 
     @classmethod
     def live_decision(page, player: Player, *, id: int, decision: str, time: int):
         current = progress.current(page, player)
-        group: Group = player.group
         assert current.trial and current.trial.id == id, "mismatched response"
 
         assert decision in C.DECISIONS
         progress.respond_decision(current, decision, response_time=time)
 
-        yield from page.continue_trial(current, group)
+        yield from page.continue_trial(current)
 
     @classmethod
     def live_timeout(page, player: Player):
@@ -73,17 +71,18 @@ class Main(LivePage):
 
         progress.timeout(current)
 
-        other = player.get_partner()
-        yield other, "progress", {'terminated': True}
+        other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
+        yield other, "progress", {'terminated': True}  # closes the page if still open
 
-        yield from page.continue_trial(current, player)
+        yield from page.continue_trial(current)
 
     @classmethod
-    def continue_trial(page, current: Progress, whom: Player | Group):
-        yield whom, "progress", page.output_progress(current)
-        yield whom, "update", page.output_trial(current.trial)
+    def continue_trial(page, current: Progress):
+        group = current.player.group
+        yield group, "progress", page.output_progress(current)
+        yield group, "update", page.output_trial(current.trial)
         if current.trial.is_completed:
-            yield whom, "result", page.output_result(current.trial)
+            yield group, "result", page.output_result(current.trial)
 
     @classmethod
     def output_progress(page, current: Progress):

@@ -140,7 +140,7 @@ def timeout(curr: Progress):
     assert curr.is_valid
     pagename, player, iteround, trial = curr
 
-    other = player.get_partner()
+    other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
     other.participant.status = 'dropout'
 
     iteround.close('TIMEOUTED')

@@ -72,7 +72,7 @@ def advance(curr: Progress) -> Progress:
 def advance_round(pagename: str, player: Player, iteround: Round) -> Round:
     if iteround is None:
         iteround = Round.advance(pagename, player=player)
-        iteround.autoresponding = player.get_partner_role()
+        iteround.autoresponding = C.PARTNEROLES[player.role]
 
     if iteround.is_pristine:
         iteround.start()
@@ -91,7 +91,7 @@ def advance_trial(player: Player, iteround: Round, trial: Trial) -> Progress:
     if trial.is_pristine:
         trial.start()
 
-    if trial.is_running and track_trial_running(trial):
+    if trial.is_running and iteround.autoresponding and track_trial_running(trial):
         autorespond(player, iteround, trial)
 
     if trial.is_running and not track_trial_running(trial):
@@ -103,7 +103,6 @@ def advance_trial(player: Player, iteround: Round, trial: Trial) -> Progress:
 
 def autorespond(player: Player, iteround: Round, trial: Trial):
     curr_turn = C.STAGEROLES[trial.progress_stage] if trial.progress_stage else None
-    print("autoresponding:", trial, curr_turn == iteround.autoresponding)
     if curr_turn == iteround.autoresponding:
         response = Response.create_next(trial, player, stage=trial.progress_stage)
         response.autorespond()
