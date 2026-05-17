@@ -50,36 +50,38 @@ Example content and calculations are intentionally dull so they can be easily re
     - labels of the buttons are configurable (by default - arranged by screen position)
     - outcomes of the cards are resolved according to distribution parameters
 - [Lottery 2s](lottery2s): lottery with sampling phase
-    - 2 phases in each trial: sampling and final
     - multiple responses in sampling phase + last final response
     - outcomes of the cards are resolved for each response
+- [Ultimatum 2](ultimatum2): classic 2-player game of ultimatum, with pre-recruiting of participants
+    - assuming they are all well-known and won't drop out, like in a lab environment
+    - participants are grouped on session initialization
+- [Ultimatum 1b](ultimatum1b): a single-player version, with automated partner
+    - role of the only participant is pre-configured or selected at random
+    - another role is played automatically by an auto-responing script
+- [Ultimatum 2t](ultimatum2t): a 2-player game, with online recruiting of participants
+    - assuming the participants may drop out of the game
+    - participants are grouped on arrival with roles assigned dynamically
+    - when one of participants drops out, the game round is terminated (and the session continues with remaining player)
+- [Ultimatum 2b](ultimatum2b): the same, with bot replacment
+    - when one of participants drops out, the game round continues with auto-reponding script
+- [Ultimatum 3](ultimatum3): a 2-player game, with chaotic recruiting of participants
+    - assuming the participants can drop out from instruction pages, refuse a consent, or fail comprehension check
+    - participants are first run individually through a separate screener app
+    - the screener pre-assigns game roles to minimize waiting time of those who already passed
+    - when one of participants drops out, the game round is terminated (and the session continues with remaining player)
 - [Async Party](party3async): multiplayer chat-like trials with asyncronous responses
     - players respond in arbitrary order
     - they observe partners' responses immediately
-- [Parallel Party](party3parallel): multiplayer chat-like trials with parallel responses
+- [Parallel Party](party3parallel): the party game with parallel responses
     - players respond in arbitrary order
-    - but they only observe partners' responses at the end
-- [Serial Party](party3serial): multiplayer chat-like trials with responses in serial order
+    - but they only observe partners' responses after all responded
+- [Serial Party](party3serial): the party game with serial responding
     - players respond in turns by their group membership
-    - they observe partners' responses immediately
-- [Sequential Party](party3sequential): multiplayer chat-like trials with responses in order of custom sequence
-    - players respond in turns by a custom sequence, that may contain multiple turns of the same role
-    - they observe partners' responses immediately,
-    - latter responces override former
-- [Ultimatum 1](ultimatum1): classic ultimatum game, with pre-grouping of participants
-    - participants are grouped on session initialization, like in a lab environment
-    - assuming they won't drop out
-    - condition can be assigned randomly to each group
-- [Ultimatum 1b](ultimatum1b): the same, with one player replaced with bot
-    - role of the only participant is pre-configured or selected at random
-    - another role is played automatically with random answers
-- [Ultimatum 2](ultimatum2): the ultimatum game, with pre-recruiting of participants
-    - participants are grouped on arrival, like with online recruiting
-    - assuming they can drop out during their game session
-    - when one of participants does not respond, the game is cancelled
-    - condition can be assigned randomly to each group
-- [Ultimatum 2b](ultimatum2b): the same, with bots replacement
-    - dropped out participants replaced by auto-responding
+    - they observe partners' responses as they're given
+- [Sequential Party](party3sequential): the party game with sequential responding
+    - players respond in turns following a custom sequence, it may contain multiple turns for the same role
+    - they observe partners' responses as they're given
+    - later responses of the same player override former
 
 ## Usage
 

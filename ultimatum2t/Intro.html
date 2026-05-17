@@ -16,5 +16,12 @@
         <p>...</p>
     </section>
 
+    <section class="form">
+        <p>Please fill information below</p>
+
+        {{ formfield 'age' }}
+        {{ formfield 'gender' }}
+    </section>
+
     {{ next_button }}
 {% endblock content %}

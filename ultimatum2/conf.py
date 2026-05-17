@@ -23,6 +23,7 @@ class C(BaseConstants):
 
     STAGES = ['PROPOSING', 'DECIDING']
     STAGEROLES = {'PROPOSING': 'P', 'DECIDING': 'R'}
+
     DECISIONS = ['ACCEPT', 'REJECT']
 
     CONDITIONS = ['C0', 'C1', 'C2']
@@ -34,7 +35,6 @@ class C(BaseConstants):
     }
 
     ITER_DELAY = 3
-    WAITING_TIMEOUT = 10
 
 
 def config_condition(session):

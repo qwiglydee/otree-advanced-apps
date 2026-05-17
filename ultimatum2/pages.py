@@ -3,15 +3,13 @@ from otree.views import Page, WaitPage
 from _stuff.livepage import LivePage
 
 from .conf import C, Points
-from .models import Player, Group, Trial, setup_group
+from .models import Player, Group, Trial
 from .progress import Progress
 from . import progress
 
 
 class Gather(WaitPage):
     template_name = "WaitPage.html"
-    group_by_arrival_time = True
-    after_all_players_arrive = setup_group
 
 
 class Main(LivePage):
@@ -74,15 +72,6 @@ class Main(LivePage):
             yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    def live_timeout(page, player: Player):
-        current = progress.current(page, player)
-        group: Group = player.group
-
-        progress.timeout(current)
-
-        yield group, "progress", page.output_progress(current)
-
-    @classmethod
     def output_progress(page, current: Progress):
         pagename, player, iteround, trial = current
         return {
@@ -111,9 +100,6 @@ class Main(LivePage):
 
 
 class Intro(Page):
-    form_model = "player"
-    form_fields = ["age", "gender"]
-
     @staticmethod
     def vars_for_template(player: Player):
         return {'endowment': C.ENDOWMENT[player.group.condition]}
@@ -135,17 +121,10 @@ class Results(Page):
     pass
 
 
-class Dropout(Page):
-    @staticmethod
-    def is_displayed(player: Player):
-        return player.participant.status == 'dropout'
-
-
 page_sequence = [
     Gather,
     Intro,
     Instructions,
     Main,
-    Dropout,
     Results,
 ]

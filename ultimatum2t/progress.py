@@ -133,3 +133,15 @@ def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
 
     advance_trial(player, iteround, trial)
     return response
+
+
+def timeout(curr: Progress):
+    """Handle timeout, reported from a waiting (live) player"""
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
+
+    other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
+    other.participant.status = 'dropout'
+
+    iteround.close('TIMEOUTED')
+    set_payoffs(iteround.group, iteround)

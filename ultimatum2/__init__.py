@@ -5,4 +5,6 @@ from .pages import page_sequence  # noqa
 
 
 def creating_session(subsession: Subsession):
-    pass
+    session = subsession.session
+    for group in subsession.get_groups():
+        group.condition = config_condition(session)

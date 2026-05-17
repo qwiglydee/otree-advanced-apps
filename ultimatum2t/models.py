@@ -1,11 +1,11 @@
 from otree import database
 from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
-# from otree.forms import widgets
+from otree.forms import widgets
 
 from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 from _stuff.dictprop import dictprop
 
-from .conf import C, Points
+from .conf import C, config_condition, Points
 
 
 class Subsession(BaseSubsession):
@@ -17,6 +17,12 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
+    age = database.IntegerField()
+    gender = database.StringField(
+        choices=[("M", "Male"), ("F", "Female"), ("O", "Other")],
+        widget=widgets.RadioSelect
+    )
+
     total_score = database.DecimalField(unit=Points, initial=0)
 
     progress_round = database.IntegerField()
@@ -82,6 +88,10 @@ class Response(BaseResponseModel):
     response_time = database.IntegerField()
     p_proposal = database.DecimalField(unit=Points)
     r_decision = database.StringField(choices=C.DECISIONS)
+
+
+def setup_group(group: Group):
+    group.condition = config_condition(group.session)
 
 
 def set_payoffs(group: Group, iteround: Round):
