@@ -54,12 +54,12 @@ class Main(LivePage):
     def output_progress(page, current: Progress):
         pagename, player, iteround, trial = current
         return {
-            "finished": iteround.is_completed,
+            "terminated": iteround.is_closed,
             "total": C.NUM_TRIALS,
             "passed": iteround.progress_trials,
             "current": trial.iteration if trial else None,
             "pending": not current.is_running,
-            "turn": current.turn,
+            "turn": current.turn if current.is_running else None,
             "score": iteround.total_score,
         }
 

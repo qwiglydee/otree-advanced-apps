@@ -1,9 +1,10 @@
 from typing import NamedTuple
 
+from _stuff.tracking import track_players_all_around, track_players_all_atrial, track_round_trials
 
 from .conf import C, Points
 from .models import Player, Group, Round, Trial, Response
-from .models import set_payoffs
+from .models import set_payoff
 from .autoresponding import autorespond_proposal, autorespond_decision
 
 
@@ -27,14 +28,13 @@ class Progress(NamedTuple):
         return self.trial.progress_stage
 
     @property
-    def turn(self) -> int:
+    def turn(self) -> str:
         assert self.is_running
         return C.STAGEROLES[self.trial.progress_stage]
 
     @property
     def autoresponding(self) -> bool:
         assert self.is_running
-        # print(self.trial.progress_stage, self.turn, "auto", self.iteround.autorespond_role)
         return self.iteround.autorespond_role == self.turn if self.is_running else None
 
 
@@ -46,14 +46,13 @@ def current(page, player: Player) -> Progress:
     return Progress(pagename, player, iteround, trial)
 
 
-def track_round_running(iteround: Round) -> bool:
+def track_round_continue(iteround: Round) -> bool:
     """Track round progress state and decide if to continue"""
     iteround.update()
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-    return iteround.progress_trials < C.NUM_TRIALS
+    return track_round_trials(iteround, Trial, C.NUM_TRIALS)
 
 
-def track_trial_running(trial: Trial) -> bool:
+def track_trial_continue(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
     trial.update()
     if trial.proposal is None:
@@ -65,26 +64,12 @@ def track_trial_running(trial: Trial) -> bool:
     return trial.progress_stage is not None
 
 
-def track_players_around(player: Player, iteround: Round) -> bool:
-    """Track players to check if they all reached the round"""
-    player.progress_round = iteround.id
-    others = [p for p in player.get_others_in_group() if p.participant.status != 'dropout']
-    return all(p.field_maybe_none('progress_round') == iteround.id for p in others)
-
-
-def track_players_atrial(player: Player, trial: Trial) -> bool:
-    """Track players to check if they all reached the trial"""
-    player.progress_trial = trial.id
-    others = [p for p in player.get_others_in_group() if p.participant.status != 'dropout']
-    return all(p.field_maybe_none('progress_trial') == trial.id for p in others)
-
-
 def advance(curr: Progress) -> Progress:
     """Advance current round one iteration further"""
     pagename, player, iteround, trial = curr
     assert trial is None or trial.is_closed, "Invalid advancing over incomplete trial"
 
-    iteround = advance_round(pagename, player, iteround)
+    iteround = advance_round(player, pagename, iteround)
 
     if not iteround.is_closed:
         trial = advance_trial(player, iteround, trial)
@@ -92,39 +77,39 @@ def advance(curr: Progress) -> Progress:
     return Progress(pagename, player, iteround, trial)
 
 
-def advance_round(pagename: str, player: Player, iteround: Round) -> Round:
+def advance_round(player: Player, pagename: str, iteround: Round | None) -> Round:
     group: Group = player.group
 
     if iteround is None:
         iteround = Round.advance(pagename, group=group)
 
-    if iteround.is_pristine and track_players_around(player, iteround):
+    if iteround.is_pristine and track_players_all_around(player, iteround):
         iteround.start()
 
-    if iteround.is_running and not track_round_running(iteround):
+    if iteround.is_running and not track_round_continue(iteround):
         iteround.complete()
-        set_payoffs(group, iteround)
+        set_payoff(group, iteround)
 
     return iteround
 
 
-def advance_trial(player: Player, iteround: Round, trial: Trial) -> Progress:
+def advance_trial(player: Player, iteround: Round, trial: Trial | None) -> Trial:
     if trial is None:
         trial = Trial.advance_next(iteround)
 
-    if trial.is_pristine and track_players_atrial(player, trial):
+    if trial.is_pristine and track_players_all_atrial(player, trial):
         trial.start()
 
-    if trial.is_running and not track_trial_running(trial):
+    if trial.is_running and not track_trial_continue(trial):
         trial.complete()
 
-    track_round_running(iteround)
+    track_round_continue(iteround)
 
     return trial
 
 
 def respond_proposal(curr: Progress, proposal: Points, **kwargs) -> Response:
-    assert curr.is_valid
+    assert curr.is_running
     pagename, player, iteround, trial = curr
 
     assert player.role == curr.turn
@@ -135,7 +120,7 @@ def respond_proposal(curr: Progress, proposal: Points, **kwargs) -> Response:
 
 
 def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
-    assert curr.is_valid
+    assert curr.is_running
     pagename, player, iteround, trial = curr
 
     assert player.role == curr.turn
@@ -146,7 +131,7 @@ def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
 
 
 async def autorespond(curr: Progress):
-    assert curr.is_valid
+    assert curr.is_running
     pagename, player, iteround, trial = curr
 
     assert iteround.autorespond_role == curr.turn
@@ -163,7 +148,7 @@ async def autorespond(curr: Progress):
 
 def timeout(curr: Progress):
     """Handle timeout, reported from a waiting (live) player"""
-    assert curr.is_valid
+    assert curr.is_running
     pagename, player, iteround, trial = curr
 
     other = player.group.get_player_by_role(C.PARTNEROLES[player.role])

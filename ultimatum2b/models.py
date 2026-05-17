@@ -98,7 +98,7 @@ def setup_group(group: Group):
     group.condition = config_condition(group.session)
 
 
-def set_payoffs(group: Group, iteround: Round):
+def set_payoff(group: Group, iteround: Round):
     scores = iteround.total_scores
     for player in group.get_players():
         player.total_score = scores[player.role]

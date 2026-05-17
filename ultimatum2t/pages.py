@@ -91,7 +91,7 @@ class Main(LivePage):
             "passed": iteround.progress_trials,
             "pending": not current.is_running,
             "current": trial.iteration if trial else None,
-            "turn": current.turn,
+            "turn": current.turn if current.is_running else None,
         }
 
     @classmethod

@@ -85,7 +85,7 @@ class Response(BaseResponseModel):
     r_decision = database.StringField(choices=C.DECISIONS)
 
 
-def set_payoffs(player: Player, iteround: Round):
+def set_payoff(player: Player, iteround: Round):
     scores = iteround.total_scores
     player.total_score = scores[player.role]
     if player.participant.status != 'dropout':

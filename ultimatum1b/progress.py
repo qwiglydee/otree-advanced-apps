@@ -1,9 +1,10 @@
 from typing import NamedTuple
 
+from _stuff.tracking import track_round_trials
 
 from .conf import C, Points
 from .models import Player, Round, Trial, Response
-from .models import set_payoffs
+from .models import set_payoff
 from .autoresponding import autorespond_proposal, autorespond_decision
 
 
@@ -34,7 +35,6 @@ class Progress(NamedTuple):
     @property
     def autoresponding(self) -> bool:
         assert self.is_running
-        # print(self.trial.progress_stage, self.turn, "auto", self.iteround.autorespond_role)
         return self.iteround.autorespond_role == self.turn
 
 
@@ -46,14 +46,13 @@ def current(page, player: Player) -> Progress:
     return Progress(pagename, player, iteround, trial)
 
 
-def track_round_running(iteround: Round) -> bool:
+def track_round_continue(iteround: Round) -> bool:
     """Track round progress state and decide if to continue"""
     iteround.update()
-    iteround.progress_trials = Trial.count(iteround, status='CLOSED')
-    return iteround.progress_trials < C.NUM_TRIALS
+    return track_round_trials(iteround, Trial, C.NUM_TRIALS)
 
 
-def track_trial_running(trial: Trial) -> bool:
+def track_trial_continue(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
     trial.update()
     if trial.proposal is None:
@@ -70,7 +69,7 @@ def advance(curr: Progress) -> Progress:
     pagename, player, iteround, trial = curr
     assert trial is None or trial.is_closed, "Invalid advancing over incomplete trial"
 
-    iteround = advance_round(pagename, player, iteround)
+    iteround = advance_round(player, pagename, iteround)
 
     if not iteround.is_closed:
         trial = advance_trial(player, iteround, trial)
@@ -78,7 +77,7 @@ def advance(curr: Progress) -> Progress:
     return Progress(pagename, player, iteround, trial)
 
 
-def advance_round(pagename: str, player: Player, iteround: Round) -> Round:
+def advance_round(player: Player, pagename: str, iteround: Round | None) -> Round:
     if iteround is None:
         iteround = Round.advance(pagename, player=player)
         iteround.autorespond_role = C.PARTNEROLES[player.role]
@@ -86,30 +85,30 @@ def advance_round(pagename: str, player: Player, iteround: Round) -> Round:
     if iteround.is_pristine:
         iteround.start()
 
-    if iteround.is_running and not track_round_running(iteround):
+    if iteround.is_running and not track_round_continue(iteround):
         iteround.complete()
-        set_payoffs(player, iteround)
+        set_payoff(player, iteround)
 
     return iteround
 
 
-def advance_trial(player: Player, iteround: Round, trial: Trial) -> Progress:
+def advance_trial(player: Player, iteround: Round, trial: Trial | None) -> Trial:
     if trial is None:
         trial = Trial.advance_next(iteround)
 
     if trial.is_pristine:
         trial.start()
 
-    if trial.is_running and not track_trial_running(trial):
+    if trial.is_running and not track_trial_continue(trial):
         trial.complete()
 
-    track_round_running(iteround)
+    track_round_continue(iteround)
 
     return trial
 
 
 def respond_proposal(curr: Progress, proposal: Points, **kwargs) -> Response:
-    assert curr.is_valid
+    assert curr.is_running
     pagename, player, iteround, trial = curr
 
     assert player.role == curr.turn
@@ -120,7 +119,7 @@ def respond_proposal(curr: Progress, proposal: Points, **kwargs) -> Response:
 
 
 def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
-    assert curr.is_valid
+    assert curr.is_running
     pagename, player, iteround, trial = curr
 
     assert player.role == curr.turn
@@ -131,7 +130,7 @@ def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
 
 
 async def autorespond(curr: Progress):
-    assert curr.is_valid
+    assert curr.is_running
     pagename, player, iteround, trial = curr
 
     assert iteround.autorespond_role == curr.turn

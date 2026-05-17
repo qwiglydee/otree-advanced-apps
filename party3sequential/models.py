@@ -68,7 +68,7 @@ class Response(BaseResponseModel):
     utterance = database.StringField()
 
 
-def set_payoffs(group: Group, iteround: Round):
+def set_payoff(group: Group, iteround: Round):
     for player in group.get_players():
         player.total_score = iteround.total_score
         player.payoff = player.total_score
