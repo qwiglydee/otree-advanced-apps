@@ -48,14 +48,26 @@ class Player(BasePlayer):
         widget=widgets.RadioSelect
     )
     agreement = database.BooleanField(
-        label="I agreee with something something",
+        label="I agree",
         widget=widgets.Checkbox
     )
     comprehended = database.BooleanField(
-        label="I've comprehended",
+        label="I comprehend",
         choices=[(True, "Yes"), (False, "No")],
         widget=widgets.RadioSelect,
     )
+
+    @property
+    def dropout(self):
+        return self.participant.status == 'dropout'
+
+    @property
+    def misfit(self):
+        return self.age < 18 or self.age > 80
+
+    @property
+    def unqualified(self):
+        return not self.field_maybe_none('comprehended')
 
 
 def preassign_player(player):
