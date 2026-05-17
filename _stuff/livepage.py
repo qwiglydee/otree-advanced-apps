@@ -52,7 +52,7 @@ class LivePage(Page):
                 # can perform async calls to some remote API
 
             @classmethod
-            def live_something(page, player: Playe, **kwargs):                
+            def live_something(page, player: Playe, **kwargs):        
                 # send a message of type 'foo' back to the player
                 yield 'foo'
 
@@ -66,9 +66,6 @@ class LivePage(Page):
                 # send a message to a particular player
                 yield another_player, 'baz
                 yield another_player, 'baz', data
-
-                # delegate handling to another page method, that should also be yield-generator
-                yield from page.somethingelse(*args)
     """
 
     @classmethod

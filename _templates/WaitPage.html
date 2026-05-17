@@ -1,0 +1,21 @@
+{% extends 'otree/WaitPage.html' %}
+
+{% block global_styles %}
+    <link rel="stylesheet" href="{{ static 'bootstrap-theme.css' }}" />
+    <link rel="stylesheet" href="{{ static 'game-style.css' }}" />
+{% endblock %}
+
+{% block body_main %}
+    <div class="otree-wait-page container">
+        <h4 class="otree-title">{{ title_text }}</h4>
+
+        <section class="info text-center">
+            <p>{{ body_text }}</p>
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"></div>
+            </div>
+        </section>
+
+        <!-- TODO: insert inactivity alerts -->
+    </div>
+{% endblock %}

@@ -1,11 +1,17 @@
-from otree.views import Page
+from otree.views import Page, WaitPage
 
 from _stuff.livepage import LivePage
 
 from .conf import C, Points
-from .models import Player, Trial
+from .models import Player, Group, Trial, setup_group
 from .progress import Progress
 from . import progress
+
+
+class Gather(WaitPage):
+    template_name = "WaitPage.html"
+    group_by_arrival_time = True
+    after_all_players_arrive = setup_group
 
 
 class Main(LivePage):
@@ -13,13 +19,15 @@ class Main(LivePage):
     page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]  # noqa
 
     def get_template_name(self):
-        # different page templates by role
-        return f"{__package__}/Main_{self.player.role}.html"
+        # different page templates by players role
+        pagename = self.__class__.__name__
+        role = self.player.role
+        return f"{__package__}/{pagename}_{role}.html"
 
     @classmethod
     def live_continue(page, player: Player):
-        group = player.group
         current = progress.current(page, player)
+        group: Group = player.group
 
         # restore trial on page reloading
         if current.is_running:
@@ -39,8 +47,8 @@ class Main(LivePage):
 
     @classmethod
     def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
-        group = player.group
         current = progress.current(page, player)
+        group: Group = player.group
         assert current.trial and current.trial.id == id, "mismatched response"
 
         proposal = Points(proposal)
@@ -48,11 +56,13 @@ class Main(LivePage):
 
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
+        if current.trial.is_completed:
+            yield group, "result", page.output_result(current.trial)
 
     @classmethod
     def live_decision(page, player: Player, *, id: int, decision: str, time: int):
-        group = player.group
         current = progress.current(page, player)
+        group: Group = player.group
         assert current.trial and current.trial.id == id, "mismatched response"
 
         assert decision in C.DECISIONS
@@ -64,11 +74,20 @@ class Main(LivePage):
             yield group, "result", page.output_result(current.trial)
 
     @classmethod
+    def live_timeout(page, player: Player):
+        current = progress.current(page, player)
+        group: Group = player.group
+
+        progress.timeout(current)
+
+        yield group, "progress", {"terminated": True}
+
+    @classmethod
     def output_progress(page, current: Progress):
         pagename, player, iteround, trial = current
         return {
             "total": C.NUM_TRIALS,
-            "finished": iteround.is_completed,
+            "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
             "pending": not current.is_running,
             "current": trial.iteration if trial else None,
@@ -92,15 +111,41 @@ class Main(LivePage):
 
 
 class Intro(Page):
-    pass
+    form_model = "player"
+    form_fields = ["age", "gender"]
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {'endowment': C.ENDOWMENT[player.group.condition]}
+
+
+class Instructions(Page):
+    def get_template_name(self):
+        # different page templates by players role
+        pagename = self.__class__.__name__
+        role = self.player.role
+        return f"{__package__}/{pagename}_{role}.html"
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {'endowment': C.ENDOWMENT[player.group.condition]}
 
 
 class Results(Page):
     pass
 
 
+class Dropout(Page):
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.participant.status == 'dropout'
+
+
 page_sequence = [
+    Gather,
     Intro,
+    Instructions,
     Main,
+    Dropout,
     Results,
 ]

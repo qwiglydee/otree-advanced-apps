@@ -2,34 +2,33 @@
 {% block content %}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
-        <section class="paper" ot-visible="vars.trial">
+        <section class="paper m-3" ot-visible="vars.trial">
             <ul class="m-0">
                 <li>Endowment = <b ot-text="vars.trial.endowment"></b></li>
-                <li ot-visible="vars.trial.proposal">Your parnter shared: <b ot-text="vars.trial.proposal"></b></li>
-                <li ot-visible="vars.trial.decision">You decided: <b ot-text="vars.decision_label"></b></li>
+                <li ot-visible="vars.trial.proposal">You shared: <b ot-text="vars.trial.proposal"></b></li>
+                <li ot-visible="vars.trial.decision">Your partner decded: <b ot-text="vars.decision_label"></b></li>
             </ul>
         </section>
     </header>
 
     <main ot-visible="vars.trial">
         <section class="form w-50">
-            <h4>Your decision:</h4>
-            <div class="d-flex gap-3 justify-content-center">
-                <div class="form-check">
-                    <input id="choice1" ot-input type="radio" name="decision" value="ACCEPT" class="form-check-input" ot-enable="vars.responding" />
-                    <label for="choice1" class="form-check-label">Accept</label>
-                </div>
-
-                <div class="form-check">
-                    <input id="choice2" ot-input type="radio" name="decision" value="REJECT" class="form-check-input" ot-enable="vars.responding" />
-                    <label for="choice2" class="form-check-label">Reject</label>
-                </div>
-            </div>
+            <h4>Your proposal:</h4>
+            <input
+                ot-input
+                type="range"
+                min="0"
+                ot-max="vars.trial.endowment"
+                name="proposal"
+                class="form-range"
+                ot-key-input="Enter"
+                ot-enable="vars.responding"
+                autofocus
+            />
 
             <hr />
-
-            <p>You're receiving: <b ot-text="vars.account.R"></b></p>
-            <p>Partner's receiving: <b ot-text="vars.account.P"></b></p>
+            <p>You're sharing: <b ot-text="vars.account.R"></b></p>
+            <p>You're keeping: <b ot-text="vars.account.P"></b></p>
 
             <button ot-click-input type="button" name="confirm" class="btn btn-primary" ot-enable="vars.confirming">Confirm</button>
         </section>
@@ -37,14 +36,15 @@
 
     <footer>
         <section class="info" ot-display="vars.result">
-            <h4>Final result</h4>
+            <h4>Final result:</h4>
             <ul class="m-0">
-                <li>Your payoff: <b ot-text="vars.result.scores.R"></b></li>
-                <li>Your partner's payoff: <b ot-text="vars.result.scores.P"></b></li>
+                <li>Your payoff: <b ot-text="vars.result.scores.P"></b></li>
+                <li>Your partner's payoff: <b ot-text="vars.result.scores.R"></b></li>
             </ul>
         </section>
+        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
         <div class="flex-fill"></div>
-        <div ot-display="vars.prompting">Select your decision and <kbd>Confirm</kbd></div>
+        <div ot-display="vars.prompting">Adjust your proposal and <kbd>Confirm</kbd></div>
         <div ot-display="vars.pending">Waiting for your partner</div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
     </footer>
@@ -67,6 +67,7 @@
             vars.responding = false;
             vars.confirming = false;
             vars.prompting = false;
+            vars.completing = false;
 
             switch (state) {
                 case "pending":
@@ -78,11 +79,12 @@
                     vars.waiting = true;
                     break;
                 case "completing":
-                    vars.waiting = true;
+                    vars.completing = true;
                     break;
                 case "running":
                     vars.responding = turn == MYTURN;
                     vars.confirming = vars.responding && vars.response != null;
+                    vars.prompting = vars.responding;
                     vars.pending = !vars.responding;
                     vars.waiting = vars.pending;
                     break;
@@ -96,7 +98,7 @@
         ot.onLive("progress", liveProgress);
         ot.onLive("trial", startTrial);
         ot.onLive("update", updateTrial);
-        ot.onInput("decision", inputResponse);
+        ot.onInput("proposal", inputResponse);
         ot.onInput("confirm", confirmResponse);
         ot.onLive("result", liveResult);
         ot.onInput("continue", continueRound);
@@ -110,7 +112,7 @@
 
         function liveProgress(progress) {
             vars.progress = progress;
-            if (progress.finished) ot.completePage();
+            if (progress.terminated) ot.completePage();
             if (progress.pending) switchState("pending");
         }
 
@@ -140,16 +142,16 @@
         }
 
         function inputResponse(response) {
-            vars.response = response;
+            vars.response = String(response);
             switchState("running");
         }
 
         function confirmResponse() {
             switchState("processing");
-            ot.sendLive("decision", {
+            ot.sendLive("proposal", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
-                decision: vars.response,
+                proposal: vars.response,
             });
         }
 
@@ -164,17 +166,16 @@
 
         async function completeTrial() {
             switchState("completing");
-            await ot.delay(ITER_DELAY);
-            continueRound();
+            // await ot.delay(ITER_DELAY);
+            // continueRound();
         }
 
-        ot.onUpdate("vars.trial.proposal", function (proposed) {
-            if (!vars.trial) return;
-            vars.account = precalcResult(vars.trial.endowment, proposed, "ACCEPT");
+        ot.onUpdate("vars.response", function (proposed) {
+            if (vars.trial == null || proposed == null) vars.account = null;
+            else vars.account = precalcResult(vars.trial.endowment, Number(proposed), "ACCEPT");
         });
 
         function precalcResult(endowment, proposed, decided) {
-            if (proposed == null || decided == null) return null;
             if (decided == "ACCEPT")
                 return {
                     P: formatScore(vars.trial.endowment - proposed),
@@ -195,7 +196,7 @@
         });
 
         function formatScore(value) {
-            return format_number(value, ".2");
+            return format_number(Number(value), ".2");
         }
     </script>
 {% endblock scripts %}

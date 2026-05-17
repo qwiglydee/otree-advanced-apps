@@ -41,6 +41,33 @@ SESSION_CONFIGS = [
         disclosure="random",
     ),
     dict(
+        name='ultimatum2',
+        app_sequence=['ultimatum2'],
+        condition="random",
+    ),
+    dict(
+        name='ultimatum1b',
+        app_sequence=['ultimatum1b'],
+        condition="random",
+        role="random",
+    ),
+    dict(
+        name='ultimatum2t',
+        app_sequence=['ultimatum2t'],
+        condition="random",
+    ),
+    dict(
+        name='ultimatum2b',
+        app_sequence=['ultimatum2b'],
+        condition="random",
+    ),
+    dict(
+        name='ultimatum3',
+        app_sequence=['ultimatum3_screener', 'ultimatum3'],
+        condition="random",
+        num_demo_participants=6,
+    ),
+    dict(
         name='party3async',
         app_sequence=['party3async'],
         num_demo_participants=3
@@ -60,11 +87,6 @@ SESSION_CONFIGS = [
         app_sequence=['party3sequential'],
         num_demo_participants=3
     ),
-    dict(
-        name='ultimatum',
-        app_sequence=['ultimatum'],
-        condition="random",
-    ),
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
@@ -78,7 +100,7 @@ SESSION_CONFIG_DEFAULTS = dict(
     real_world_currency_per_point=0.10,
 )
 
-PARTICIPANT_FIELDS = []
+PARTICIPANT_FIELDS = ['assignment']
 SESSION_FIELDS = []
 
 # ISO-639 code

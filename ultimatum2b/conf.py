@@ -14,18 +14,18 @@ class Points(DecimalUnit):
 class C(BaseConstants):
     NAME_IN_URL = __package__
     NUM_ROUNDS = 1  # should be =1
+    NUM_TRIALS = 5
 
     PLAYERS_PER_GROUP = 2
     P_ROLE = "P"
     R_ROLE = "R"
-
-    NUM_TRIALS = 5
+    PARTNEROLES = {'P': 'R', 'R': 'P'}
 
     STAGES = ['PROPOSING', 'DECIDING']
-    STAGEROLES = {'PROPOSING': P_ROLE, 'DECIDING': R_ROLE}
+    STAGEROLES = {'PROPOSING': 'P', 'DECIDING': 'R'}
     DECISIONS = ['ACCEPT', 'REJECT']
 
-    CONDITIONS = ["C0", "C1", "C2"]
+    CONDITIONS = ['C0', 'C1', 'C2']
 
     ENDOWMENT = {
         'C0': Points(100),
@@ -33,7 +33,8 @@ class C(BaseConstants):
         'C2': Points(1000)
     }
 
-    ITER_DELAY = 2
+    ITER_DELAY = 3
+    WAITING_TIMEOUT = 10
 
 
 def config_condition(session):
