@@ -14,7 +14,7 @@ with some advanced features and techniques beyond standard capabilities of the o
     - /multiple rounds/trials/responses/
     - /conditional termination/
     - /infinite sequences/
-- /autoresponding with scripts or bots/
+- /autoresponding with scripts or chatbots/
 - /style and layout/
 
 ## The Apps
@@ -54,7 +54,7 @@ with some advanced features and techniques beyond standard capabilities of the o
 - [Ultimatum 2b](ultimatum2b): a 2-player game, with bot replacment
     - when one of participants drops out, the game round continues with auto-responding script
 - [Ultimatum 3](ultimatum3): a 2-player game, with chaotic recruiting of participants
-    - assuming the participants can drop out from instruction pages, refuse a consent, or fail comprehension check
+    - assuming the participants may drop out from instruction pages, refuse a consent, or fail comprehension check
     - participants are first run individually through a separate screener app
     - the screener pre-assigns game roles to minimize waiting time of those who already passed
     - when a participant drops out in screener, it does not affect the rest
@@ -73,6 +73,7 @@ with some advanced features and techniques beyond standard capabilities of the o
     - it may contain multiple turns for the same role
     - they observe partners' responses as they're given
     - later responses of the same player override former
+- Sliders: TODO
 
 ### Common fatures
 
@@ -80,12 +81,11 @@ Most of the apps have many common fatures:
 
 :bangbang: TODO
 
-- /session config condition/
+- /session config conditions/
 - /practice and main rounds/
 - /page reloading/
 - /anti-cheating/
 - /multiplayer pending/
-- /remote api bots/
 
 ## Usage
 
