@@ -126,10 +126,7 @@ class Dropout(Page):
 
 page_sequence = [
     Gather,
-    Dull,
-    # Intro,
-    # Instructions,
-    # Main,
-    # Dropout,
+    Main,
+    Dropout,
     Results,
 ]
