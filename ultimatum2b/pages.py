@@ -25,7 +25,7 @@ class Main(LivePage):
         return f"{__package__}/{pagename}_{role}.html"
 
     @classmethod
-    def live_continue(page, player: Player):
+    async def live_continue(page, player: Player):
         current = progress.current(page, player)
         group: Group = player.group
 
@@ -37,36 +37,64 @@ class Main(LivePage):
 
         current = progress.advance(current)
 
-        if current.is_running:
-            # synchronize progress and trial
-            yield group, "progress", page.output_progress(current)
-            yield group, "trial", page.output_trial(current.trial)
-        else:
-            # pending state
+        if not current.is_running:
+            # indicate pending state
             yield player, "progress", page.output_progress(current)
+            return
+
+        yield group, "progress", page.output_progress(current)
+        yield group, "trial", page.output_trial(current.trial)
+
+        if current.is_running and current.autoresponding:
+            await progress.autorespond(current)
+            yield group, "progress", page.output_progress(current)
+            yield group, "update", page.output_trial(current.trial)
+
+        if current.trial.is_completed:
+            yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
+    async def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
         current = progress.current(page, player)
+        group: Group = current.player.group
         assert current.trial and current.trial.id == id, "mismatched response"
 
         proposal = Points(proposal)
         progress.respond_proposal(current, proposal, response_time=time)
 
-        yield from page.continue_trial(current)
+        yield group, "progress", page.output_progress(current)
+        yield group, "update", page.output_trial(current.trial)
+
+        if current.is_running and current.autoresponding:
+            await progress.autorespond(current)
+            yield group, "progress", page.output_progress(current)
+            yield group, "update", page.output_trial(current.trial)
+
+        if current.trial.is_completed:
+            yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    def live_decision(page, player: Player, *, id: int, decision: str, time: int):
+    async def live_decision(page, player: Player, *, id: int, decision: str, time: int):
         current = progress.current(page, player)
+        group: Group = current.player.group
         assert current.trial and current.trial.id == id, "mismatched response"
 
         assert decision in C.DECISIONS
         progress.respond_decision(current, decision, response_time=time)
 
-        yield from page.continue_trial(current)
+        yield group, "progress", page.output_progress(current)
+        yield group, "update", page.output_trial(current.trial)
+
+        if current.is_running and current.autoresponding:
+            await progress.autorespond(current)
+            yield group, "progress", page.output_progress(current)
+            yield group, "update", page.output_trial(current.trial)
+
+        if current.trial.is_completed:
+            yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    def live_timeout(page, player: Player):
+    async def live_timeout(page, player: Player):
         current = progress.current(page, player)
 
         progress.timeout(current)
@@ -74,15 +102,13 @@ class Main(LivePage):
         other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
         yield other, "progress", {'terminated': True}  # closes the page if still open
 
-        yield from page.continue_trial(current)
+        if current.is_running and current.autoresponding:
+            await progress.autorespond(current)
+            yield player, "progress", page.output_progress(current)
+            yield player, "update", page.output_trial(current.trial)
 
-    @classmethod
-    def continue_trial(page, current: Progress):
-        group = current.player.group
-        yield group, "progress", page.output_progress(current)
-        yield group, "update", page.output_trial(current.trial)
         if current.trial.is_completed:
-            yield group, "result", page.output_result(current.trial)
+            yield player, "result", page.output_result(current.trial)
 
     @classmethod
     def output_progress(page, current: Progress):
@@ -93,7 +119,7 @@ class Main(LivePage):
             "passed": iteround.progress_trials,
             "pending": not current.is_running,
             "current": trial.iteration if trial else None,
-            "turn": current.turn,
+            "turn": current.turn if current.is_running else None,
         }
 
     @classmethod
@@ -145,8 +171,8 @@ class Dropout(Page):
 
 page_sequence = [
     Gather,
-    Intro,
-    Instructions,
+    # Intro,
+    # Instructions,
     Main,
     Dropout,
     Results,

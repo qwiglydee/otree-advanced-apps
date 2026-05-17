@@ -44,8 +44,8 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
+    autorespond_role = database.StringField()
     progress_trials = database.IntegerField()
-    autoresponding = database.StringField()
 
 
 class Trial(BaseTrialModel):
@@ -87,18 +87,11 @@ class Response(BaseResponseModel):
     trial: Trial = database.Link(Trial)
     stage = database.StringField()
     player: Player = database.Link(Player)
+    autoresponded = database.BooleanField(initial=False)
 
     response_time = database.IntegerField()
     p_proposal = database.DecimalField(unit=Points)
     r_decision = database.StringField(choices=C.DECISIONS)
-
-    def autorespond(self):
-        self.autoresponded = True
-        if self.stage == 'PROPOSING':
-            proposal = random.gauss(0.5, 0.2) * self.trial.endowment
-            self.p_proposal = min(self.trial.endowment, max(0, proposal))
-        if self.stage == 'DECIDING':
-            self.r_decision = random.choice(C.DECISIONS)
 
 
 def setup_group(group: Group):
@@ -142,6 +135,7 @@ def custom_export_responses(_):
         "response.iteration",
         "response.stage",
         "player.role",
+        "response.autoresponded",
         "response.response_time",
         "response.proposal",
         "response.decision",
@@ -183,6 +177,7 @@ def custom_export_responses(_):
             response.iteration,
             response.stage,
             player.role,
+            response.autoresponded,
             response.response_time,
             response.p_proposal,
             response.r_decision

@@ -19,7 +19,7 @@ class Main(LivePage):
         return f"{__package__}/{pagename}_{role}.html"
 
     @classmethod
-    def live_continue(page, player: Player):
+    async def live_continue(page, player: Player):
         current = progress.current(page, player)
 
         # restore trial on page reloading
@@ -34,15 +34,26 @@ class Main(LivePage):
         if current.trial:
             yield player, "trial", page.output_trial(current.trial)
 
+        if current.is_running and current.autoresponding:  # the very first turn
+            await progress.autorespond(current)
+            yield "progress", page.output_progress(current)
+            yield "update", page.output_trial(current.trial)
+
     @classmethod
-    def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
+    async def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
         current = progress.current(page, player)
         assert current.trial and current.trial.id == id, "mismatched response"
 
         proposal = Points(proposal)
         progress.respond_proposal(current, proposal, response_time=time)
 
-        yield from page.continue_trial(current)
+        yield "progress", page.output_progress(current)
+        yield "update", page.output_trial(current.trial)
+
+        await progress.autorespond(current)
+        yield "progress", page.output_progress(current)
+        yield "update", page.output_trial(current.trial)
+        yield "result", page.output_result(current.trial)
 
     @classmethod
     def live_decision(page, player: Player, *, id: int, decision: str, time: int):
@@ -52,14 +63,9 @@ class Main(LivePage):
         assert decision in C.DECISIONS
         progress.respond_decision(current, decision, response_time=time)
 
-        yield from page.continue_trial(current)
-
-    @classmethod
-    def continue_trial(page, current: Progress):
         yield "progress", page.output_progress(current)
         yield "update", page.output_trial(current.trial)
-        if current.trial.is_completed:
-            yield "result", page.output_result(current.trial)
+        yield "result", page.output_result(current.trial)
 
     @classmethod
     def output_progress(page, current: Progress):
@@ -70,7 +76,7 @@ class Main(LivePage):
             "passed": iteround.progress_trials,
             "pending": not current.is_running,
             "current": trial.iteration if trial else None,
-            "turn": current.turn,
+            "turn": current.turn if current.is_running else None,
         }
 
     @classmethod

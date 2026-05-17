@@ -1,5 +1,3 @@
-import random
-
 from otree import database
 from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
 # from otree.forms import widgets
@@ -37,7 +35,7 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
-    autoresponding = database.StringField()
+    autorespond_role = database.StringField()
     progress_trials = database.IntegerField()
 
 
@@ -85,14 +83,6 @@ class Response(BaseResponseModel):
     response_time = database.IntegerField()
     p_proposal = database.DecimalField(unit=Points)
     r_decision = database.StringField(choices=C.DECISIONS)
-
-    def autorespond(self):
-        self.autoresponded = True
-        if self.stage == 'PROPOSING':
-            proposal = random.gauss(0.5, 0.2) * self.trial.endowment
-            self.p_proposal = min(self.trial.endowment, max(0, proposal))
-        if self.stage == 'DECIDING':
-            self.r_decision = random.choice(C.DECISIONS)
 
 
 def set_payoffs(player: Player, iteround: Round):

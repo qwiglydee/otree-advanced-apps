@@ -4,6 +4,7 @@ from typing import NamedTuple
 from .conf import C, Points
 from .models import Player, Group, Round, Trial, Response
 from .models import set_payoffs
+from .autoresponding import autorespond_proposal, autorespond_decision
 
 
 class Progress(NamedTuple):
@@ -21,12 +22,20 @@ class Progress(NamedTuple):
         return self.trial and self.trial.is_running
 
     @property
-    def stage(self):
-        return self.trial.progress_stage if self.trial else None
+    def stage(self) -> str:
+        assert self.is_running
+        return self.trial.progress_stage
 
     @property
     def turn(self) -> int:
-        return C.STAGEROLES[self.trial.progress_stage] if self.is_running else None
+        assert self.is_running
+        return C.STAGEROLES[self.trial.progress_stage]
+
+    @property
+    def autoresponding(self) -> bool:
+        assert self.is_running
+        # print(self.trial.progress_stage, self.turn, "auto", self.iteround.autorespond_role)
+        return self.iteround.autorespond_role == self.turn if self.is_running else None
 
 
 def current(page, player: Player) -> Progress:
@@ -106,22 +115,12 @@ def advance_trial(player: Player, iteround: Round, trial: Trial) -> Progress:
     if trial.is_pristine and track_players_atrial(player, trial):
         trial.start()
 
-    if trial.is_running and iteround.autoresponding and track_trial_running(trial):
-        autorespond(player, iteround, trial)
-
     if trial.is_running and not track_trial_running(trial):
         trial.complete()
-        track_round_running(iteround)
+
+    track_round_running(iteround)
 
     return trial
-
-
-def autorespond(player: Player, iteround: Round, trial: Trial):
-    curr_turn = C.STAGEROLES[trial.progress_stage] if trial.progress_stage else None
-    if curr_turn == iteround.autoresponding:
-        response = Response.create_next(trial, player, stage=trial.progress_stage)
-        response.autorespond()
-        return response
 
 
 def respond_proposal(curr: Progress, proposal: Points, **kwargs) -> Response:
@@ -146,6 +145,22 @@ def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
     return response
 
 
+async def autorespond(curr: Progress):
+    assert curr.is_valid
+    pagename, player, iteround, trial = curr
+
+    assert iteround.autorespond_role == curr.turn
+    response = Response.create_next(trial, player, stage=trial.progress_stage)
+
+    if trial.progress_stage == 'PROPOSING':
+        await autorespond_proposal(trial, response)
+    if trial.progress_stage == 'DECIDING':
+        await autorespond_decision(trial, response)
+
+    advance_trial(player, iteround, trial)
+    return response
+
+
 def timeout(curr: Progress):
     """Handle timeout, reported from a waiting (live) player"""
     assert curr.is_valid
@@ -154,5 +169,5 @@ def timeout(curr: Progress):
     other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
     other.participant.status = 'dropout'
 
-    iteround.autoresponding = other.role
+    iteround.autorespond_role = other.role
     advance_trial(player, iteround, trial)
