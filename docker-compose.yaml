@@ -1,0 +1,23 @@
+services:
+  otree:
+    build: .
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db/otree
+      - OTREE_ADMIN_PASSWORD=${OTREE_ADMIN_PASSWORD}
+      - OTREE_PRODUCTION=0
+      - OTREE_AUTH_LEVEL=DEMO
+    ports:
+      - 8000:8000
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_DB=otree
+      - POSTGRES_PASSWORD=postgres
+    tmpfs:
+      - /var/lib/postgresql
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
