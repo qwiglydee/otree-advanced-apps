@@ -6,7 +6,7 @@ from units import Points
 from .conf import C
 from .models import Player, Round, Trial, Response
 from .models import set_payoff
-from .autoresponding import autorespond_proposal, autorespond_decision
+from .autoresponding import make_proposal, make_decision
 
 
 class Progress(NamedTuple):
@@ -126,18 +126,26 @@ def respond_decision(progr: Progress, decision: str, **kwargs) -> Response:
     return response
 
 
-async def autorespond(progr: Progress):
+async def autorespond_proposal(progr: Progress) -> Response:
+    pagename, player, iteround, trial = progr
+    assert iteround is not None and trial is not None, "Invalid responding to missing trial"
+    assert trial.progress_stage == "PROPOSING"
+
+    response = Response.create_next(trial, player, stage=trial.progress_stage)
+    await make_proposal(trial, response)
+
+    advance_trial(progr, iteround, trial)
+    return response
+
+
+async def autorespond_decision(progr: Progress) -> Response:
     # TODO: seperate into 2 autorespond_ s
     pagename, player, iteround, trial = progr
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
+    assert trial.progress_stage == "DECIDING"
 
-    assert iteround.autorespond_role == progr.turn
     response = Response.create_next(trial, player, stage=trial.progress_stage)
-
-    if trial.progress_stage == "PROPOSING":
-        await autorespond_proposal(trial, response)
-    if trial.progress_stage == "DECIDING":
-        await autorespond_decision(trial, response)
+    await make_decision(trial, response)
 
     advance_trial(progr, iteround, trial)
     return response

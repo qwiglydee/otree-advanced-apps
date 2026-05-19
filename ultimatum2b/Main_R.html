@@ -104,7 +104,7 @@
         });
 
         ot.onTimer("pending", function timeoutPending() {
-            ot.sendLive("timeout");
+            ot.sendLive("timeout", { id: vars.trial.id });
         });
 
         ot.onLoad(continueRound);

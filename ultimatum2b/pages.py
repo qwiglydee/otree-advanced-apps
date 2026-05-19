@@ -41,6 +41,7 @@ class Main(LivePage):
         else:
             # go first/next round/trial
             advanced = progress.advance(current)
+            assert advanced.iteround
 
             if advanced.trial is None:
                 # no more trials
@@ -52,34 +53,33 @@ class Main(LivePage):
                 yield group, "progress", page.output_progress(advanced)
                 yield group, "trial", page.output_trial(advanced.trial)
 
-                # autorespond the very first turn
-                async for r in page.autoresponding(advanced):
-                    yield r
-
-    @classmethod
-    async def autoresponding(page, current: Progress) -> AsyncLiveResponding:
-        if current.trial is None or not current.autoresponding:
-            return
-        await progress.autorespond(current)
-        yield "progress", page.output_progress(current)
-        yield "update", page.output_trial(current.trial)
+                if advanced.iteround.autorespond_role == "P":
+                    async for r in page.auto_proposal(advanced):
+                        yield r
 
     @classmethod
     async def live_proposal(page, player: Player, *, id: int, proposal: str, time: int) -> AsyncLiveResponding:
         current = progress.current(page, player)
         group = current.player.group
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.iteround is not None and current.trial is not None and current.trial.id == id, "mismatched response"
 
         progress.respond_proposal(current, Points(proposal), response_time=time)
 
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
 
-        # autorespond the next turn
-        async for r in page.autoresponding(current):
-            yield r
+        if current.iteround.autorespond_role == "R":
+            async for r in page.auto_decision(current):
+                yield r
 
-        yield group, "result", page.output_result(current.trial)
+    @classmethod
+    async def auto_proposal(page, current: Progress) -> AsyncLiveResponding:
+        assert current.trial is not None
+
+        await progress.autorespond_proposal(current)
+
+        yield "progress", page.output_progress(current)
+        yield "update", page.output_trial(current.trial)
 
     @classmethod
     async def live_decision(page, player: Player, *, id: int, decision: str, time: int) -> AsyncLiveResponding:
@@ -95,21 +95,33 @@ class Main(LivePage):
         yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    async def live_timeout(page, player: Player) -> AsyncLiveResponding:
+    async def auto_decision(page, current: Progress) -> AsyncLiveResponding:
+        assert current.trial is not None
+
+        await progress.autorespond_decision(current)
+
+        yield "progress", page.output_progress(current)
+        yield "update", page.output_trial(current.trial)
+        yield "result", page.output_result(current.trial)
+
+    @classmethod
+    async def live_timeout(page, player: Player, id: int) -> AsyncLiveResponding:
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.iteround is not None and current.trial is not None
+        assert current.trial.id == id, "mismatched response"
 
         progress.timeout(current)
 
         other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
         yield other, "progress", {"terminated": True}  # closes the page if still open
 
-        # autorespond the next turn
-        async for r in page.autoresponding(current):
-            yield r
+        if current.iteround.autorespond_role == "P":
+            async for r in page.auto_proposal(current):
+                yield r
 
-        if current.trial.is_completed:
-            yield player, "result", page.output_result(current.trial)
+        if current.iteround.autorespond_role == "R":
+            async for r in page.auto_decision(current):
+                yield r
 
     @classmethod
     def output_progress(page, progr: Progress) -> LivePayload:

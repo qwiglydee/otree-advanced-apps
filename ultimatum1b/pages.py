@@ -34,6 +34,7 @@ class Main(LivePage):
         else:
             # go first/next round/trial
             advanced = progress.advance(current)
+            assert advanced.iteround
 
             if advanced.trial is None:
                 # no more trials
@@ -42,33 +43,32 @@ class Main(LivePage):
                 yield "progress", page.output_progress(advanced)
                 yield "trial", page.output_trial(advanced.trial)
 
-                # autorespond the very first turn
-                async for r in page.autoresponding(advanced):
-                    yield r
-
-    @classmethod
-    async def autoresponding(page, current: Progress) -> AsyncLiveResponding:
-        if current.trial is None or not current.autoresponding:
-            return
-        await progress.autorespond(current)
-        yield "progress", page.output_progress(current)
-        yield "update", page.output_trial(current.trial)
+                if advanced.iteround.autorespond_role == "P":
+                    async for r in page.auto_proposal(advanced):
+                        yield r
 
     @classmethod
     async def live_proposal(page, player: Player, *, id: int, proposal: str, time: int) -> AsyncLiveResponding:
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.iteround and current.trial is not None and current.trial.id == id, "mismatched response"
 
         progress.respond_proposal(current, Points(proposal), response_time=time)
 
         yield "progress", page.output_progress(current)
         yield "update", page.output_trial(current.trial)
 
-        # autorespond next turn
-        async for r in page.autoresponding(current):
-            yield r
+        if current.iteround.autorespond_role == "R":
+            async for r in page.auto_decision(current):
+                yield r
 
-        yield "result", page.output_result(current.trial)
+    @classmethod
+    async def auto_proposal(page, current: Progress) -> AsyncLiveResponding:
+        assert current.trial is not None
+
+        await progress.autorespond_proposal(current)
+
+        yield "progress", page.output_progress(current)
+        yield "update", page.output_trial(current.trial)
 
     @classmethod
     async def live_decision(page, player: Player, *, id: int, decision: str, time: int) -> AsyncLiveResponding:
@@ -77,6 +77,16 @@ class Main(LivePage):
 
         assert decision in C.DECISIONS
         progress.respond_decision(current, decision, response_time=time)
+
+        yield "progress", page.output_progress(current)
+        yield "update", page.output_trial(current.trial)
+        yield "result", page.output_result(current.trial)
+
+    @classmethod
+    async def auto_decision(page, current: Progress) -> AsyncLiveResponding:
+        assert current.trial is not None
+
+        await progress.autorespond_decision(current)
 
         yield "progress", page.output_progress(current)
         yield "update", page.output_trial(current.trial)
