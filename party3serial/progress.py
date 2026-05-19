@@ -15,19 +15,15 @@ class Progress(NamedTuple):
 
     @property
     def group(self) -> Group:
-        return self.iteround.group
-
-    @property
-    def is_valid(self) -> bool:
-        return self.iteround and self.trial
+        return self.player.group
 
     @property
     def is_running(self) -> bool:
-        return self.trial and self.trial.is_running
+        return self.trial is not None and self.trial.is_running
 
     @property
     def turn(self) -> str:
-        assert self.is_running
+        assert self.trial is not None and self.trial.is_running
         return self.trial.progress_turn
 
 

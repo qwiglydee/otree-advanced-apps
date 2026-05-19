@@ -14,16 +14,13 @@ class Progress(NamedTuple):
     trial: Trial | None
 
     @property
-    def is_valid(self) -> bool:
-        return self.iteround and self.trial
-
-    @property
     def is_running(self) -> bool:
-        return self.trial and self.trial.is_running
+        return self.trial is not None and self.trial.is_running
 
     @property
     def is_finalizable(self):
-        return self.trial.progress_samples >= C.MIN_SAMPLES if self.trial else None
+        assert self.trial is not None and self.trial.is_running
+        return self.trial.progress_samples >= C.MIN_SAMPLES
 
 
 def current(page, player: Player) -> Progress:

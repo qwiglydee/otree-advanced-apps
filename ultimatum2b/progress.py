@@ -15,27 +15,23 @@ class Progress(NamedTuple):
     trial: Trial | None
 
     @property
-    def is_valid(self) -> bool:
-        return self.iteround and self.trial
-
-    @property
     def is_running(self) -> bool:
-        return self.trial and self.trial.is_running
+        return self.trial is not None and self.trial.is_running
 
     @property
     def stage(self) -> str:
-        assert self.is_running
+        assert self.trial is not None and self.trial.is_running
         return self.trial.progress_stage
 
     @property
     def turn(self) -> str:
-        assert self.is_running
+        assert self.trial is not None and self.trial.is_running
         return C.STAGEROLES[self.trial.progress_stage]
 
     @property
     def autoresponding(self) -> bool:
-        assert self.is_running
-        return self.iteround.autorespond_role == self.turn if self.is_running else None
+        assert self.iteround is not None and self.trial is not None and self.trial.is_running
+        return self.iteround.autorespond_role == self.turn
 
 
 def current(page, player: Player) -> Progress:

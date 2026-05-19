@@ -14,21 +14,17 @@ class Progress(NamedTuple):
     trial: Trial | None
 
     @property
-    def is_valid(self) -> bool:
-        return self.iteround and self.trial
-
-    @property
     def is_running(self) -> bool:
-        return self.trial and self.trial.is_running
+        return self.trial is not None and self.trial.is_running
 
     @property
     def stage(self) -> str:
-        assert self.is_running
+        assert self.trial is not None and self.trial.is_running
         return self.trial.progress_stage
 
     @property
     def turn(self) -> str:
-        assert self.is_running
+        assert self.trial is not None and self.trial.is_running
         return C.STAGEROLES[self.trial.progress_stage]
 
 
@@ -130,8 +126,8 @@ def timeout(curr: Progress):
     pagename, player, iteround, trial = curr
 
     other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
-    other.participant.status = 'dropout'
+    other.participant.status = "dropout"
 
-    trial.close('TIMEOUT')
-    iteround.close('TIMEOUT')
+    trial.close("TIMEOUT")
+    iteround.close("TIMEOUT")
     set_payoff(iteround.group, iteround)

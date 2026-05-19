@@ -14,16 +14,12 @@ class Progress(NamedTuple):
     trial: Trial | None
 
     @property
-    def is_valid(self) -> bool:
-        return self.iteround and self.trial
-
-    @property
     def is_running(self) -> bool:
-        return self.trial and self.trial.is_running
+        return self.trial is not None and self.trial.is_running
 
     @property
     def retries_left(self) -> int:
-        assert self.trial
+        assert self.trial is not None and self.trial.is_running
         return C.NUM_RETRIES.get(self.pagename, 1) - self.trial.progress_retries
 
 

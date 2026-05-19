@@ -15,26 +15,22 @@ class Progress(NamedTuple):
     trial: Trial | None
 
     @property
-    def is_valid(self) -> bool:
-        return self.iteround and self.trial
-
-    @property
     def is_running(self) -> bool:
-        return self.trial and self.trial.is_running
+        return self.trial is not None and self.trial.is_running
 
     @property
     def stage(self) -> str:
-        assert self.is_running
+        assert self.trial is not None and self.trial.is_running
         return self.trial.progress_stage
 
     @property
-    def turn(self) -> int:
-        assert self.is_running
+    def turn(self) -> str:
+        assert self.trial is not None and self.trial.is_running
         return C.STAGEROLES[self.trial.progress_stage]
 
     @property
     def autoresponding(self) -> bool:
-        assert self.is_running
+        assert self.iteround is not None and self.trial is not None and self.trial.is_running
         return self.iteround.autorespond_role == self.turn
 
 
@@ -136,9 +132,9 @@ async def autorespond(curr: Progress):
     assert iteround.autorespond_role == curr.turn
     response = Response.create_next(trial, player, stage=trial.progress_stage)
 
-    if trial.progress_stage == 'PROPOSING':
+    if trial.progress_stage == "PROPOSING":
         await autorespond_proposal(trial, response)
-    if trial.progress_stage == 'DECIDING':
+    if trial.progress_stage == "DECIDING":
         await autorespond_decision(trial, response)
 
     advance_trial(player, iteround, trial)
