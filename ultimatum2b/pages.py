@@ -28,34 +28,36 @@ class Main(LivePage):
     page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]  # noqa
 
     @classmethod
+    async def live_load(page, player: Player) -> AsyncLiveResponding:
+        current = progress.current(page, player)
+
+        if current.trial is None:
+            async for r in page.live_iterate(player):
+                yield r
+        else:
+            yield "progress", page.output_progress(current)
+            yield "trial", page.output_trial(current.trial)
+
+    @classmethod
     async def live_iterate(page, player: Player) -> AsyncLiveResponding:
         current = progress.current(page, player)
+        current = progress.advance(current)
         group = current.group
+        assert current.iteround
 
-        if current.trial is not None:
-            # page reloaded during a trial
+        if current.trial is None:
+            # no more trials
+            yield group, "progress", page.output_progress(current)
+        elif not current.trial.is_running:
+            # pending state
             yield player, "progress", page.output_progress(current)
-            if current.trial.is_running:
-                # restore
-                yield player, "trial", page.output_trial(current.trial)
         else:
-            # go first/next round/trial
-            advanced = progress.advance(current)
-            assert advanced.iteround
+            yield group, "progress", page.output_progress(current)
+            yield group, "trial", page.output_trial(current.trial)
 
-            if advanced.trial is None:
-                # no more trials
-                yield group, "progress", page.output_progress(advanced)
-            elif not advanced.trial.is_running:
-                # pending state
-                yield player, "progress", page.output_progress(advanced)
-            else:
-                yield group, "progress", page.output_progress(advanced)
-                yield group, "trial", page.output_trial(advanced.trial)
-
-                if advanced.iteround.autorespond_role == "P":
-                    async for r in page.auto_proposal(advanced):
-                        yield r
+            if current.iteround.autorespond_role == "P":
+                async for r in page.auto_proposal(current):
+                    yield r
 
     @classmethod
     async def live_proposal(page, player: Player, trialid: int, proposal: str, time: int) -> AsyncLiveResponding:

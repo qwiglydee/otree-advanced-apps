@@ -13,34 +13,37 @@ class Main(LivePage):
     page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]
 
     @classmethod
+    def live_load(page, player: Player) -> LiveResponding:
+        current = progress.current(page, player)
+
+        if current.trial is None:
+            yield from page.live_iterate(player)
+        elif not current.trial.is_running:
+            yield "progress", page.output_progress(current)
+        else:
+            yield "progress", page.output_progress(current)
+            yield "trial", page.output_trial(current.trial)
+
+    @classmethod
     def live_iterate(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
+        current = progress.advance(current)
         group = current.group
 
-        if current.trial is not None:
-            # page reloaded during a trial
+        if current.trial is None:
+            # no more trials
+            yield group, "progress", page.output_progress(current)
+        elif not current.trial.is_running:
+            # pending state
             yield player, "progress", page.output_progress(current)
-            if current.trial.is_running:
-                # restore
-                yield player, "trial", page.output_trial(current.trial)
         else:
-            # go first/next round/trial
-            advanced = progress.advance(current)
-
-            if advanced.trial is None:
-                # no more trials
-                yield group, "progress", page.output_progress(advanced)
-            elif not advanced.trial.is_running:
-                # pending state
-                yield player, "progress", page.output_progress(advanced)
-            else:
-                yield group, "progress", page.output_progress(advanced)
-                yield group, "trial", page.output_trial(advanced.trial)
+            yield group, "progress", page.output_progress(current)
+            yield group, "trial", page.output_trial(current.trial)
 
     @classmethod
     def live_response(page, player: Player, trialid: int, utterance: str) -> LiveResponding:
-        group = player.group
         current = progress.current(page, player)
+        group = current.group
         assert current.iteround is not None and current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
 
@@ -61,7 +64,7 @@ class Main(LivePage):
             "total": C.NUM_TRIALS,
             "passed": iteround.progress_trials,
             "current": trial.iteration if trial else None,
-            "pending": not current.is_running,
+            "pending": not progr.is_running,
             "score": iteround.total_score,
         }
 

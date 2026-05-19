@@ -77,7 +77,7 @@
             ot.updatePage();
         }
 
-        ot.onLoad(continueRound);
+        ot.onLoad(initPage);
         ot.onLive("progress", liveProgress);
         ot.onLive("trial", startTrial);
         ot.onLive("update", updateTrial);
@@ -85,7 +85,12 @@
         ot.onLive("feedback", liveFeedback);
         ot.onLive("result", liveResult);
 
-        async function continueRound() {
+        function initPage() {
+            switchState("starting");
+            ot.sendLive("load");
+        }
+
+        async function iterateRound() {
             resetTrial();
             switchState("starting");
             await ot.delay(BLINK_DELAY);
@@ -147,7 +152,7 @@
         async function completeTrial() {
             switchState("completing");
             await ot.delay(ITER_DELAY);
-            continueRound();
+            iterateRound();
         }
 
         ot.onUpdate("vars.trial.responses", function (responses) {
