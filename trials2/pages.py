@@ -9,24 +9,28 @@ from . import progress
 
 
 class TrialsPage(LivePage):
-    page_styles = ['ot-progress.css', 'ot-pulse.css']
-    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
+    page_styles = ["ot-progress.css", "ot-pulse.css"]
+    page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]
 
     @classmethod
-    def live_continue(page, player: Player):
+    def live_iterate(page, player: Player):
         current = progress.current(page, player)
 
-        # restore trial on page reloading
-        if current.is_running:
+        if current.trial is not None:
+            # page reloaded during a trial
             yield "progress", page.output_progress(current)
-            yield "trial", page.output_trial(current.trial)
-            return
-
-        current = progress.advance(current)
-
-        yield "progress", page.output_progress(current)
-        if current.is_running:
-            yield "trial", page.output_trial(current.trial)
+            if current.trial.is_running:
+                # restore
+                yield "trial", page.output_trial(current.trial)
+        else:
+            # go first/next round/trial
+            advanced = progress.advance(current)
+            if advanced.trial is None:
+                # no more trials
+                yield "progress", page.output_progress(advanced)
+            else:
+                yield "progress", page.output_progress(advanced)
+                yield "trial", page.output_trial(advanced.trial)
 
     @classmethod
     def live_response(page, player: Player, *, id: int, button: str, time: int):
@@ -38,8 +42,7 @@ class TrialsPage(LivePage):
 
         yield "progress", page.output_progress(current)
         yield "feedback", page.output_feedback(current.trial, response)
-        if current.trial.is_completed:
-            yield "result", page.output_result(current.trial)
+        yield "result", page.output_result(current.trial)
 
     @classmethod
     def output_progress(page, current: Progress):
@@ -63,7 +66,6 @@ class TrialsPage(LivePage):
 
 
 class Practice(TrialsPage):
-
     @classmethod
     def output_feedback(page, trial: Trial, response: Response):
         return {

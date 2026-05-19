@@ -19,8 +19,8 @@ class Dull(Page):
 
 
 class Main(LivePage):
-    page_styles = ['ot-progress.css', 'ot-pulse.css']  # noqa
-    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]  # noqa
+    page_styles = ["ot-progress.css", "ot-pulse.css"]  # noqa
+    page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]  # noqa
 
     def get_template_name(self):
         # different page templates by players role
@@ -29,25 +29,29 @@ class Main(LivePage):
         return f"{__package__}/{pagename}_{role}.html"
 
     @classmethod
-    def live_continue(page, player: Player):
+    def live_iterate(page, player: Player):
         current = progress.current(page, player)
-        group: Group = player.group
+        group = current.group
 
-        # restore trial on page reloading
-        if current.is_running:
+        if current.trial is not None:
+            # page reloaded during a trial
             yield player, "progress", page.output_progress(current)
-            yield player, "trial", page.output_trial(current.trial)
-            return
+            if current.trial.is_running:
+                # restore
+                yield player, "trial", page.output_trial(current.trial)
+        else:
+            # go first/next round/trial
+            advanced = progress.advance(current)
 
-        current = progress.advance(current)
-
-        if not current.is_running:
-            # indicate pending state
-            yield player, "progress", page.output_progress(current)
-            return
-
-        yield group, "progress", page.output_progress(current)
-        yield group, "trial", page.output_trial(current.trial)
+            if advanced.trial is None:
+                # no more trials
+                yield group, "progress", page.output_progress(advanced)
+            elif not advanced.trial.is_running:
+                # pending state
+                yield player, "progress", page.output_progress(advanced)
+            else:
+                yield group, "progress", page.output_progress(advanced)
+                yield group, "trial", page.output_trial(advanced.trial)
 
     @classmethod
     def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
@@ -109,9 +113,7 @@ class Main(LivePage):
 
     @classmethod
     def output_result(page, trial: Trial):
-        return {
-            "scores": trial.scores
-        }
+        return {"scores": trial.scores}
 
 
 class Results(Page):
@@ -121,7 +123,7 @@ class Results(Page):
 class Dropout(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.participant.status == 'dropout'
+        return player.participant.status == "dropout"
 
 
 page_sequence = [

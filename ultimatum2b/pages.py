@@ -15,8 +15,8 @@ class Gather(WaitPage):
 
 
 class Main(LivePage):
-    page_styles = ['ot-progress.css', 'ot-pulse.css']  # noqa
-    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]  # noqa
+    page_styles = ["ot-progress.css", "ot-pulse.css"]  # noqa
+    page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]  # noqa
 
     def get_template_name(self):
         # different page templates by players role
@@ -25,33 +25,41 @@ class Main(LivePage):
         return f"{__package__}/{pagename}_{role}.html"
 
     @classmethod
-    async def live_continue(page, player: Player):
+    async def live_iterate(page, player: Player):
         current = progress.current(page, player)
-        group: Group = player.group
+        group = current.group
 
-        # restore trial on page reloading
-        if current.is_running:
+        if current.trial is not None:
+            # page reloaded during a trial
             yield player, "progress", page.output_progress(current)
-            yield player, "trial", page.output_trial(current.trial)
+            if current.trial.is_running:
+                # restore
+                yield player, "trial", page.output_trial(current.trial)
+        else:
+            # go first/next round/trial
+            advanced = progress.advance(current)
+
+            if advanced.trial is None:
+                # no more trials
+                yield group, "progress", page.output_progress(advanced)
+            elif not advanced.trial.is_running:
+                # pending state
+                yield player, "progress", page.output_progress(advanced)
+            else:
+                yield group, "progress", page.output_progress(advanced)
+                yield group, "trial", page.output_trial(advanced.trial)
+
+                # autorespond the very first turn
+                async for r in page.autoresponding(advanced):
+                    yield r
+
+    @classmethod
+    async def autoresponding(page, current: Progress):
+        if current.trial is None or not current.autoresponding:
             return
-
-        current = progress.advance(current)
-
-        if not current.is_running:
-            # indicate pending state
-            yield player, "progress", page.output_progress(current)
-            return
-
-        yield group, "progress", page.output_progress(current)
-        yield group, "trial", page.output_trial(current.trial)
-
-        if current.is_running and current.autoresponding:
-            await progress.autorespond(current)
-            yield group, "progress", page.output_progress(current)
-            yield group, "update", page.output_trial(current.trial)
-
-        if current.trial.is_completed:
-            yield group, "result", page.output_result(current.trial)
+        await progress.autorespond(current)
+        yield "progress", page.output_progress(current)
+        yield "update", page.output_trial(current.trial)
 
     @classmethod
     async def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
@@ -65,13 +73,11 @@ class Main(LivePage):
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
 
-        if current.is_running and current.autoresponding:
-            await progress.autorespond(current)
-            yield group, "progress", page.output_progress(current)
-            yield group, "update", page.output_trial(current.trial)
+        # autorespond the next turn
+        async for r in page.autoresponding(current):
+            yield r
 
-        if current.trial.is_completed:
-            yield group, "result", page.output_result(current.trial)
+        yield group, "result", page.output_result(current.trial)
 
     @classmethod
     async def live_decision(page, player: Player, *, id: int, decision: str, time: int):
@@ -84,14 +90,7 @@ class Main(LivePage):
 
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
-
-        if current.is_running and current.autoresponding:
-            await progress.autorespond(current)
-            yield group, "progress", page.output_progress(current)
-            yield group, "update", page.output_trial(current.trial)
-
-        if current.trial.is_completed:
-            yield group, "result", page.output_result(current.trial)
+        yield group, "result", page.output_result(current.trial)
 
     @classmethod
     async def live_timeout(page, player: Player):
@@ -100,7 +99,7 @@ class Main(LivePage):
         progress.timeout(current)
 
         other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
-        yield other, "progress", {'terminated': True}  # closes the page if still open
+        yield other, "progress", {"terminated": True}  # closes the page if still open
 
         if current.is_running and current.autoresponding:
             await progress.autorespond(current)
@@ -133,9 +132,7 @@ class Main(LivePage):
 
     @classmethod
     def output_result(page, trial: Trial):
-        return {
-            "scores": trial.scores
-        }
+        return {"scores": trial.scores}
 
 
 class Intro(Page):
@@ -144,7 +141,7 @@ class Intro(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        return {'endowment': C.ENDOWMENT[player.group.condition]}
+        return {"endowment": C.ENDOWMENT[player.group.condition]}
 
 
 class Instructions(Page):
@@ -156,7 +153,7 @@ class Instructions(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        return {'endowment': C.ENDOWMENT[player.group.condition]}
+        return {"endowment": C.ENDOWMENT[player.group.condition]}
 
 
 class Results(Page):
@@ -166,7 +163,7 @@ class Results(Page):
 class Dropout(Page):
     @staticmethod
     def is_displayed(player: Player):
-        return player.participant.status == 'dropout'
+        return player.participant.status == "dropout"
 
 
 page_sequence = [

@@ -9,32 +9,33 @@ from . import progress
 
 
 class Main(LivePage):
-    page_styles = ['ot-progress.css', 'ot-pulse.css']
-    page_scripts = ['ot-progress.js', 'ot-pulse.js', "format.js"]
+    page_styles = ["ot-progress.css", "ot-pulse.css"]
+    page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]
 
     @classmethod
-    def live_continue(page, player: Player):
-        group: Group = player.group
+    def live_iterate(page, player: Player):
         current = progress.current(page, player)
+        group = current.group
 
-        # restoring incomplete trial when page occasionally reloaded
-        if current.is_running:
+        if current.trial is not None:
+            # page reloaded during a trial
             yield player, "progress", page.output_progress(current)
-            yield player, "trial", page.output_trial(current.trial)
-            resp = Response.last(current.trial, player=player)
-            if resp:
-                yield player, "feedback", page.output_feedback(current, resp)
-            return
-
-        current = progress.advance(current)
-
-        if current.is_running:
-            # synchronize progress and trial
-            yield group, "progress", page.output_progress(current)
-            yield group, "trial", page.output_trial(current.trial)
+            if current.trial.is_running:
+                # restore
+                yield player, "trial", page.output_trial(current.trial)
         else:
-            # pending state
-            yield player, "progress", page.output_progress(current)
+            # go first/next round/trial
+            advanced = progress.advance(current)
+
+            if advanced.trial is None:
+                # no more trials
+                yield group, "progress", page.output_progress(advanced)
+            elif not advanced.trial.is_running:
+                # pending state
+                yield player, "progress", page.output_progress(advanced)
+            else:
+                yield group, "progress", page.output_progress(advanced)
+                yield group, "trial", page.output_trial(advanced.trial)
 
     @classmethod
     def live_response(page, player: Player, *, id: int, utterance: str):
@@ -65,11 +66,8 @@ class Main(LivePage):
 
     @classmethod
     def output_trial(page, trial: Trial):
-        chat = [{'id': r.player.id, 'response': r.utterance} for r in Response.group_last(trial, trial.iteround.group)]
-        return {
-            "id": trial.id,
-            "responses": chat
-        }
+        chat = [{"id": r.player.id, "response": r.utterance} for r in Response.group_last(trial, trial.iteround.group)]
+        return {"id": trial.id, "responses": chat}
 
     @classmethod
     def output_feedback(page, trial: Trial, response: Response):
