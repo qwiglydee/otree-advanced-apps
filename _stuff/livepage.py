@@ -11,7 +11,8 @@ Messages are routed and handled according to their type.
 """
 
 import inspect
-from typing import Any, AsyncIterator, Iterator
+from typing import Any
+from collections.abc import AsyncIterator, Iterator
 
 from otree.api import BaseGroup, BasePlayer, Page
 
@@ -21,7 +22,10 @@ LivePayload = dict[str, Any]
 LiveResponse = str | tuple[str, LivePayload] | tuple[BasePlayer | BaseGroup, str] | tuple[BasePlayer | BaseGroup, str, LivePayload]
 """Format of yields from a page live handler"""
 
-LiveResponding = Iterator[LiveResponse] | AsyncIterator[LiveResponse]
+LiveResponding = Iterator[LiveResponse]
+"""Type of page live handler: It should yield one or more live responses"""
+
+AsyncLiveResponding = AsyncIterator[LiveResponse]
 """Type of page live handler: It should yield one or more live responses"""
 
 # internal data for otree core

@@ -1,6 +1,6 @@
 from otree.api import Page, WaitPage
 
-from _stuff.livepage import LivePage, LivePayload, LiveResponding
+from _stuff.livepage import LivePage, LivePayload, AsyncLiveResponding
 from units import Points
 
 from . import progress
@@ -28,7 +28,7 @@ class Main(LivePage):
     page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]  # noqa
 
     @classmethod
-    async def live_iterate(page, player: Player) -> LiveResponding:
+    async def live_iterate(page, player: Player) -> AsyncLiveResponding:
         current = progress.current(page, player)
         group = current.group
 
@@ -57,7 +57,7 @@ class Main(LivePage):
                     yield r
 
     @classmethod
-    async def autoresponding(page, current: Progress):
+    async def autoresponding(page, current: Progress) -> AsyncLiveResponding:
         if current.trial is None or not current.autoresponding:
             return
         await progress.autorespond(current)
@@ -65,7 +65,7 @@ class Main(LivePage):
         yield "update", page.output_trial(current.trial)
 
     @classmethod
-    async def live_proposal(page, player: Player, *, id: int, proposal: str, time: int) -> LiveResponding:
+    async def live_proposal(page, player: Player, *, id: int, proposal: str, time: int) -> AsyncLiveResponding:
         current = progress.current(page, player)
         group = current.player.group
         assert current.trial is not None and current.trial.id == id, "mismatched response"
@@ -82,7 +82,7 @@ class Main(LivePage):
         yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    async def live_decision(page, player: Player, *, id: int, decision: str, time: int) -> LiveResponding:
+    async def live_decision(page, player: Player, *, id: int, decision: str, time: int) -> AsyncLiveResponding:
         current = progress.current(page, player)
         group = current.player.group
         assert current.trial is not None and current.trial.id == id, "mismatched response"
@@ -95,7 +95,7 @@ class Main(LivePage):
         yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    async def live_timeout(page, player: Player) -> LiveResponding:
+    async def live_timeout(page, player: Player) -> AsyncLiveResponding:
         current = progress.current(page, player)
         assert current.trial is not None and current.trial.id == id, "mismatched response"
 
