@@ -14,6 +14,10 @@ class Progress(NamedTuple):
     trial: Trial | None
 
     @property
+    def group(self) -> Group:
+        return self.player.group
+
+    @property
     def is_running(self) -> bool:
         return self.trial is not None and self.trial.is_running
 
@@ -59,35 +63,34 @@ def advance(curr: Progress) -> Progress:
     pagename, player, iteround, trial = curr
     assert trial is None or trial.is_closed, "Invalid advancing over incomplete trial"
 
-    iteround = advance_round(player, pagename, iteround)
+    iteround = advance_round(curr, iteround)
 
     if not iteround.is_closed:
-        trial = advance_trial(player, iteround, trial)
+        trial = advance_trial(curr, iteround, trial)
 
     return Progress(pagename, player, iteround, trial)
 
 
-def advance_round(player: Player, pagename: str, iteround: Round | None) -> Round:
-    group: Group = player.group
+def advance_round(curr: Progress, iteround: Round | None) -> Round:
 
     if iteround is None:
-        iteround = Round.advance(pagename, group=group)
+        iteround = Round.pick(curr.pagename, group=curr.group)
 
-    if iteround.is_pristine and track_players_all_around(player, iteround):
+    if iteround.is_pristine and track_players_all_around(curr.player, iteround):
         iteround.start()
 
     if iteround.is_running and not track_round_continue(iteround):
         iteround.complete()
-        set_payoff(group, iteround)
+        set_payoff(curr.group, iteround)
 
     return iteround
 
 
-def advance_trial(player: Player, iteround: Round, trial: Trial | None) -> Trial:
+def advance_trial(curr: Progress, iteround: Round, trial: Trial | None) -> Trial:
     if trial is None:
-        trial = Trial.advance_next(iteround)
+        trial = Trial.pick_next(iteround)
 
-    if trial.is_pristine and track_players_all_atrial(player, trial):
+    if trial.is_pristine and track_players_all_atrial(curr.player, trial):
         trial.start()
 
     if trial.is_running and not track_trial_continue(trial):
@@ -99,31 +102,31 @@ def advance_trial(player: Player, iteround: Round, trial: Trial | None) -> Trial
 
 
 def respond_proposal(curr: Progress, proposal: Points, **kwargs) -> Response:
-    assert curr.is_running
     pagename, player, iteround, trial = curr
+    assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
     assert player.role == curr.turn
     response = Response.create_next(trial, player, stage=trial.progress_stage, p_proposal=proposal, **kwargs)
 
-    advance_trial(player, iteround, trial)
+    advance_trial(curr, iteround, trial)
     return response
 
 
 def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
-    assert curr.is_running
     pagename, player, iteround, trial = curr
+    assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
     assert player.role == curr.turn
     response = Response.create_next(trial, player, stage=trial.progress_stage, r_decision=decision, **kwargs)
 
-    advance_trial(player, iteround, trial)
+    advance_trial(curr, iteround, trial)
     return response
 
 
 def timeout(curr: Progress):
     """Handle timeout, reported from a waiting (live) player"""
-    assert curr.is_running
     pagename, player, iteround, trial = curr
+    assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
     other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
     other.participant.status = "dropout"

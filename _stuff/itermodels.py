@@ -22,14 +22,15 @@ class IterStatusMixin:
     - COMPLETED: normally completed
     - use anything else for additional reasons
     """
-    status = database.StringField(choices=['NEW', 'STARTED', 'CLOSED'])
+
+    status = database.StringField(choices=["NEW", "STARTED", "CLOSED"])
     completion = database.StringField()
 
     processing_started = database.FloatField()
     processing_ended = database.FloatField()
 
     @property
-    def processing_time(self) -> float:
+    def processing_time(self) -> float | None:
         """Server-side time in seconds from being started to closed
         This includes all processing time and network latency.
         """
@@ -39,7 +40,7 @@ class IterStatusMixin:
 
     @property
     def is_pristine(self) -> bool:
-        return self.status == 'NEW'
+        return self.status == "NEW"
 
     @property
     def is_running(self) -> bool:
@@ -47,7 +48,7 @@ class IterStatusMixin:
 
     @property
     def is_closed(self) -> bool:
-        return self.status == 'CLOSED'
+        return self.status == "CLOSED"
 
     def start(self):
         self.processing_started = now()
@@ -56,7 +57,7 @@ class IterStatusMixin:
     def close(self, reason: str):
         """Mark model as closed for some reason"""
         self.processing_ended = now()
-        self.status = 'CLOSED'
+        self.status = "CLOSED"
         self.completion = reason
 
     def complete(self):
@@ -68,7 +69,7 @@ class IterStatusMixin:
 
     @property
     def is_completed(self):
-        return self.is_closed and self.completion == 'COMPLETED'
+        return self.is_closed and self.completion == "COMPLETED"
 
 
 class BaseRoundModel(IterStatusMixin, ExtraModel):
@@ -79,6 +80,7 @@ class BaseRoundModel(IterStatusMixin, ExtraModel):
     Actual model in your app should add links to player or group models, whatever applies.
     Links to the player/group should be provided in all the methods via their kwargs
     """
+
     __abstract__ = True
 
     pagename = database.StringField()
@@ -106,7 +108,7 @@ class BaseRoundModel(IterStatusMixin, ExtraModel):
         """Get current round matching the given pagename and kwargs.
         Returns None if none yet created.
         """
-        assert 'player' in kwargs or 'group' in kwargs
+        assert "player" in kwargs or "group" in kwargs
         try:
             return cls.objects_filter(pagename=pagename, **kwargs).one_or_none()
         except MultipleResultsFound:
@@ -115,15 +117,17 @@ class BaseRoundModel(IterStatusMixin, ExtraModel):
     @classmethod
     def create_new(cls, pagename: str, **kwargs) -> Self:
         """Create new round for the given pagename and kwargs"""
-        assert 'player' in kwargs or 'group' in kwargs
-        instance = cls.create(pagename=pagename, **kwargs, status='NEW')
+        assert "player" in kwargs or "group" in kwargs
+        instance = cls.create(pagename=pagename, **kwargs, status="NEW")
         instance.init()
         db.commit()
         return instance
 
     @classmethod
-    def advance(cls, pagename: str, **kwargs) -> Self:
-        """Create or get already created round for the given pagename and kwargs"""
+    def pick(cls, pagename: str, **kwargs) -> Self:
+        """Create or get already created round for the given page and kwargs
+        Works both for pre-generated rounds or created on the fly
+        """
         thenext = cls.current(pagename, **kwargs)
         if thenext is None:
             thenext = cls.create_new(pagename, **kwargs)
@@ -141,6 +145,7 @@ class BaseTrialModel(IterStatusMixin, ExtraModel):
     Actual model in your app should add link to round model.
     And obviously all the parameters of the task.
     """
+
     __abstract__ = True
 
     iteround = database.Link(BaseRoundModel)  # probably: redefine in concrete subclass
@@ -166,13 +171,13 @@ class BaseTrialModel(IterStatusMixin, ExtraModel):
         Returns None if none started yet.
         """
         try:
-            return cls.objects_filter(iteround=iteround, status='STARTED').one_or_none()
+            return cls.objects_filter(iteround=iteround, status="STARTED").one_or_none()
         except MultipleResultsFound:
             raise RuntimeError(f"Multiple of {cls.__name__} started")
 
     @classmethod
     def create_new(cls, iteround: BaseRoundModel, iteration: int) -> Self:
-        instance = cls.create(iteround=iteround, iteration=iteration, status='NEW')
+        instance = cls.create(iteround=iteround, iteration=iteration, status="NEW")
         instance.init()
         return instance
 
@@ -181,7 +186,7 @@ class BaseTrialModel(IterStatusMixin, ExtraModel):
         """Create a next trial within given round
         With sequential iteration number following last closed trial
         """
-        cnt = cls.count(iteround, status='CLOSED')
+        cnt = cls.count(iteround, status="CLOSED")
         instance = cls.create_new(iteround=iteround, iteration=cnt + 1)
         db.commit()
         return instance
@@ -194,11 +199,11 @@ class BaseTrialModel(IterStatusMixin, ExtraModel):
         return instances
 
     @classmethod
-    def advance_next(cls, iteround: BaseRoundModel):
+    def pick_next(cls, iteround: BaseRoundModel):
         """Get or create next new trial
         Works both for pre-generated trials or created on the fly
         """
-        thenext = cls.first(iteround, status='NEW')
+        thenext = cls.first(iteround, status="NEW")
         if thenext is None:
             thenext = cls.create_next(iteround)
         return thenext
@@ -270,4 +275,4 @@ class BaseResponseModel(ExtraModel):
         if len(all) == 0:
             return []
         pids = [r.player.id for r in all]
-        return [r for i, r in enumerate(all) if r.player.id not in pids[i + 1:]]
+        return [r for i, r in enumerate(all) if r.player.id not in pids[i + 1 :]]
