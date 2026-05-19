@@ -35,7 +35,8 @@ class TrialsPage(LivePage):
     @classmethod
     def live_decision(page, player: Player, trialid: int, decision: str, time: int) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
+        assert current.iteround is not None and current.trial is not None
+        assert trialid == current.trial.id, "mismatched response"
         assert decision in C.STRATEGIES
 
         progress.respond_decision(current, decision, response_time=time)
@@ -46,7 +47,8 @@ class TrialsPage(LivePage):
     @classmethod
     def live_answer(page, player: Player, trialid: int, time: int, answer: str) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
+        assert current.iteround is not None and current.trial is not None
+        assert trialid == current.trial.id, "mismatched response"
         assert current.trial.strategy == "INPUT"
 
         response = progress.respond_answer(current, answer, response_time=time)
@@ -58,7 +60,8 @@ class TrialsPage(LivePage):
     @classmethod
     def live_choice(page, player: Player, trialid: int, time: int, button: int) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
+        assert current.iteround is not None and current.trial is not None
+        assert trialid == current.trial.id, "mismatched response"
         assert current.trial.strategy == "CHOOSE"
 
         answer = current.trial.options[str(button)]

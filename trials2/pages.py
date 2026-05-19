@@ -35,7 +35,8 @@ class TrialsPage(LivePage):
     @classmethod
     def live_response(page, player: Player, trialid: int, button: str, time: int) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
+        assert current.iteround is not None and current.trial is not None
+        assert trialid == current.trial.id, "mismatched response"
 
         answer = current.trial.options[button]
         response = progress.respond(current, answer, response_time=time, button=button)

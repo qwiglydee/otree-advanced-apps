@@ -41,7 +41,8 @@ class Main(LivePage):
     def live_response(page, player: Player, trialid: int, utterance: str) -> LiveResponding:
         group = player.group
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
+        assert current.iteround is not None and current.trial is not None
+        assert trialid == current.trial.id, "mismatched response"
 
         response = progress.respond(current, utterance)
 
