@@ -1,27 +1,48 @@
 """
-Combining multiple fields into single dictionary attribute
+Combining multiple fields into single dictionary property
 by qwiglydee@gmail.com
+
+The property retrieves a dictionary with all values from fields.
+Setting a key in the dict updates underlying field
 
 Usage:
   class Something(ExtraModel):
       foo_a = models.StringField()
       foo_b = models.StringField()
-      foos = dictproperty('foo_', 'AB') # retrieves: { 'A': foo_a, 'B': foo_b }
-
-      bar_a1 = models.StringField()
-      bar_a2 = models.StringField()
-      bars = dictproperty('bar_', ('a1', 'a2')) # retrieves: { 'a1': bar_a1, 'B': bar_b }
+      foos = dictprop('foo_', ('A', 'B'))  # makes dict(A=value_of(foo_a), B=value_of(foo_b))
 """
 
+from typing import Any
 
-def dictvalues(obj, prefix, suffixes):
-    return {k: getattr(obj, prefix + k.lower()) for k in suffixes}
+
+class dictproxy(dict):
+    __obj: Any
+    __prefix: str
+    __keys: tuple
+
+    def __fieldname(self, key):
+        assert key in self.__keys
+        return f"{self.__prefix}{str(key).lower()}"
+
+    def __setitem__(self, key, val):
+        super().__setitem__(key, val)
+        setattr(self.__obj, self.__fieldname(key), val)
+
+    def __new__(cls, obj, prefix, keys):
+        inst = super().__new__(cls)
+        inst.__obj = obj
+        inst.__prefix = prefix
+        inst.__keys = keys
+        return inst
+
+    def __init__(self, *args):
+        super().__init__({k: getattr(self.__obj, self.__fieldname(k)) for k in self.__keys})
 
 
 class dictprop:
-    def __init__(self, prefix, suffixes):
+    def __init__(self, prefix, keys):
         self.prefix = prefix
-        self.suffixes = suffixes
+        self.keys = keys
 
-    def __get__(self, instance, owner):
-        return dictvalues(instance, self.prefix, self.suffixes)
+    def __get__(self, obj, cls):
+        return dictproxy(obj, self.prefix, self.keys)
