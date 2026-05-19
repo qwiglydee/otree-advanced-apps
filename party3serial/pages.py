@@ -38,10 +38,10 @@ class Main(LivePage):
                 yield group, "trial", page.output_trial(advanced.trial)
 
     @classmethod
-    def live_response(page, player: Player, *, id: int, utterance: str) -> LiveResponding:
+    def live_response(page, player: Player, trialid: int, utterance: str) -> LiveResponding:
         group = player.group
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
 
         response = progress.respond(current, utterance)
 

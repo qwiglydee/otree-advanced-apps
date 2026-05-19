@@ -127,7 +127,7 @@
             vars.response = response;
             switchState("processing");
             ot.sendLive("response", {
-                id: vars.trial.id,
+                trialid: vars.trial.id,
                 utterance: response,
             });
         }

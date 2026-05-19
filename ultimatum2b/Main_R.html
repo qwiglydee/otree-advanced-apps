@@ -104,7 +104,7 @@
         });
 
         ot.onTimer("pending", function timeoutPending() {
-            ot.sendLive("timeout", { id: vars.trial.id });
+            ot.sendLive("timeout", { trialid: vars.trial.id });
         });
 
         ot.onLoad(continueRound);
@@ -162,7 +162,7 @@
         function confirmResponse() {
             switchState("processing");
             ot.sendLive("decision", {
-                id: vars.trial.id,
+                trialid: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 decision: vars.response,
             });

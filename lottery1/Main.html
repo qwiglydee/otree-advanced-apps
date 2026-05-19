@@ -124,7 +124,7 @@
             vars.choice = Number(choice);
             switchState("processing");
             ot.sendLive("response", {
-                id: vars.trial.id,
+                trialid: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 button: vars.choice,
             });

@@ -57,10 +57,10 @@ class Main(LivePage):
                 yield group, "trial", page.output_trial(advanced.trial)
 
     @classmethod
-    def live_proposal(page, player: Player, *, id: int, proposal: str, time: int) -> LiveResponding:
+    def live_proposal(page, player: Player, trialid: int, proposal: str, time: int) -> LiveResponding:
         current = progress.current(page, player)
         group = player.group
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
 
         progress.respond_proposal(current, Points(proposal), response_time=time)
 
@@ -70,10 +70,10 @@ class Main(LivePage):
             yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    def live_decision(page, player: Player, *, id: int, decision: str, time: int) -> LiveResponding:
+    def live_decision(page, player: Player, trialid: int, decision: str, time: int) -> LiveResponding:
         current = progress.current(page, player)
         group = player.group
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
 
         assert decision in C.DECISIONS
         progress.respond_decision(current, decision, response_time=time)
@@ -87,7 +87,7 @@ class Main(LivePage):
     def live_timeout(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
         group = player.group
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
 
         progress.timeout(current)
 

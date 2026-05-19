@@ -33,9 +33,9 @@ class TrialsPage(LivePage):
                 yield "trial", page.output_trial(advanced.trial)
 
     @classmethod
-    def live_decision(page, player: Player, *, id: int, decision: str, time: int) -> LiveResponding:
+    def live_decision(page, player: Player, trialid: int, decision: str, time: int) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
         assert decision in C.STRATEGIES
 
         progress.respond_decision(current, decision, response_time=time)
@@ -44,9 +44,9 @@ class TrialsPage(LivePage):
         yield "update", page.output_trial(current.trial)
 
     @classmethod
-    def live_answer(page, player: Player, *, id: int, time: int, answer: str) -> LiveResponding:
+    def live_answer(page, player: Player, trialid: int, time: int, answer: str) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
         assert current.trial.strategy == "INPUT"
 
         response = progress.respond_answer(current, answer, response_time=time)
@@ -56,9 +56,9 @@ class TrialsPage(LivePage):
         yield "result", page.output_result(current.trial)
 
     @classmethod
-    def live_choice(page, player: Player, *, id: int, time: int, button: int) -> LiveResponding:
+    def live_choice(page, player: Player, trialid: int, time: int, button: int) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
         assert current.trial.strategy == "CHOOSE"
 
         answer = current.trial.options[str(button)]

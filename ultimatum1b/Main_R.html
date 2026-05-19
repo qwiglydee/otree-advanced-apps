@@ -150,7 +150,7 @@
         function confirmResponse() {
             switchState("processing");
             ot.sendLive("decision", {
-                id: vars.trial.id,
+                trialid: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 decision: vars.response,
             });

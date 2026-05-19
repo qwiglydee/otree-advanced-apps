@@ -199,7 +199,7 @@
             vars.decision = decision;
             switchState("processing");
             ot.sendLive("decision", {
-                id: vars.trial.id,
+                trialid: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 decision,
             });
@@ -209,7 +209,7 @@
             vars.answer = String(answer);
             switchState("processing");
             ot.sendLive("answer", {
-                id: vars.trial.id,
+                trialid: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 answer: vars.answer,
             });
@@ -223,7 +223,7 @@
         function confirmChoice() {
             switchState("processing");
             ot.sendLive("choice", {
-                id: vars.trial.id,
+                trialid: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 button: vars.choice,
             });

@@ -124,7 +124,7 @@
             vars.answer = String(answer);
             switchState("processing");
             ot.sendLive("response", {
-                id: vars.trial.id,
+                trialid: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 answer: vars.answer,
             });

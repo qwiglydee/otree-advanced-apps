@@ -58,10 +58,10 @@ class Main(LivePage):
                         yield r
 
     @classmethod
-    async def live_proposal(page, player: Player, *, id: int, proposal: str, time: int) -> AsyncLiveResponding:
+    async def live_proposal(page, player: Player, trialid: int, proposal: str, time: int) -> AsyncLiveResponding:
         current = progress.current(page, player)
         group = current.player.group
-        assert current.iteround is not None and current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.iteround is not None and current.trial is not None and current.trial.id == trialid, "mismatched response"
 
         progress.respond_proposal(current, Points(proposal), response_time=time)
 
@@ -82,10 +82,10 @@ class Main(LivePage):
         yield "update", page.output_trial(current.trial)
 
     @classmethod
-    async def live_decision(page, player: Player, *, id: int, decision: str, time: int) -> AsyncLiveResponding:
+    async def live_decision(page, player: Player, trialid: int, decision: str, time: int) -> AsyncLiveResponding:
         current = progress.current(page, player)
         group = current.player.group
-        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == trialid, "mismatched response"
 
         assert decision in C.DECISIONS
         progress.respond_decision(current, decision, response_time=time)
@@ -105,10 +105,10 @@ class Main(LivePage):
         yield "result", page.output_result(current.trial)
 
     @classmethod
-    async def live_timeout(page, player: Player, id: int) -> AsyncLiveResponding:
+    async def live_timeout(page, player: Player, trialid: int) -> AsyncLiveResponding:
         current = progress.current(page, player)
         assert current.iteround is not None and current.trial is not None
-        assert current.trial.id == id, "mismatched response"
+        assert current.trial.id == trialid, "mismatched response"
 
         progress.timeout(current)
 
