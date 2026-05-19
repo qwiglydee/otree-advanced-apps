@@ -1,25 +1,28 @@
-from otree.views import Page
+from otree.api import Page
 
-from _stuff.livepage import LivePage
+from _stuff.livepage import LivePage, LivePayload, LiveResponding
+from units import Points
 
-from .conf import C, Points
+from . import progress
+from .conf import C
 from .models import Player, Trial
 from .progress import Progress
-from . import progress
+
+
+def get_template_rolename(page: Page):
+    # different page templates by players role: `Pagename_ROLE.html`
+    pagename = page.__class__.__name__
+    role: str = page.player.role  # type: ignore
+    return f"{__package__}/{pagename}_{role}.html"
 
 
 class Main(LivePage):
+    get_template_name = get_template_rolename
     page_styles = ["ot-progress.css", "ot-pulse.css"]  # noqa
     page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]  # noqa
 
-    def get_template_name(self):
-        # different page templates by players role
-        pagename = self.__class__.__name__
-        role = self.player.role
-        return f"{__package__}/{pagename}_{role}.html"
-
     @classmethod
-    async def live_iterate(page, player: Player):
+    async def live_iterate(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
 
         if current.trial is not None:
@@ -52,12 +55,11 @@ class Main(LivePage):
         yield "update", page.output_trial(current.trial)
 
     @classmethod
-    async def live_proposal(page, player: Player, *, id: int, proposal: str, time: int):
+    async def live_proposal(page, player: Player, *, id: int, proposal: str, time: int) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == id, "mismatched response"
 
-        proposal = Points(proposal)
-        progress.respond_proposal(current, proposal, response_time=time)
+        progress.respond_proposal(current, Points(proposal), response_time=time)
 
         yield "progress", page.output_progress(current)
         yield "update", page.output_trial(current.trial)
@@ -69,9 +71,9 @@ class Main(LivePage):
         yield "result", page.output_result(current.trial)
 
     @classmethod
-    def live_decision(page, player: Player, *, id: int, decision: str, time: int):
+    async def live_decision(page, player: Player, *, id: int, decision: str, time: int) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == id, "mismatched response"
 
         assert decision in C.DECISIONS
         progress.respond_decision(current, decision, response_time=time)
@@ -83,6 +85,7 @@ class Main(LivePage):
     @classmethod
     def output_progress(page, current: Progress):
         pagename, player, iteround, trial = current
+        assert iteround is not None
         return {
             "total": C.NUM_TRIALS,
             "terminated": iteround.is_closed,
@@ -93,7 +96,7 @@ class Main(LivePage):
         }
 
     @classmethod
-    def output_trial(page, trial: Trial):
+    def output_trial(page, trial: Trial) -> LivePayload:
         return {
             "id": trial.id,
             "endowment": trial.endowment,
@@ -102,7 +105,7 @@ class Main(LivePage):
         }
 
     @classmethod
-    def output_result(page, trial: Trial):
+    def output_result(page, trial: Trial) -> LivePayload:
         return {"scores": trial.scores}
 
 
@@ -113,11 +116,7 @@ class Intro(Page):
 
 
 class Instructions(Page):
-    def get_template_name(self):
-        # different page templates by players role
-        pagename = self.__class__.__name__
-        role = self.player.role
-        return f"{__package__}/{pagename}_{role}.html"
+    get_template_name = get_template_rolename
 
     @staticmethod
     def vars_for_template(player: Player):

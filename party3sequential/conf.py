@@ -1,12 +1,6 @@
-from otree.constants import BaseConstants
-from otree.decimal import DecimalUnit
+from otree.api import BaseConstants
 
-
-class Points(DecimalUnit):
-    storage_places = 1
-    output_max_places = 1
-    output_min_places = 1
-    input_places = 1
+from units import Points
 
 
 class C(BaseConstants):
@@ -21,7 +15,7 @@ class C(BaseConstants):
 
     NUM_TRIALS = 5
 
-    RESPONSES = ['MEOW', 'WOOF']
+    RESPONSES = ["MEOW", "WOOF"]
 
     SCORING = {
         2: Points(1.0),

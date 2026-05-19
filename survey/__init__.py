@@ -1,5 +1,5 @@
 from .conf import C, config_condition  # noqa
-from .models import Subsession, Group, Player   # noqa
+from .models import Subsession, Group, Player  # noqa
 from .pages import page_sequence  # noqa
 
 

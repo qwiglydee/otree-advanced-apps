@@ -1,7 +1,8 @@
-from otree.constants import BaseConstants
+from otree.api import BaseConstants
 
 from _stuff.config import get_session_param
 
+##
 import ultimatum3 as mainapp
 
 
@@ -26,4 +27,4 @@ class C(BaseConstants):
 
 
 def config_condition(session):
-    return get_session_param(session, 'condition', choices=C.CONDITIONS, default=None)
+    return get_session_param(session, "condition", choices=C.CONDITIONS, default=None)

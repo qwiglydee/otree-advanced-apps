@@ -1,18 +1,18 @@
-from otree.views import Page
+from otree.api import Page
 
 from .conf import C
 from .models import Player, preassign_player
 
 
-def get_template_rolename(page):
+def get_template_rolename(page: Page):
     # different page templates by players role: `Pagename_ROLE.html`
     pagename = page.__class__.__name__
-    role = page.player.role
+    role: str = page.player.role  # type: ignore
     return f"{__package__}/{pagename}_{role}.html"
 
 
 def common_vars(player: Player):
-    return {'condition': player.subsession.condition, 'endowment': C.ENDOWMENT[player.subsession.condition]}
+    return {"condition": player.condition, "endowment": C.ENDOWMENT[player.condition]}
 
 
 class Intro(Page):
@@ -25,7 +25,7 @@ class Intro(Page):
     @staticmethod
     def before_next_page(player: Player, timeout_happened: bool):
         if timeout_happened:
-            player.participant.status = 'dropout'
+            player.participant.status = "dropout"
 
         if not player.dropout and not player.misfit:
             preassign_player(player)
@@ -43,16 +43,15 @@ class Instructions(Page):
     @staticmethod
     def before_next_page(player: Player, timeout_happened: bool):
         if timeout_happened:
-            player.participant.status = 'dropout'
+            player.participant.status = "dropout"
 
 
 class Comprehension(Page):
     timeout_seconds = 30
-    form_model = "player"
-    form_fields = ["comprehended"]
-
     get_template_name = get_template_rolename
     vars_for_template = common_vars
+    form_model = "player"
+    form_fields = ["comprehended"]
 
     @staticmethod
     def is_displayed(player: Player):
@@ -61,7 +60,7 @@ class Comprehension(Page):
     @staticmethod
     def before_next_page(player: Player, timeout_happened: bool):
         if timeout_happened:
-            player.participant.status = 'dropout'
+            player.participant.status = "dropout"
 
 
 class Dropout(Page):

@@ -1,11 +1,11 @@
-from otree.views import Page
+from otree.api import Page
 
-from _stuff.livepage import LivePage
+from _stuff.livepage import LivePage, LivePayload, LiveResponding
 
-from .conf import C
-from .models import Player, Trial, Response
-from .progress import Progress
 from . import progress
+from .conf import C
+from .models import Player, Response, Trial
+from .progress import Progress
 
 
 class TrialsPage(LivePage):
@@ -13,7 +13,7 @@ class TrialsPage(LivePage):
     page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]
 
     @classmethod
-    def live_iterate(page, player: Player):
+    def live_iterate(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
 
         if current.trial is not None:
@@ -33,9 +33,9 @@ class TrialsPage(LivePage):
                 yield "trial", page.output_trial(advanced.trial)
 
     @classmethod
-    def live_decision(page, player: Player, *, id: int, decision: str, time: int):
+    def live_decision(page, player: Player, *, id: int, decision: str, time: int) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == id, "mismatched response"
         assert decision in C.STRATEGIES
 
         progress.respond_decision(current, decision, response_time=time)
@@ -44,9 +44,10 @@ class TrialsPage(LivePage):
         yield "update", page.output_trial(current.trial)
 
     @classmethod
-    def live_response(page, player: Player, *, id: int, time: int, answer: str = None, button: str = None):
+    def live_response(page, player: Player, *, id: int, time: int, answer: str = None, button: str = None) -> LiveResponding:
+        # TODO: refactor into different live_ handlers
         current = progress.current(page, player)
-        assert current.trial and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == id, "mismatched response"
 
         if current.trial.strategy == "INPUT":
             assert answer is not None and button is None
@@ -64,6 +65,7 @@ class TrialsPage(LivePage):
     @classmethod
     def output_progress(page, current: Progress):
         pagename, player, iteround, trial = current
+        assert iteround is not None
         return {
             "total": C.NUM_TRIALS[pagename],
             "terminated": iteround.is_closed,
@@ -75,7 +77,7 @@ class TrialsPage(LivePage):
         }
 
     @classmethod
-    def output_trial(page, trial: Trial):
+    def output_trial(page, trial: Trial) -> LivePayload:
         return {
             "id": trial.id,
             "task": trial.task,
@@ -83,17 +85,23 @@ class TrialsPage(LivePage):
             "strategy": trial.strategy,
         }
 
+    @classmethod
+    def output_feedback(page, trial: Trial, response: Response) -> LivePayload: ...
+
+    @classmethod
+    def output_result(page, trial: Trial) -> LivePayload: ...
+
 
 class Practice(TrialsPage):
     @classmethod
-    def output_feedback(page, trial: Trial, response: Response):
+    def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
             "final": trial.is_completed,
             "correct": response.correct,
         }
 
     @classmethod
-    def output_result(page, trial: Trial):
+    def output_result(page, trial: Trial) -> LivePayload:
         return {
             "score": trial.score,
             "truth": trial.truth,
@@ -102,13 +110,13 @@ class Practice(TrialsPage):
 
 class Main(TrialsPage):
     @classmethod
-    def output_feedback(page, trial: Trial, response: Response):
+    def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
             "final": trial.is_completed,
         }
 
     @classmethod
-    def output_result(page, trial: Trial):
+    def output_result(page, trial: Trial) -> LivePayload:
         return {
             "score": trial.score,
         }

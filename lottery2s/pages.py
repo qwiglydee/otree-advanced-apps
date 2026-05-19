@@ -1,12 +1,12 @@
-from otree.views import Page
+from otree.api import Page
 
-from _stuff.livepage import LivePage
 from _stuff.layout import arrange
+from _stuff.livepage import LivePage, LivePayload, LiveResponding
 
-from .conf import C
-from .models import Player, Trial, Response
-from .progress import Progress
 from . import progress
+from .conf import C
+from .models import Player, Response, Trial
+from .progress import Progress
 
 
 class TrialsPage(LivePage):
@@ -14,7 +14,7 @@ class TrialsPage(LivePage):
     page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]
 
     @classmethod
-    def live_iterate(page, player: Player):
+    def live_iterate(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
 
         if current.trial is not None:
@@ -34,11 +34,10 @@ class TrialsPage(LivePage):
                 yield "trial", page.output_trial(advanced.trial)
 
     @classmethod
-    def live_response(page, player: Player, *, id: int, stage: str, button: str, time: int):
+    def live_response(page, player: Player, *, id: int, stage: str, button: int, time: int) -> LiveResponding:
         current = progress.current(page, player)
-        assert current.trial and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == id, "mismatched response"
 
-        button = button
         choice = current.trial.layout[button]
         response = progress.respond(current, stage, choice, response_time=time, button=button)
 
@@ -50,6 +49,7 @@ class TrialsPage(LivePage):
     @classmethod
     def output_progress(page, current: Progress):
         pagename, player, iteround, trial = current
+        assert iteround
         return {
             "total": C.NUM_TRIALS[pagename],
             "terminated": iteround.is_closed,
@@ -60,21 +60,21 @@ class TrialsPage(LivePage):
         }
 
     @classmethod
-    def output_trial(page, trial: Trial):
+    def output_trial(page, trial: Trial) -> LivePayload:
         return {
             "id": trial.id,
             "labels": arrange(trial.layout, trial.labels),
         }
 
     @classmethod
-    def output_feedback(page, trial: Trial, response: Response):
+    def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
             "final": trial.is_completed,
             "outcomes": arrange(trial.layout, response.outcomes),
         }
 
     @classmethod
-    def output_result(page, trial: Trial):
+    def output_result(page, trial: Trial) -> LivePayload:
         return {"score": trial.score}
 
 

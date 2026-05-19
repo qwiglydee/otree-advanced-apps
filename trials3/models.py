@@ -1,12 +1,16 @@
 import random
 
-from otree import database
-from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
+from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
-from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 from _stuff.dictprop import dictprop
+from _stuff.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
+from units import Points
 
-from .conf import C, Points
+from .conf import C
+
+
+def PointsField():
+    return models.DecimalField(unit=Points, initial=0)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -18,48 +22,48 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    condition = database.StringField()
-    total_score = database.DecimalField(unit=Points, initial=0)
+    condition = models.StringField()
+    total_score = PointsField()
 
 
 class Round(BaseRoundModel):
-    player: Player = database.Link(Player)
-    ispractice = database.BooleanField()
-    total_score = database.DecimalField(unit=Points, initial=0)
+    player: Player = models.Link(Player)
+    ispractice = models.BooleanField()
+    total_score = PointsField()
 
     @property
     def is_practice(self) -> bool:
-        return self.pagename == 'Practice'
+        return self.pagename == "Practice"
 
-    def init(self, **kwargs):
+    def init(self):
         pass
 
     def update(self):
         pass
 
-    progress_trials = database.IntegerField()
+    progress_trials = models.IntegerField()
 
 
 class Trial(BaseTrialModel):
-    iteround: Round = database.Link(Round)
+    iteround: Round = models.Link(Round)
 
-    task = database.StringField()
-    truth = database.StringField()
+    task = models.StringField()
+    truth = models.StringField()
 
-    option_1 = database.StringField()
-    option_2 = database.StringField()
-    option_3 = database.StringField()
-    options = dictprop('option_', '123')
+    option_1 = models.StringField()
+    option_2 = models.StringField()
+    option_3 = models.StringField()
+    options = dictprop("option_", "123")
 
-    strategy = database.StringField()
-    success = database.IntegerField()
-    score = database.DecimalField(unit=Points, initial=0)
+    strategy = models.StringField()
+    success = models.IntegerField()
+    score = PointsField()
 
     @property
     def condition(self) -> str:
         return self.iteround.player.condition
 
-    def init(self, **kwargs):
+    def init(self):
         config = C.NUMBERS[self.condition]
         num1, num2 = config.samples(2)
         result = num1 + num2
@@ -75,46 +79,47 @@ class Trial(BaseTrialModel):
         self.option_3 = str(options[2])
 
     def update(self):
-        response = Response.last(self, stage='DECISION')
+        response = Response.last(self, stage="DECISION")
         self.strategy = response.decision if response else None
-        response = Response.last(self, stage='ANSWER')
+        response = Response.last(self, stage="ANSWER")
         self.success = response.correct if response else None
 
     def complete(self):
-        self.close('COMPLETED')
+        assert self.success is not None
+        self.close("COMPLETED")
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
 
-    progress_retries = database.IntegerField()
-    progress_stage = database.StringField()
+    progress_retries = models.IntegerField()
+    progress_stage = models.StringField()
 
 
 class Response(BaseResponseModel):
     """Both for decisions and answers"""
-    trial: Trial = database.Link(Trial)
-    player: Player = database.Link(Player)
-    stage = database.StringField()
-    response_time = database.IntegerField()
 
-    decision = database.StringField()
-    button = database.StringField()
-    answer = database.StringField()
-    correct = database.BooleanField()
+    trial: Trial = models.Link(Trial)
+    player: Player = models.Link(Player)
+    stage = models.StringField()
+    response_time = models.IntegerField()
+
+    decision = models.StringField()
+    button = models.StringField()
+    answer = models.StringField()
+    correct = models.BooleanField()
 
     def evaluate(self):
-        if self.stage == 'ANSWER':
+        if self.stage == "ANSWER":
             assert self.answer is not None
             self.correct = self.answer == self.trial.truth
 
 
 def set_payoff(player: Player, iteround: Round):
-    if iteround.is_practice:
-        return
-    player.total_score = iteround.total_score
-    player.payoff = player.total_score
+    if iteround.pagename == "Main":
+        player.total_score = iteround.total_score
+        player.payoff = player.total_score.to_real_world_currency(player.session)  # type: ignore
 
 
-def custom_export_trials(_: list[Player]):
+def custom_export_trials(_):
     yield [
         "session.code",
         "session.label",
@@ -145,17 +150,15 @@ def custom_export_trials(_: list[Player]):
         "trial.retries",
     ]
 
-    for trial in Trial.objects_filter().order_by('iteround_id', 'iteration'):
-        iteround: Round = trial.iteround
-        player: Player = iteround.player
-        session: Session = player.session
-        participant: Participant = player.participant
+    for trial in Trial.totall():
+        iteround = trial.iteround
+        player = iteround.player
 
         yield [
-            session.code,
-            session.label,
-            participant.code,
-            participant.label,
+            player.session.code,
+            player.session.label,
+            player.participant.code,
+            player.participant.label,
             player.condition,
             #
             iteround.pagename,
@@ -178,11 +181,11 @@ def custom_export_trials(_: list[Player]):
             trial.strategy,
             trial.success,
             trial.score,
-            trial.progress_retries
+            trial.progress_retries,
         ]
 
 
-def custom_export_responses(_: list[Player]):
+def custom_export_responses(_):
     yield [
         "session.code",
         "session.label",
@@ -221,18 +224,16 @@ def custom_export_responses(_: list[Player]):
         "response.correct",
     ]
 
-    for response in Response.objects_filter().order_by('trial_id', 'iteration'):
-        trial: Trial = response.trial
-        iteround: Round = trial.iteround
-        player: Player = iteround.player
-        session: Session = player.session
-        participant: Participant = player.participant
+    for response in Response.totall():
+        trial = response.trial
+        iteround = trial.iteround
+        player = iteround.player
 
         yield [
-            session.code,
-            session.label,
-            participant.code,
-            participant.label,
+            player.session.code,
+            player.session.label,
+            player.participant.code,
+            player.participant.label,
             player.condition,
             #
             iteround.pagename,

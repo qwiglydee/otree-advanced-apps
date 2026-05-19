@@ -1,8 +1,9 @@
 from typing import NamedTuple
 
 from _stuff.tracking import track_round_trials
+from units import Points
 
-from .conf import C, Points
+from .conf import C
 from .models import Player, Round, Trial, Response
 from .models import set_payoff
 from .autoresponding import autorespond_proposal, autorespond_decision
@@ -25,7 +26,7 @@ class Progress(NamedTuple):
 
     @property
     def turn(self) -> str:
-        assert self.trial is not None and self.trial.is_running
+        assert self.trial is not None and self.trial.is_running and self.trial.progress_stage != ""
         return C.STAGEROLES[self.trial.progress_stage]
 
     @property
@@ -56,8 +57,8 @@ def track_trial_continue(trial: Trial) -> bool:
     elif trial.decision is None:
         trial.progress_stage = "DECIDING"
     else:
-        trial.progress_stage = None
-    return trial.progress_stage is not None
+        trial.progress_stage = ""
+    return trial.progress_stage != ""
 
 
 def advance(curr: Progress) -> Progress:
@@ -126,6 +127,7 @@ def respond_decision(curr: Progress, decision: str, **kwargs) -> Response:
 
 
 async def autorespond(curr: Progress):
+    # TODO: seperate into 2 autorespond_ s
     pagename, player, iteround, trial = curr
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 

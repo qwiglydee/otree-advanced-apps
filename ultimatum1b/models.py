@@ -1,11 +1,16 @@
-from otree import database
-from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
-# from otree.forms import widgets
+from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
-from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
 from _stuff.dictprop import dictprop
 
-from .conf import C, Points
+# from otree.api import widgets
+from _stuff.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
+from units import Points
+
+from .conf import C
+
+
+def PointsField():
+    return models.DecimalField(unit=Points, initial=0)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -17,79 +22,80 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    condition = database.StringField()
+    condition = models.StringField()
 
-    total_score = database.DecimalField(unit=Points, initial=0)
+    total_score = PointsField()
 
 
 class Round(BaseRoundModel):
-    player: Player = database.Link(Player)
+    player: Player = models.Link(Player)
 
-    total_score_p = database.DecimalField(unit=Points, initial=0)
-    total_score_r = database.DecimalField(unit=Points, initial=0)
-    total_scores = dictprop("total_score_", ('P', 'R'))
+    total_score_p = PointsField()
+    total_score_r = PointsField()
+    total_scores = dictprop("total_score_", ("P", "R"))
 
-    def init(self, **kwargs):
+    def init(self):
         pass
 
     def update(self):
         pass
 
-    autorespond_role = database.StringField()
-    progress_trials = database.IntegerField()
+    autorespond_role = models.StringField()
+    progress_trials = models.IntegerField()
 
 
 class Trial(BaseTrialModel):
-    iteround: Round = database.Link(Round)
+    iteround: Round = models.Link(Round)
 
-    endowment = database.DecimalField(unit=Points)
-    proposal = database.DecimalField(unit=Points)
-    decision = database.StringField(choices=C.DECISIONS)
+    endowment = PointsField()
+    proposal = PointsField()
+    decision = models.StringField(choices=C.DECISIONS)
 
-    score_p = database.DecimalField(unit=Points, initial=0)
-    score_r = database.DecimalField(unit=Points, initial=0)
-    scores = dictprop("score_", ('P', 'R'))
+    score_p = PointsField()
+    score_r = PointsField()
+    scores = dictprop("score_", ("P", "R"))
 
     @property
     def condition(self) -> str:
         return self.iteround.player.condition
 
-    def init(self, **kwargs):
+    def init(self):
         self.endowment = C.ENDOWMENT[self.condition]
 
     def update(self):
-        proposed = Response.last(self, stage='PROPOSING')
+        proposed = Response.last(self, stage="PROPOSING")
         self.proposal = proposed.p_proposal if proposed else None
-        decided = Response.last(self, stage='DECIDING')
+        decided = Response.last(self, stage="DECIDING")
         self.decision = decided.r_decision if decided else None
 
     def complete(self):
-        self.close('COMPLETED')
-        if self.decision == 'ACCEPT':
+        self.close("COMPLETED")
+        assert self.proposal is not None
+        if self.decision == "ACCEPT":
             self.score_p = self.endowment - self.proposal
             self.score_r = self.proposal
             self.iteround.total_score_p += self.score_p
             self.iteround.total_score_r += self.score_r
 
-    progress_stage = database.StringField()
+    progress_stage = models.StringField()
 
 
 class Response(BaseResponseModel):
-    trial: Trial = database.Link(Trial)
-    stage = database.StringField()
-    player: Player = database.Link(Player)
-    autoresponded = database.BooleanField(initial=False)
+    trial: Trial = models.Link(Trial)
+    stage = models.StringField()
+    player: Player = models.Link(Player)
+    autoresponded = models.BooleanField(initial=False)
 
-    response_time = database.IntegerField()
-    p_proposal = database.DecimalField(unit=Points)
-    r_decision = database.StringField(choices=C.DECISIONS)
+    response_time = models.IntegerField()
+    p_proposal = PointsField()
+    r_decision = models.StringField(choices=C.DECISIONS)
 
 
 def set_payoff(player: Player, iteround: Round):
     scores = iteround.total_scores
     player.total_score = scores[player.role]
-    if player.participant.status != 'dropout':
-        player.payoff = player.total_score
+    if player.participant.status != "dropout":
+        player.payoff = player.total_score.to_real_world_currency(player.session)  # type: ignore
 
 
 def custom_export_responses(_):
@@ -128,18 +134,16 @@ def custom_export_responses(_):
         "response.decision",
     ]
 
-    for response in Response.objects_filter().order_by('trial_id', 'iteration'):
-        trial: Trial = response.trial
-        iteround: Round = trial.iteround
-        player: Player = response.player
-        session: Session = player.session
-        participant: Participant = player.participant
+    for response in Response.totall():
+        trial = response.trial
+        iteround = trial.iteround
+        player = response.player
 
         yield [
-            session.code,
-            session.label,
-            participant.code,
-            participant.label,
+            player.session.code,
+            player.session.label,
+            player.participant.code,
+            player.participant.label,
             player.condition,
             player.role,
             #
@@ -167,7 +171,7 @@ def custom_export_responses(_):
             response.autoresponded,
             response.response_time,
             response.p_proposal,
-            response.r_decision
+            response.r_decision,
         ]
 
 
@@ -199,17 +203,15 @@ def custom_export_trials(_):
         "trial.score.R",
     ]
 
-    for trial in Trial.objects_filter().order_by('iteround_id', 'iteration'):
-        iteround: Round = trial.iteround
-        player: Player = iteround.player
-        session: Session = player.session
-        participant: Participant = player.participant
+    for trial in Trial.totall():
+        iteround = trial.iteround
+        player = iteround.player
 
         yield [
-            session.code,
-            session.label,
-            participant.code,
-            participant.label,
+            player.session.code,
+            player.session.label,
+            player.participant.code,
+            player.participant.label,
             player.condition,
             player.role,
             #

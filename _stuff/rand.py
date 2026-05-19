@@ -1,4 +1,4 @@
-""" Some utils to generate random numbers from distributions
+"""Some utils to generate random numbers from distributions
 by qwiglydee@gmail.com
 
 Generic usage:
@@ -8,6 +8,7 @@ Generic usage:
 
 The distributions are compatible with Constants and can be passed as vars or jsvars
 """
+
 from typing import Any
 from dataclasses import dataclass
 import random
@@ -16,6 +17,7 @@ import random
 @dataclass(slots=True)
 class Bernoulli:
     """Bernoulli distribution defined by probability (float)"""
+
     p: float
 
     def sample(self) -> bool:
@@ -28,6 +30,7 @@ class Bernoulli:
 @dataclass(slots=True)
 class BernoulliF:
     """Bernoulli distribution defined by rational"""
+
     nom: int
     den: int
 
@@ -41,6 +44,7 @@ class BernoulliF:
 @dataclass(slots=True)
 class Uniform:
     """Uniform distribution defined by range on floats or ints"""
+
     min: int | float
     max: int | float
 
@@ -57,6 +61,7 @@ class Uniform:
 @dataclass(slots=True)
 class Normal:
     """Normal distribution on integers or floats"""
+
     mean: int | float
     std: int | float
 
@@ -74,6 +79,7 @@ class Normal:
 @dataclass(slots=True)
 class Discrete:
     """Discrete distribution defined by outcomes and weights"""
+
     outcomes: tuple
     weights: tuple
 
@@ -100,6 +106,7 @@ def Outcomes(**kwargs):
 @dataclass(slots=True)
 class Choices:
     """Equally distributed choices"""
+
     outcomes: tuple
 
     def __init__(self, *args):
@@ -120,6 +127,7 @@ class Const:
     """Just a constant value
     added for interchangability with other distributions
     """
+
     value: Any
 
     def __init__(self, arg):

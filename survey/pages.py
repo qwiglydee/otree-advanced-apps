@@ -1,4 +1,4 @@
-from otree.views import Page
+from otree.api import Page
 
 from .models import Player
 
@@ -14,7 +14,7 @@ class Intro(Page):
     def before_next_page(player: Player, timeout_happened: bool):
         player.dropout = timeout_happened
         if not player.dropout:
-            player.misfit = player.gender == 'O'
+            player.misfit = player.gender == "O"
 
 
 class Dropout(Page):
@@ -52,7 +52,12 @@ class Questions3(Page):
     # the page uses custom html an conditional fields
     page_scripts = ["otree-front-form.js"]
     form_model = "player"
-    form_fields = ["q_baz", "q_baz_other", "q_qux", "q_qux_other", ]
+    form_fields = [
+        "q_baz",
+        "q_baz_other",
+        "q_qux",
+        "q_qux_other",
+    ]
 
 
 class Results(Page):

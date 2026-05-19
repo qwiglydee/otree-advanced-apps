@@ -1,11 +1,11 @@
-from otree.views import Page
+from otree.api import Page
 
-from _stuff.livepage import LivePage
+from _stuff.livepage import LivePage, LivePayload, LiveResponding
 
-from .conf import C
-from .models import Group, Player, Trial, Response  # noqa
-from .progress import Progress
 from . import progress
+from .conf import C
+from .models import Group, Player, Response, Trial  # noqa
+from .progress import Progress
 
 
 class Main(LivePage):
@@ -13,7 +13,7 @@ class Main(LivePage):
     page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]
 
     @classmethod
-    def live_iterate(page, player: Player):
+    def live_iterate(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
         group = current.group
 
@@ -38,10 +38,10 @@ class Main(LivePage):
                 yield group, "trial", page.output_trial(advanced.trial)
 
     @classmethod
-    def live_response(page, player: Player, *, id: int, utterance: str):
+    def live_response(page, player: Player, *, id: int, utterance: str) -> LiveResponding:
         group = player.group
         current = progress.current(page, player)
-        assert current.trial and current.trial.id == id, "mismatched response"
+        assert current.trial is not None and current.trial.id == id, "mismatched response"
 
         response = progress.respond(current, utterance)
 
@@ -54,6 +54,7 @@ class Main(LivePage):
     @classmethod
     def output_progress(page, current: Progress):
         pagename, player, iteround, trial = current
+        assert iteround is not None
         return {
             "terminated": iteround.is_closed,
             "total": C.NUM_TRIALS,
@@ -65,20 +66,20 @@ class Main(LivePage):
         }
 
     @classmethod
-    def output_trial(page, trial: Trial):
-        chat = [{"id": r.player.id, "response": r.utterance} for r in Response.list(trial)]
+    def output_trial(page, trial: Trial) -> LivePayload:
+        chat = [{"id": r.player.id, "response": r.utterance} for r in Response.all(trial)]
 
         return {"id": trial.id, "responses": chat}
 
     @classmethod
-    def output_feedback(page, trial: Trial, response: Response):
+    def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         assert response
         return {
             "response": response.utterance,
         }
 
     @classmethod
-    def output_result(page, trial: Trial):
+    def output_result(page, trial: Trial) -> LivePayload:
         return {
             "score": trial.score,
         }

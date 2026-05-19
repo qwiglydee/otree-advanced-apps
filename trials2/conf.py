@@ -1,15 +1,8 @@
-from otree.constants import BaseConstants
-from otree.decimal import DecimalUnit
+from otree.api import BaseConstants
 
 from _stuff import rand
 from _stuff.config import get_session_param
-
-
-class Points(DecimalUnit):
-    storage_places = 2
-    output_max_places = 2
-    output_min_places = 2
-    input_places = 2
+from units import Points
 
 
 class C(BaseConstants):
@@ -18,19 +11,19 @@ class C(BaseConstants):
     PLAYERS_PER_GROUP = None
 
     NUM_TRIALS = {
-        'Practice': 3,
-        'Main': 5,
+        "Practice": 3,
+        "Main": 5,
     }
 
     NUM_RETRIES = {
-        'Practice': 2,
+        "Practice": 2,
     }
 
     CONDITIONS = ["C0", "C1", "C2"]
     NUMBERS = {
-        'C0': rand.Uniform(12, 19),
-        'C1': rand.Choices(13, 15, 17, 19),
-        'C2': rand.Choices(12, 14, 16, 18),
+        "C0": rand.Uniform(12, 19),
+        "C1": rand.Choices(13, 15, 17, 19),
+        "C2": rand.Choices(12, 14, 16, 18),
     }
 
     SCORING = {
@@ -43,4 +36,4 @@ class C(BaseConstants):
 
 
 def config_condition(session):
-    return get_session_param(session, 'condition', C.CONDITIONS)
+    return get_session_param(session, "condition", C.CONDITIONS)

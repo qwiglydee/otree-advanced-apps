@@ -1,11 +1,15 @@
 from collections import Counter
 
-from otree import database
-from otree.models import BaseSubsession, BaseGroup, BasePlayer, Session, Participant
+from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
-from _stuff.itermodels import BaseRoundModel, BaseTrialModel, BaseResponseModel
+from _stuff.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
+from units import Points
 
-from .conf import C, Points
+from .conf import C
+
+
+def PointsField():
+    return models.DecimalField(unit=Points, initial=0)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -17,35 +21,35 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    total_score = database.DecimalField(unit=Points, initial=0)
-    progress_round = database.IntegerField()
-    progress_trial = database.IntegerField()
+    total_score = PointsField()
+    progress_round = models.IntegerField()
+    progress_trial = models.IntegerField()
 
 
 class Round(BaseRoundModel):
-    group: Group = database.Link(Group)
-    total_score = database.DecimalField(unit=Points, initial=0)
+    group: Group = models.Link(Group)
+    total_score = PointsField()
 
-    def init(self, **kwargs):
+    def init(self):
         pass
 
     def update(self):
         pass
 
-    progress_trials = database.IntegerField()
+    progress_trials = models.IntegerField()
 
 
 class Trial(BaseTrialModel):
-    iteround: Round = database.Link(Round)
+    iteround: Round = models.Link(Round)
 
-    success = database.IntegerField()
-    score = database.DecimalField(unit=Points, initial=0)
+    success = models.IntegerField()
+    score = PointsField()
 
-    def init(self, **kwargs):
+    def init(self):
         pass
 
     def update(self):
-        responses = Response.list(self)
+        responses = Response.all(self)
         counts = Counter([r.utterance for r in responses])
         if not counts:
             return
@@ -54,24 +58,24 @@ class Trial(BaseTrialModel):
 
     def complete(self):
         assert self.success is not None
-        self.close('COMPLETED')
-        self.score = C.SCORING.get(self.success, 0)
+        self.close("COMPLETED")
+        self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
 
-    progress_turn = database.IntegerField()
+    progress_turn = models.IntegerField()
 
 
 class Response(BaseResponseModel):
-    trial = database.Link(Trial)
-    player = database.Link(Player)
+    trial = models.Link(Trial)
+    player = models.Link(Player)
 
-    utterance = database.StringField()
+    utterance = models.StringField()
 
 
 def set_payoff(group: Group, iteround: Round):
     for player in group.get_players():
         player.total_score = iteround.total_score
-        player.payoff = player.total_score
+        player.payoff = player.total_score.to_real_world_currency(player.session)  # type: ignore
 
 
 def custom_export_responses(_):
@@ -99,18 +103,16 @@ def custom_export_responses(_):
         "response.utterance",
     ]
 
-    for response in Response.objects_filter().order_by('trial_id', 'iteration'):
-        trial: Trial = response.trial
-        iteround: Round = trial.iteround
-        player: Player = response.player
-        session: Session = player.session
-        participant: Participant = player.participant
+    for response in Response.totall():
+        trial = response.trial
+        iteround = trial.iteround
+        player = response.player
 
         yield [
-            session.code,
-            session.label,
-            participant.code,
-            participant.label,
+            player.session.code,
+            player.session.label,
+            player.participant.code,
+            player.participant.label,
             #
             iteround.pagename,
             iteround.status,

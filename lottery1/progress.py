@@ -80,7 +80,7 @@ def advance_trial(curr: Progress, iteround: Round, trial: Trial | None) -> Trial
     return trial
 
 
-def respond(curr: Progress, stage: str, choice: str, **kwargs) -> Response:
+def respond(curr: Progress, choice: str, **kwargs) -> Response:
     pagename, player, iteround, trial = curr
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 

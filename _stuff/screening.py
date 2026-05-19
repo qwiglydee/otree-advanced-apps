@@ -1,8 +1,8 @@
+from otree.api import BasePlayer
 from otree.database import AnyModel
-from otree.models import BasePlayer
 from otree.settings import PARTICIPANT_FIELDS
 
-assert 'assignment' in PARTICIPANT_FIELDS, "screening.py requires `assignment` participant field"
+assert "assignment" in PARTICIPANT_FIELDS, "screening.py requires `assignment` participant field"
 
 
 def copy_fields(src: AnyModel, dst: AnyModel, fieldnames: list[str]):
@@ -24,7 +24,4 @@ def post_assign_role(player: BasePlayer):
 
 def waiting_queues(waiting_players: list[BasePlayer], ROLES: list[str]):
     """Sort out waiting players by assigned roles"""
-    return {
-        role: [p for p in waiting_players if p.participant.assignment == role]
-        for role in ROLES
-    }
+    return {role: [p for p in waiting_players if p.participant.assignment == role] for role in ROLES}

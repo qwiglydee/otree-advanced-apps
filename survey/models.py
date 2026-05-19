@@ -1,6 +1,4 @@
-from otree import database
-from otree.models import BaseSubsession, BaseGroup, BasePlayer
-from otree.forms import widgets
+from otree.api import BaseGroup, BasePlayer, BaseSubsession, models, widgets
 
 from _stuff.widgets.hidden import HiddenWidget
 from _stuff.widgets.slider import IntegerSlider
@@ -15,25 +13,19 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    condition = database.StringField()
+    condition = models.StringField()
 
-    age = database.IntegerField(min=18, max=90)
-    gender = database.StringField(
-        choices=[("M", "Male"), ("F", "Female"), ("O", "Other")],
-        widget=widgets.RadioSelect
-    )
-    localtime = database.StringField(label="", blank=True, widget=HiddenWidget)
-    agreement = database.BooleanField(label="I agree with something something", widget=widgets.Checkbox)
+    age = models.IntegerField(min=18, max=90)
+    gender = models.StringField(choices=[("M", "Male"), ("F", "Female"), ("O", "Other")], widget=widgets.RadioSelect)
+    localtime = models.StringField(label="", blank=True, widget=HiddenWidget)
+    agreement = models.BooleanField(label="I agree with something something", widget=widgets.Checkbox)
 
-    dropout = database.BooleanField(initial=False)
-    misfit = database.BooleanField(initial=False)
+    dropout = models.BooleanField(initial=False)
+    misfit = models.BooleanField(initial=False)
 
-    q_range = database.IntegerField(
-        label="How much do you something?",
-        min=1, max=100,
-        widget=IntegerSlider)
+    q_range = models.IntegerField(label="How much do you something?", min=1, max=100, widget=IntegerSlider)
 
-    q_scale = database.IntegerField(
+    q_scale = models.IntegerField(
         label="How much do you agree with something",
         choices=[
             (1, "1<br> totally disagree"),
@@ -45,7 +37,7 @@ class Player(BasePlayer):
         widget=widgets.RadioSelectHorizontal,
     )
 
-    q_foo_c1 = database.StringField(
+    q_foo_c1 = models.StringField(
         label="Something something?",
         choices=[
             ("F1", "Foo 1"),
@@ -54,7 +46,7 @@ class Player(BasePlayer):
         widget=widgets.RadioSelect,
     )
 
-    q_foo_c2 = database.StringField(
+    q_foo_c2 = models.StringField(
         label="Something something?",
         choices=[
             ("F2", "Foo 2"),
@@ -63,7 +55,7 @@ class Player(BasePlayer):
         widget=widgets.RadioSelect,
     )
 
-    q_bar_c1 = database.StringField(
+    q_bar_c1 = models.StringField(
         label="Something something?",
         choices=[
             ("B1", "Bar 1"),
@@ -72,7 +64,7 @@ class Player(BasePlayer):
         widget=widgets.RadioSelect,
     )
 
-    q_bar_c2 = database.StringField(
+    q_bar_c2 = models.StringField(
         label="Something something?",
         choices=[
             ("B2", "Bar 2"),
@@ -81,7 +73,7 @@ class Player(BasePlayer):
         widget=widgets.RadioSelect,
     )
 
-    q_baz = database.StringField(
+    q_baz = models.StringField(
         label="Something something?",
         choices=[
             ("Z1", "Baz 1"),
@@ -92,9 +84,9 @@ class Player(BasePlayer):
         ],
     )
 
-    q_baz_other = database.StringField(label="Specify baz", blank=True)
+    q_baz_other = models.StringField(label="Specify baz", blank=True)
 
-    q_qux = database.StringField(
+    q_qux = models.StringField(
         label="Something something?",
         choices=[
             ("Q1", "Qux 1"),
@@ -105,4 +97,4 @@ class Player(BasePlayer):
         ],
     )
 
-    q_qux_other = database.StringField(label="Specify qux", blank=True)
+    q_qux_other = models.StringField(label="Specify qux", blank=True)

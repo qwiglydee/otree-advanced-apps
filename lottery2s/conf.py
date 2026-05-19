@@ -1,17 +1,9 @@
 import random
 
-from otree.constants import BaseConstants
-from otree.decimal import DecimalUnit
+from otree.api import BaseConstants
 
 from _stuff import rand
 from _stuff.config import get_session_param
-
-
-class Points(DecimalUnit):
-    storage_places = 2
-    output_max_places = 2
-    output_min_places = 2
-    input_places = 2
 
 
 class C(BaseConstants):
@@ -20,15 +12,15 @@ class C(BaseConstants):
     PLAYERS_PER_GROUP = None
 
     NUM_TRIALS = {
-        'Practice': 3,
-        'Main': 5,
+        "Practice": 3,
+        "Main": 5,
     }
 
     CONDITIONS = ["C0", "C1", "C2"]
-    DISCLOSURES = ['FULL', 'CHOICE', 'FINAL']
+    DISCLOSURES = ["FULL", "CHOICE", "FINAL"]
 
     CHOICES = ["A", "B", "C"]
-    LABELS = {'1': 'foo', '2': 'bar', '3': 'baz'}  # by screen position
+    LABELS = {1: "foo", 2: "bar", 3: "baz"}  # by screen position
 
     PARAMS = {
         "C0": {
@@ -51,7 +43,7 @@ class C(BaseConstants):
         },
     }
 
-    STAGES = ['SAMPLING', 'FINAL']
+    STAGES = ["SAMPLING", "FINAL"]
     MIN_SAMPLES = 3
 
     SAMPLING_DELAY = 1
@@ -59,11 +51,11 @@ class C(BaseConstants):
 
 
 def config_condition(session):
-    return get_session_param(session, 'condition', C.CONDITIONS)
+    return get_session_param(session, "condition", C.CONDITIONS)
 
 
 def config_disclosure(session):
-    return get_session_param(session, 'disclosure', C.DISCLOSURES)
+    return get_session_param(session, "disclosure", C.DISCLOSURES)
 
 
 def config_layout():

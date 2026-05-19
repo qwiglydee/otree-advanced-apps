@@ -1,12 +1,10 @@
-from typing import Self
 from time import monotonic as now
+from typing import Self
 
+from otree.api import BasePlayer, models
+from otree.database import db, ExtraModel
 from sqlalchemy import desc
 from sqlalchemy.orm.exc import MultipleResultsFound
-
-from otree.models import BasePlayer, BaseGroup
-from otree.database import db, ExtraModel
-from otree import database
 
 
 class IterStatusMixin:
@@ -23,11 +21,11 @@ class IterStatusMixin:
     - use anything else for additional reasons
     """
 
-    status = database.StringField(choices=["NEW", "STARTED", "CLOSED"])
-    completion = database.StringField()
+    status = models.StringField(choices=["NEW", "STARTED", "CLOSED"])
+    completion = models.StringField()
 
-    processing_started = database.FloatField()
-    processing_ended = database.FloatField()
+    processing_started = models.FloatField()
+    processing_ended = models.FloatField()
 
     @property
     def processing_time(self) -> float | None:
@@ -83,16 +81,15 @@ class BaseRoundModel(IterStatusMixin, ExtraModel):
 
     __abstract__ = True
 
-    pagename = database.StringField()
+    pagename = models.StringField()
 
     # add additional linking fields, such as:
-    # player = database.Link(Player)
-    # group = database.Link(Group)
+    # player = models.Link(Player)
+    # group = models.Link(Group)
 
-    def init(self, **kwargs):
+    def init(self):
         """Initialize newly created round
-        Called automatically (without kwargs) when a model is created.
-        Could be called manually (with some args) to reinitialize with some parameters.
+        Called automatically when a model is created.
         """
         raise NotImplementedError(f"Missing method {self.__class__.__name__}.init")
 
@@ -104,12 +101,13 @@ class BaseRoundModel(IterStatusMixin, ExtraModel):
         # a placeholder to be implemented in some specific models
 
     @classmethod
-    def current(cls, pagename: str, **kwargs) -> Self:
+    def current(cls, pagename: str, **kwargs) -> Self | None:
         """Get current round matching the given pagename and kwargs.
         Returns None if none yet created.
         """
         assert "player" in kwargs or "group" in kwargs
         try:
+            cls.objects_filter()
             return cls.objects_filter(pagename=pagename, **kwargs).one_or_none()
         except MultipleResultsFound:
             raise RuntimeError(f"Multiple of matching {cls.__name__} created")
@@ -133,6 +131,11 @@ class BaseRoundModel(IterStatusMixin, ExtraModel):
             thenext = cls.create_new(pagename, **kwargs)
         return thenext
 
+    @classmethod
+    def totall(cls) -> list[Self]:
+        """Retrieve totally all rounds in the app"""
+        return cls.objects_filter().all()
+
 
 class BaseTrialModel(IterStatusMixin, ExtraModel):
     """Base of model for trials
@@ -148,13 +151,12 @@ class BaseTrialModel(IterStatusMixin, ExtraModel):
 
     __abstract__ = True
 
-    iteround = database.Link(BaseRoundModel)  # probably: redefine in concrete subclass
-    iteration = database.IntegerField(initial=0)
+    iteround = models.Link(BaseRoundModel)  # probably: redefine in concrete subclass
+    iteration = models.IntegerField(initial=0)
 
-    def init(self, **kwargs):
+    def init(self):
         """Initialize newly created trial
-        Called automatically (without kwargs) when a model is created.
-        Could be called manually (with some args) to reinitialize with some parameters.
+        Called automatically when a model is created.
         """
         raise NotImplementedError(f"Missing method {self.__class__.__name__}.init")
 
@@ -166,7 +168,7 @@ class BaseTrialModel(IterStatusMixin, ExtraModel):
         # a placeholder to be implemented in some specific models
 
     @classmethod
-    def current(cls, iteround: BaseRoundModel) -> Self:
+    def current(cls, iteround: BaseRoundModel) -> Self | None:
         """Get current (already started) trial in the round.
         Returns None if none started yet.
         """
@@ -213,8 +215,13 @@ class BaseTrialModel(IterStatusMixin, ExtraModel):
         return cls.objects_filter(iteround=iteround, **kwargs).count()
 
     @classmethod
-    def list(cls, iteround: BaseRoundModel, **kwargs) -> list[Self]:
-        return list(cls.objects_filter(iteround=iteround, **kwargs).order_by("iteration"))
+    def all(cls, iteround: BaseRoundModel, **kwargs) -> list[Self]:
+        return cls.objects_filter(iteround=iteround, **kwargs).order_by("iteration").all()
+
+    @classmethod
+    def totall(cls) -> list[Self]:
+        """Retrieve totally all trials in the app"""
+        return cls.objects_filter().order_by("iteround_id", "iteration").all()
 
     @classmethod
     def first(cls, iteround: BaseRoundModel, **kwargs) -> Self:
@@ -239,9 +246,9 @@ class BaseResponseModel(ExtraModel):
 
     __abstract__ = True
 
-    trial = database.Link(BaseTrialModel)  # replace with link to actual Trial in your app
-    player = database.Link(BasePlayer)  # repalce with link to actual Player in your app
-    iteration = database.IntegerField(initial=0)
+    trial = models.Link(BaseTrialModel)  # replace with link to actual Trial in your app
+    player = models.Link(BasePlayer)  # repalce with link to actual Player in your app
+    iteration = models.IntegerField(initial=0)
 
     @classmethod
     def create_next(cls, trial: BaseTrialModel, player: BasePlayer, **kwargs) -> Self:
@@ -260,18 +267,23 @@ class BaseResponseModel(ExtraModel):
         return cls.objects_filter(trial=trial, **kwargs).count()
 
     @classmethod
-    def list(cls, trial: BaseTrialModel, **kwargs) -> list[Self]:
-        return list(cls.objects_filter(trial=trial, **kwargs).order_by("iteration"))
+    def all(cls, trial: BaseTrialModel, **kwargs) -> list[Self]:
+        return cls.objects_filter(trial=trial, **kwargs).order_by("iteration").all()
+
+    @classmethod
+    def totall(cls) -> list[Self]:
+        """Retrieve totally all responses in the app"""
+        return cls.objects_filter().order_by("trial_id", "iteration").all()
 
     @classmethod
     def last(cls, trial: BaseTrialModel, **kwargs) -> Self:
         return cls.objects_filter(trial=trial, **kwargs).order_by(desc("iteration")).first()
 
     @classmethod
-    def group_last(cls, trial: BaseTrialModel, group: BaseGroup, **kwargs):
-        """All (last) responses from each member of group, ordered by iteration"""
+    def allast(cls, trial: BaseTrialModel, **kwargs):
+        """All responses with only last response from each player"""
         # this works for parallel, sequential, asyncronous single- and multi-responding
-        all = list(cls.objects_filter(trial=trial, **kwargs).order_by("iteration"))
+        all = cls.objects_filter(trial=trial, **kwargs).order_by("iteration").all()
         if len(all) == 0:
             return []
         pids = [r.player.id for r in all]

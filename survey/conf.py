@@ -1,4 +1,4 @@
-from otree.constants import BaseConstants
+from otree.api import BaseConstants
 
 from _stuff.config import get_session_param
 
@@ -12,4 +12,4 @@ class C(BaseConstants):
 
 
 def config_condition(session):
-    return get_session_param(session, 'condition', C.CONDITIONS)
+    return get_session_param(session, "condition", C.CONDITIONS)

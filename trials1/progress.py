@@ -3,8 +3,7 @@ from typing import NamedTuple
 from _stuff.tracking import track_round_trials
 
 from .conf import C  # noqa
-from .models import Player, Round, Trial, Response
-from .models import set_payoff
+from .models import Player, Response, Round, Trial, set_payoff
 
 
 class Progress(NamedTuple):

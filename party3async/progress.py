@@ -15,7 +15,7 @@ class Progress(NamedTuple):
 
     @property
     def group(self) -> Group:
-        return self.player.group
+        return self.player.group  # type: ignore
 
     @property
     def is_running(self) -> bool:

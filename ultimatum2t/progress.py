@@ -1,8 +1,9 @@
 from typing import NamedTuple
 
 from _stuff.tracking import track_players_all_around, track_players_all_atrial, track_round_trials
+from units import Points
 
-from .conf import C, Points
+from .conf import C
 from .models import Player, Group, Round, Trial, Response
 from .models import set_payoff
 
@@ -15,7 +16,7 @@ class Progress(NamedTuple):
 
     @property
     def group(self) -> Group:
-        return self.player.group
+        return self.player.group  # type: ignore
 
     @property
     def is_running(self) -> bool:
@@ -54,8 +55,8 @@ def track_trial_continue(trial: Trial) -> bool:
     elif trial.decision is None:
         trial.progress_stage = "DECIDING"
     else:
-        trial.progress_stage = None
-    return trial.progress_stage is not None
+        trial.progress_stage = ""
+    return trial.progress_stage != ""
 
 
 def advance(curr: Progress) -> Progress:
