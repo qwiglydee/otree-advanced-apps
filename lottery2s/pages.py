@@ -47,8 +47,8 @@ class TrialsPage(LivePage):
             yield "result", page.output_result(current.trial)
 
     @classmethod
-    def output_progress(page, current: Progress):
-        pagename, player, iteround, trial = current
+    def output_progress(page, progr: Progress) -> LivePayload:
+        pagename, player, iteround, trial = progr
         assert iteround
         return {
             "total": C.NUM_TRIALS[pagename],
@@ -56,7 +56,7 @@ class TrialsPage(LivePage):
             "passed": iteround.progress_trials,
             "score": iteround.total_score,
             "current": trial.iteration if trial else None,
-            "finalizable": current.is_finalizable,
+            "finalizable": progr.is_finalizable,
         }
 
     @classmethod

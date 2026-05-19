@@ -50,34 +50,34 @@ def track_trial_continue(trial: Trial) -> bool:
     return trial.progress_retries < C.NUM_RETRIES.get(trial.iteround.pagename, 1) and not trial.success
 
 
-def advance(curr: Progress) -> Progress:
+def advance(progr: Progress) -> Progress:
     """Advance current round one iteration further"""
-    pagename, player, iteround, trial = curr
+    pagename, player, iteround, trial = progr
     assert trial is None or trial.is_closed, "Invalid advancing over incomplete trial"
 
-    iteround = advance_round(curr, iteround)
+    iteround = advance_round(progr, iteround)
 
     if not iteround.is_closed:
-        trial = advance_trial(curr, iteround, trial)
+        trial = advance_trial(progr, iteround, trial)
 
     return Progress(pagename, player, iteround, trial)
 
 
-def advance_round(curr: Progress, iteround: Round | None) -> Round:
+def advance_round(progr: Progress, iteround: Round | None) -> Round:
     if iteround is None:
-        iteround = Round.pick(curr.pagename, player=curr.player)
+        iteround = Round.pick(progr.pagename, player=progr.player)
 
     if iteround.is_pristine:
         iteround.start()
 
     if iteround.is_running and not track_round_continue(iteround):
         iteround.complete()
-        set_payoff(curr.player, iteround)
+        set_payoff(progr.player, iteround)
 
     return iteround
 
 
-def advance_trial(curr: Progress, iteround: Round, trial: Trial | None) -> Trial:
+def advance_trial(progr: Progress, iteround: Round, trial: Trial | None) -> Trial:
     if trial is None:
         trial = Trial.pick_next(iteround)
 
@@ -92,25 +92,25 @@ def advance_trial(curr: Progress, iteround: Round, trial: Trial | None) -> Trial
     return trial
 
 
-def respond_decision(curr: Progress, decision: str, **kwargs):
-    pagename, player, iteround, trial = curr
+def respond_decision(progr: Progress, decision: str, **kwargs):
+    pagename, player, iteround, trial = progr
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
     assert trial.progress_stage == "DECISION", "Invalid responding in wrong stage"
 
     response = Response.create_next(trial, player, stage=trial.progress_stage, decision=decision, **kwargs)
     track_trial_continue(trial)
 
-    advance_trial(curr, iteround, trial)
+    advance_trial(progr, iteround, trial)
     return response
 
 
-def respond_answer(curr: Progress, answer: str, **kwargs) -> Response:
-    pagename, player, iteround, trial = curr
+def respond_answer(progr: Progress, answer: str, **kwargs) -> Response:
+    pagename, player, iteround, trial = progr
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
     assert trial.progress_stage == "ANSWER", "Invalid responding in wrong stage"
 
     response = Response.create_next(trial, player, stage=trial.progress_stage, answer=answer, **kwargs)
     response.evaluate()
 
-    advance_trial(curr, iteround, trial)
+    advance_trial(progr, iteround, trial)
     return response

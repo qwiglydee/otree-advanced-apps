@@ -44,34 +44,34 @@ def track_trial_continue(trial: Trial) -> bool:
     return Response.count(trial, stage="FINAL") == 0
 
 
-def advance(curr: Progress) -> Progress:
+def advance(progr: Progress) -> Progress:
     """Advance current round one iteration further"""
-    pagename, player, iteround, trial = curr
+    pagename, player, iteround, trial = progr
     assert trial is None or trial.is_closed, "Invalid advancing over incomplete trial"
 
-    iteround = advance_round(curr, iteround)
+    iteround = advance_round(progr, iteround)
 
     if not iteround.is_closed:
-        trial = advance_trial(curr, iteround, trial)
+        trial = advance_trial(progr, iteround, trial)
 
     return Progress(pagename, player, iteround, trial)
 
 
-def advance_round(curr: Progress, iteround: Round | None) -> Round:
+def advance_round(progr: Progress, iteround: Round | None) -> Round:
     if iteround is None:
-        iteround = Round.pick(curr.pagename, player=curr.player)
+        iteround = Round.pick(progr.pagename, player=progr.player)
 
     if iteround.is_pristine:
         iteround.start()
 
     if iteround.is_running and not track_round_continue(iteround):
         iteround.complete()
-        set_payoff(curr.player, iteround)
+        set_payoff(progr.player, iteround)
 
     return iteround
 
 
-def advance_trial(curr: Progress, iteround: Round, trial: Trial | None) -> Trial:
+def advance_trial(progr: Progress, iteround: Round, trial: Trial | None) -> Trial:
     if trial is None:
         trial = Trial.pick_next(iteround)
 
@@ -86,15 +86,15 @@ def advance_trial(curr: Progress, iteround: Round, trial: Trial | None) -> Trial
     return trial
 
 
-def respond(curr: Progress, stage: str, choice: str, **kwargs) -> Response:
-    pagename, player, iteround, trial = curr
+def respond(progr: Progress, stage: str, choice: str, **kwargs) -> Response:
+    pagename, player, iteround, trial = progr
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
     if stage == "FINAL":
-        assert curr.is_finalizable
+        assert progr.is_finalizable
 
     response = Response.create_next(trial, player, stage=stage, choice=choice, **kwargs)
     response.evaluate()
 
-    advance_trial(curr, iteround, trial)
+    advance_trial(progr, iteround, trial)
     return response
