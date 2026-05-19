@@ -137,9 +137,9 @@ async def autorespond(curr: Progress):
     assert iteround.autorespond_role == curr.turn
     response = Response.create_next(trial, player, stage=trial.progress_stage)
 
-    if trial.progress_stage == 'PROPOSING':
+    if trial.progress_stage == "PROPOSING":
         await autorespond_proposal(trial, response)
-    if trial.progress_stage == 'DECIDING':
+    if trial.progress_stage == "DECIDING":
         await autorespond_decision(trial, response)
 
     advance_trial(player, iteround, trial)
@@ -152,7 +152,7 @@ def timeout(curr: Progress):
     pagename, player, iteround, trial = curr
 
     other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
-    other.participant.status = 'dropout'
+    other.participant.status = "dropout"
 
     iteround.autorespond_role = other.role
     advance_trial(player, iteround, trial)

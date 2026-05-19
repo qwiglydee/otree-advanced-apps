@@ -43,8 +43,8 @@ def track_round_continue(iteround: Round) -> bool:
 def track_trial_continue(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
     trial.update()
-    trial.progress_samples = Response.count(trial, stage='SAMPLING')
-    return Response.count(trial, stage='FINAL') == 0
+    trial.progress_samples = Response.count(trial, stage="SAMPLING")
+    return Response.count(trial, stage="FINAL") == 0
 
 
 def advance(curr: Progress) -> Progress:
@@ -63,7 +63,6 @@ def advance(curr: Progress) -> Progress:
 def advance_round(player: Player, pagename: str, iteround: Round | None) -> Round:
     if iteround is None:
         iteround = Round.advance(pagename, player=player)
-        iteround.autorespond_role = C.PARTNEROLES[player.role]
 
     if iteround.is_pristine:
         iteround.start()
@@ -94,7 +93,7 @@ def respond(curr: Progress, stage: str, choice: str, **kwargs) -> Response:
     assert curr.is_running
     pagename, player, iteround, trial = curr
 
-    if stage == 'FINAL':
+    if stage == "FINAL":
         assert curr.is_finalizable
 
     response = Response.create_next(trial, player, stage=stage, choice=choice, **kwargs)

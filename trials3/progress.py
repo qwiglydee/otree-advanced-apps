@@ -49,8 +49,8 @@ def track_round_continue(iteround: Round) -> bool:
 def track_trial_continue(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
     trial.update()
-    trial.progress_retries = Response.count(trial, stage='ANSWER')
-    trial.progress_stage = 'ANSWER' if trial.strategy else 'DECISION'
+    trial.progress_retries = Response.count(trial, stage="ANSWER")
+    trial.progress_stage = "ANSWER" if trial.strategy else "DECISION"
     return trial.progress_retries < C.NUM_RETRIES.get(trial.iteround.pagename, 1) and not trial.success
 
 
@@ -70,7 +70,6 @@ def advance(curr: Progress) -> Progress:
 def advance_round(player: Player, pagename: str, iteround: Round | None) -> Round:
     if iteround is None:
         iteround = Round.advance(pagename, player=player)
-        iteround.autorespond_role = C.PARTNEROLES[player.role]
 
     if iteround.is_pristine:
         iteround.start()
@@ -98,10 +97,10 @@ def advance_trial(player: Player, iteround: Round, trial: Trial | None) -> Trial
 
 
 def respond_decision(curr: Progress, decision: str, **kwargs):
-    assert curr.is_running and curr.stage == 'DECISION'
+    assert curr.is_running and curr.stage == "DECISION"
     pagename, player, iteround, trial = curr
 
-    response = Response.create_next(trial, player, stage='DECISION', decision=decision, **kwargs)
+    response = Response.create_next(trial, player, stage="DECISION", decision=decision, **kwargs)
     track_trial_continue(trial)
 
     advance_trial(player, iteround, trial)
@@ -109,10 +108,10 @@ def respond_decision(curr: Progress, decision: str, **kwargs):
 
 
 def respond_answer(curr: Progress, answer: str, **kwargs) -> Response:
-    assert curr.is_running and curr.stage == 'ANSWER'
+    assert curr.is_running and curr.stage == "ANSWER"
     pagename, player, iteround, trial = curr
 
-    response = Response.create_next(trial, player, stage='ANSWER', answer=answer, **kwargs)
+    response = Response.create_next(trial, player, stage="ANSWER", answer=answer, **kwargs)
     response.evaluate()
 
     advance_trial(player, iteround, trial)
