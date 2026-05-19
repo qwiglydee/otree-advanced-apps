@@ -53,7 +53,7 @@ class Trial(BaseTrialModel):
     option_1 = models.StringField()
     option_2 = models.StringField()
     option_3 = models.StringField()
-    options = dictprop("option_", "123")
+    options = dictprop("option_", (1, 2, 3))
 
     success = models.IntegerField()
     score = PointsField()
@@ -96,7 +96,7 @@ class Response(BaseResponseModel):
     player: Player = models.Link(Player)
 
     response_time = models.IntegerField()
-    button = models.StringField()
+    button = models.IntegerField()
     answer = models.StringField()
     correct = models.BooleanField()
 

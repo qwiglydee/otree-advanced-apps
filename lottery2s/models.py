@@ -105,7 +105,7 @@ class Response(BaseResponseModel):
     stage = models.StringField()
 
     response_time = models.IntegerField()
-    button = models.StringField()
+    button = models.IntegerField()
     choice = models.StringField()
 
     outcome_a = PointsField()

@@ -33,7 +33,7 @@ class TrialsPage(LivePage):
                 yield "trial", page.output_trial(advanced.trial)
 
     @classmethod
-    def live_response(page, player: Player, trialid: int, button: str, time: int) -> LiveResponding:
+    def live_response(page, player: Player, trialid: int, button: int, time: int) -> LiveResponding:
         current = progress.current(page, player)
         assert current.iteround is not None and current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
@@ -55,7 +55,7 @@ class TrialsPage(LivePage):
             "passed": iteround.progress_trials,
             "score": iteround.total_score,
             "current": trial.iteration if trial else None,
-            "retries": progr.retries_left if trial else None,
+            "retries": progr.retries_left if trial and trial.is_running else None,
         }
 
     @classmethod

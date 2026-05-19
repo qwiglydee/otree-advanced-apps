@@ -64,7 +64,7 @@ class TrialsPage(LivePage):
         assert trialid == current.trial.id, "mismatched response"
         assert current.trial.strategy == "CHOOSE"
 
-        answer = current.trial.options[str(button)]
+        answer = current.trial.options[button]
         response = progress.respond_answer(current, answer, response_time=time, button=button)
 
         yield "progress", page.output_progress(current)
