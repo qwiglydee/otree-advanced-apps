@@ -44,19 +44,25 @@ class TrialsPage(LivePage):
         yield "update", page.output_trial(current.trial)
 
     @classmethod
-    def live_response(page, player: Player, *, id: int, time: int, answer: str = None, button: str = None) -> LiveResponding:
-        # TODO: refactor into different live_ handlers
+    def live_answer(page, player: Player, *, id: int, time: int, answer: str) -> LiveResponding:
         current = progress.current(page, player)
         assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.trial.strategy == "INPUT"
 
-        if current.trial.strategy == "INPUT":
-            assert answer is not None and button is None
-            response = progress.respond_answer(current, answer, response_time=time)
+        response = progress.respond_answer(current, answer, response_time=time)
 
-        if current.trial.strategy == "CHOOSE":
-            assert button is not None and answer is None
-            answer = current.trial.options[button]
-            response = progress.respond_answer(current, answer, response_time=time, button=button)
+        yield "progress", page.output_progress(current)
+        yield "feedback", page.output_feedback(current.trial, response)
+        yield "result", page.output_result(current.trial)
+
+    @classmethod
+    def live_choice(page, player: Player, *, id: int, time: int, button: int) -> LiveResponding:
+        current = progress.current(page, player)
+        assert current.trial is not None and current.trial.id == id, "mismatched response"
+        assert current.trial.strategy == "CHOOSE"
+
+        answer = current.trial.options[str(button)]
+        response = progress.respond_answer(current, answer, response_time=time, button=button)
 
         yield "progress", page.output_progress(current)
         yield "feedback", page.output_feedback(current.trial, response)

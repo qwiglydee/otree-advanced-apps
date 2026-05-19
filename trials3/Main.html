@@ -208,7 +208,7 @@
         function inputResponse(answer) {
             vars.answer = String(answer);
             switchState("processing");
-            ot.sendLive("response", {
+            ot.sendLive("answer", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 answer: vars.answer,
@@ -216,13 +216,13 @@
         }
 
         function inputChoice(choice) {
-            vars.choice = choice;
+            vars.choice = Number(choice);
             switchState("running");
         }
 
         function confirmChoice() {
             switchState("processing");
-            ot.sendLive("response", {
+            ot.sendLive("choice", {
                 id: vars.trial.id,
                 time: ot.getTimeMeasurement(),
                 button: vars.choice,
