@@ -1,14 +1,16 @@
+from decimal import Decimal
+
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models, widgets
 
 from _stuff.dictprop import dictprop
 from _stuff.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
-from units import Points
+from units import Coins
 
 from .conf import C, config_condition
 
 
 def PointsField(**kwargs):
-    return models.DecimalField(unit=Points, **kwargs)  # type: ignore internal incompatibility
+    return models.DecimalField(unit=Coins, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -29,7 +31,7 @@ class Player(BasePlayer):
     progress_trial = models.IntegerField()
 
     @property
-    def condition(self) -> str:
+    def condition(self):
         return self.group.condition  # type: ignore
 
 
@@ -76,13 +78,22 @@ class Trial(BaseTrialModel):
     def complete(self):
         assert self.proposal is not None and self.decision is not None
         self.close("COMPLETED")
-        if self.decision == "ACCEPT":
-            self.score_p = self.endowment - self.proposal
-            self.score_r = self.proposal
-            self.iteround.total_score_p += self.score_p
-            self.iteround.total_score_r += self.score_r
+        scores = evaluate(self.endowment, self.proposal, self.decision == "ACCEPT")
+        self.score_p = scores["P"]
+        self.score_r = scores["R"]
+        self.iteround.total_score_p += self.score_p
+        self.iteround.total_score_r += self.score_r
 
     progress_stage = models.StringField()
+
+
+def evaluate(endowment: Decimal, proposed: Decimal, accepted: bool) -> dict[str, Decimal]:
+    """The main game rule"""
+    # using Decimals because otree fields are broken-typed
+    if accepted:
+        return {"R": proposed, "P": Decimal(endowment - proposed)}
+    else:
+        return {"R": Decimal(0), "P": Decimal(0)}
 
 
 class Response(BaseResponseModel):

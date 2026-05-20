@@ -1,7 +1,7 @@
 from otree.api import BaseConstants
 
 from _stuff.config import get_session_param
-from units import Points
+from units import Coins
 
 
 class C(BaseConstants):
@@ -21,9 +21,9 @@ class C(BaseConstants):
     CONDITIONS = ["C0", "C1", "C2"]
 
     ENDOWMENT = {
-        "C0": Points(100),
-        "C1": Points(500),
-        "C2": Points(1000),
+        "C0": Coins(100),
+        "C1": Coins(500),
+        "C2": Coins(1000),
     }
 
     ITER_DELAY = 3

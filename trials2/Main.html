@@ -56,7 +56,7 @@
     </main>
 
     <footer>
-        <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
+        <div ot-display="vars.result">Scored: <i ot-text="vars.result.score"></i></div>
         <div class="flex-fill"></div>
         <div ot-display="vars.prompting">Select and <kbd>Confirm</kbd> your answer...</div>
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
@@ -179,7 +179,6 @@
 
         function liveResult(result) {
             vars.result = result;
-            result.score = formatScore(result.score);
             completeTrial();
         }
 
@@ -197,9 +196,5 @@
             }
             ot.updatePage();
         });
-
-        function formatScore(value) {
-            return format_number(value, "+.1");
-        }
     </script>
 {% endblock scripts %}

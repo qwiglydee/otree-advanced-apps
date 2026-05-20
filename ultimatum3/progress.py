@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 from _stuff.tracking import track_players_all_around, track_players_all_atrial, track_round_trials
-from units import Points
+from units import Coins
 
 from .conf import C
 from .models import Player, Group, Round, Trial, Response
@@ -101,7 +101,7 @@ def advance_trial(progr: Progress, iteround: Round, trial: Trial | None) -> Tria
     return trial
 
 
-def respond_proposal(progr: Progress, proposal: Points, **kwargs) -> Response:
+def respond_proposal(progr: Progress, proposal: Coins, **kwargs) -> Response:
     pagename, player, iteround, trial = progr
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 

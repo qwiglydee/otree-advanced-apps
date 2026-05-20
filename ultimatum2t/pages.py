@@ -1,11 +1,12 @@
+from decimal import Decimal
 from otree.api import Page, WaitPage
 
 from _stuff.livepage import LivePage, LivePayload, LiveResponding
-from units import Points
+from units import Coins
 
 from . import progress
 from .conf import C
-from .models import Player, Trial, setup_group
+from .models import Player, Trial, evaluate, setup_group
 from .progress import Progress
 
 
@@ -24,8 +25,8 @@ class Gather(WaitPage):
 
 class Main(LivePage):
     get_template_name = get_template_rolename
-    page_styles = ["ot-progress.css", "ot-pulse.css"]  # noqa
-    page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]  # noqa
+    page_styles = ["ot-progress.css", "ot-pulse.css"]
+    page_scripts = ["ot-progress.js", "ot-pulse.js"]
 
     @classmethod
     def live_load(page, player: Player) -> LiveResponding:
@@ -62,7 +63,7 @@ class Main(LivePage):
         assert current.iteround is not None and current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
 
-        progress.respond_proposal(current, Points(proposal), response_time=time)
+        progress.respond_proposal(current, Coins(proposal), response_time=time)
 
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
@@ -81,8 +82,7 @@ class Main(LivePage):
 
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
-        if current.trial.is_completed:
-            yield group, "result", page.output_result(current.trial)
+        yield group, "result", page.output_result(current.trial)
 
     @classmethod
     def live_timeout(page, player: Player) -> LiveResponding:
@@ -110,14 +110,28 @@ class Main(LivePage):
     def output_trial(page, trial: Trial) -> LivePayload:
         return {
             "id": trial.id,
-            "endowment": trial.endowment,
-            "proposal": trial.proposal,
+            "endowment": str(trial.endowment),
+            "proposal": str(trial.proposal) if trial.proposal is not None else None,
             "decision": trial.decision,
         }
 
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
-        return {"scores": trial.scores}
+        scores = trial.scores
+        return page.output_shares(scores)
+
+    @classmethod
+    def live_evaluate(page, player: Player, proposal: int, decision: bool) -> LiveResponding:
+        """Online payoff calculator (with proper score fomatting)"""
+        current = progress.current(page, player)
+        assert current.trial is not None
+        shares = evaluate(current.trial.endowment, Decimal(proposal), decision)
+        yield player, "evaluation", page.output_shares(shares)
+
+    @classmethod
+    def output_shares(page, shares: dict[str, Decimal]) -> LivePayload:
+        """Format scores according to the unit config"""
+        return {k: str(Coins(v)) for k, v in shares.items()}
 
 
 class Intro(Page):

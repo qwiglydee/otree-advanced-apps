@@ -48,7 +48,7 @@
     </main>
 
     <footer>
-        <div ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></div>
+        <div ot-display="vars.result">Scored: <i ot-text="vars.result.score"></i></div>
         <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
         <div class="flex-fill"></div>
         <div ot-display="vars.prompting.sample">Make your <b>sampling</b> choice or <kbd>Finalize</kbd> to proceed to final stage...</div>
@@ -188,7 +188,6 @@
 
         function liveResult(result) {
             vars.result = result;
-            result.score = formatGain(result.score);
             completeTrial();
         }
 
@@ -208,20 +207,12 @@
                 for (let i in outcomes) {
                     let val = outcomes[i];
                     if (val != null) {
-                        vars.labels[i] = format_number(val, ".2");
+                        vars.labels[i] = val;
                         vars.styles[i] = "opened";
                     }
                 }
             }
             ot.updatePage();
         });
-
-        function formatScore(value) {
-            return format_number(value, ".2");
-        }
-
-        function formatGain(value) {
-            return format_number(value, "+.2");
-        }
     </script>
 {% endblock scripts %}

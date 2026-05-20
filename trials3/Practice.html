@@ -80,7 +80,7 @@
 
     <footer>
         <div ot-display="vars.result.truth">Correct answer: <b ot-text="vars.result.truth"></b></div>
-        <div ot-display="vars.result">Score would be: <b ot-text="vars.result.score"></b></div>
+        <div ot-display="vars.result">Score would be: <i ot-text="vars.result.score"></i></div>
         <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
         <div class="flex-fill"></div>
         <div ot-display="vars.prompting.deciding">Choose your strategy to solve the task...</div>
@@ -246,7 +246,6 @@
 
         function liveResult(result) {
             vars.result = result;
-            result.score = formatScore(result.score);
             completeTrial();
         }
 
@@ -265,9 +264,5 @@
             }
             ot.updatePage();
         });
-
-        function formatScore(value) {
-            return format_number(value, "+.1");
-        }
     </script>
 {% endblock scripts %}

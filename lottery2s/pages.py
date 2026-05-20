@@ -11,7 +11,7 @@ from .progress import Progress
 
 class TrialsPage(LivePage):
     page_styles = ["ot-progress.css", "ot-pulse.css", "cards.css"]
-    page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]
+    page_scripts = ["ot-progress.js", "ot-pulse.js"]
 
     @classmethod
     def live_load(page, player: Player) -> LiveResponding:
@@ -57,7 +57,7 @@ class TrialsPage(LivePage):
             "total": C.NUM_TRIALS[pagename],
             "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
-            "score": iteround.total_score,
+            "score": f"{iteround.total_score:g}",
             "current": trial.iteration if trial else None,
             "finalizable": progr.is_finalizable if trial else None,
         }
@@ -71,14 +71,16 @@ class TrialsPage(LivePage):
 
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
+        # format as plain number or leave null
+        outcomes = {k: (f"{v:g}" if v is not None else None) for k, v in response.outcomes.items()}
         return {
             "final": trial.is_completed,
-            "outcomes": arrange(trial.layout, response.outcomes),
+            "outcomes": arrange(trial.layout, outcomes),
         }
 
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
-        return {"score": trial.score}
+        return {"score": f"{trial.score:+n}" if trial.score is not None else None}
 
 
 class Practice(TrialsPage):

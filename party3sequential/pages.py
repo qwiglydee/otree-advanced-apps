@@ -10,7 +10,7 @@ from .progress import Progress
 
 class Main(LivePage):
     page_styles = ["ot-progress.css", "ot-pulse.css"]
-    page_scripts = ["ot-progress.js", "ot-pulse.js", "format.js"]
+    page_scripts = ["ot-progress.js", "ot-pulse.js"]
 
     @classmethod
     def live_load(page, player: Player) -> LiveResponding:
@@ -66,7 +66,7 @@ class Main(LivePage):
             "current": trial.iteration if trial else None,
             "pending": not progr.is_running,
             "turn": progr.turn if progr.is_running else None,
-            "score": iteround.total_score,
+            "score": f"{iteround.total_score:g}",
         }
 
     @classmethod
@@ -76,15 +76,11 @@ class Main(LivePage):
 
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
-        return {
-            "response": response.utterance,
-        }
+        return {"response": response.utterance}
 
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
-        return {
-            "score": trial.score,
-        }
+        return {"score": f"{trial.score:+n}" if trial.score is not None else None}
 
 
 class Intro(Page):

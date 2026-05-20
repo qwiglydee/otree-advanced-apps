@@ -23,7 +23,7 @@
     </main>
 
     <footer>
-        <div ot-display="vars.result">Score gain: <b ot-text="vars.result.score"></b></div>
+        <div ot-display="vars.result">Score gain: <i ot-text="vars.result.score"></i></div>
         <div class="flex-fill"></div>
         <div ot-display="vars.prompting">Choose your response.</div>
         <div ot-display="vars.pending">Waiting for your partners...</div>
@@ -139,7 +139,6 @@
 
         function liveResult(result) {
             vars.result = result;
-            vars.result.score = formatScore(result.score);
             completeTrial();
         }
 
@@ -159,10 +158,6 @@
             let who = resp.id == MYID ? "You" : "Other";
             let what = resp.response.toLowerCase();
             return `<b>${who} said:</b> <i>${what}</i>`;
-        }
-
-        function formatScore(score) {
-            return format_number(score, "+.1");
         }
     </script>
 {% endblock scripts %}
