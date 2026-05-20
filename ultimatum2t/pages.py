@@ -88,7 +88,6 @@ class Main(LivePage):
     def live_timeout(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
         group = current.group
-        assert current.iteround is not None and current.trial is not None
 
         progress.timeout(current)
 

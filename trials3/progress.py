@@ -18,14 +18,14 @@ class Progress(NamedTuple):
         return self.trial is not None and self.trial.is_running
 
     @property
-    def stage(self) -> str:
-        assert self.trial is not None and self.trial.is_running
+    def stage(self) -> str | None:
+        assert self.trial is not None
         return self.trial.progress_stage
 
     @property
-    def retries_left(self) -> int:
-        assert self.trial is not None and self.trial.is_running
-        return C.NUM_RETRIES.get(self.pagename, 1) - self.trial.progress_retries
+    def retries_left(self) -> int | None:
+        assert self.trial is not None
+        return C.NUM_RETRIES.get(self.pagename, 1) - self.trial.progress_retries if self.trial.is_running else None
 
 
 def current(page, player: Player) -> Progress:

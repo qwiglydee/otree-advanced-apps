@@ -18,9 +18,9 @@ class Progress(NamedTuple):
         return self.trial is not None and self.trial.is_running
 
     @property
-    def is_finalizable(self):
-        assert self.trial is not None and self.trial.is_running
-        return self.trial.progress_samples >= C.MIN_SAMPLES
+    def is_finalizable(self) -> bool:
+        assert self.trial is not None
+        return self.trial.is_running and self.trial.progress_samples >= C.MIN_SAMPLES
 
 
 def current(page, player: Player) -> Progress:

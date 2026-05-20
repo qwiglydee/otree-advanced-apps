@@ -9,8 +9,8 @@ from units import Points
 from .conf import C
 
 
-def PointsField():
-    return models.DecimalField(unit=Points, initial=0)  # type: ignore internal incompatibility
+def PointsField(**kwargs):
+    return models.DecimalField(unit=Points, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -23,17 +23,13 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     condition = models.StringField()
-    total_score = PointsField()
+    total_score = PointsField(initial=0)
 
 
 class Round(BaseRoundModel):
     player: Player = models.Link(Player)
     ispractice = models.BooleanField()
-    total_score = PointsField()
-
-    @property
-    def is_practice(self) -> bool:
-        return self.pagename == "Practice"
+    total_score = PointsField(initial=0)
 
     def init(self):
         pass
@@ -56,7 +52,7 @@ class Trial(BaseTrialModel):
     options = dictprop("option_", (1, 2, 3))
 
     success = models.IntegerField()
-    score = PointsField()
+    score = PointsField(initial=None)
 
     @property
     def condition(self) -> str:
@@ -120,7 +116,6 @@ def custom_export_trials(_):
         "condition",
         #
         "iteround.pagename",
-        "iteround.is_practice",
         "iteround.status",
         "iteround.completion",
         "iteround.processing_time",
@@ -153,7 +148,6 @@ def custom_export_trials(_):
             player.condition,
             #
             iteround.pagename,
-            iteround.is_practice,
             iteround.status,
             iteround.completion,
             f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
@@ -184,7 +178,6 @@ def custom_export_responses(_):
         "condition",
         #
         "iteround.pagename",
-        "iteround.is_practice",
         "iteround.status",
         "iteround.completion",
         "iteround.processing_time",
@@ -224,7 +217,6 @@ def custom_export_responses(_):
             player.condition,
             #
             iteround.pagename,
-            iteround.is_practice,
             iteround.status,
             iteround.completion,
             f"{iteround.processing_time:.01f}" if iteround.processing_time else None,

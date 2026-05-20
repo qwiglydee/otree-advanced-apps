@@ -111,6 +111,7 @@
         ot.onInput("continue", iterateRound);
 
         function initPage() {
+            resetTrial();
             switchState("starting");
             ot.sendLive("load");
         }

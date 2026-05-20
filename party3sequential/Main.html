@@ -86,6 +86,7 @@
         ot.onLive("result", liveResult);
 
         function initPage() {
+            resetTrial();
             switchState("starting");
             ot.sendLive("load");
         }

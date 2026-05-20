@@ -59,7 +59,7 @@ class TrialsPage(LivePage):
             "passed": iteround.progress_trials,
             "score": iteround.total_score,
             "current": trial.iteration if trial else None,
-            "finalizable": progr.is_finalizable,
+            "finalizable": progr.is_finalizable if trial else None,
         }
 
     @classmethod

@@ -8,8 +8,8 @@ from units import Points
 from .conf import C
 
 
-def PointsField():
-    return models.DecimalField(unit=Points, initial=0)  # type: ignore internal incompatibility
+def PointsField(**kwargs):
+    return models.DecimalField(unit=Points, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -39,7 +39,7 @@ class Player(BasePlayer):
     age = models.IntegerField()
     gender = models.StringField()
 
-    total_score = PointsField()
+    total_score = PointsField(initial=0)
 
     progress_round = models.IntegerField()
     progress_trial = models.IntegerField()
@@ -55,8 +55,8 @@ def setup_player(player: Player):
 class Round(BaseRoundModel):
     group: Group = models.Link(Group)
 
-    total_score_p = PointsField()
-    total_score_r = PointsField()
+    total_score_p = PointsField(initial=0)
+    total_score_r = PointsField(initial=0)
     total_scores = dictprop("total_score_", ("P", "R"))
 
     def init(self):
@@ -93,8 +93,8 @@ class Trial(BaseTrialModel):
         self.decision = decided.r_decision if decided else None
 
     def complete(self):
+        assert self.proposal is not None and self.decision is not None
         self.close("COMPLETED")
-        assert self.proposal is not None
         if self.decision == "ACCEPT":
             self.score_p = self.endowment - self.proposal
             self.score_r = self.proposal

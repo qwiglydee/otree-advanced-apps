@@ -10,6 +10,7 @@ class C(BaseConstants):
     NUM_TRIALS = 5
 
     PLAYERS_PER_GROUP = 2
+    # NB: no _ROLE constants to avoid automatic assignment
     ROLES = ["P", "R"]
     PARTNEROLES = {"P": "R", "R": "P"}
 

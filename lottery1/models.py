@@ -10,8 +10,8 @@ from units import Points
 from .conf import C
 
 
-def PointsField():
-    return models.DecimalField(unit=Points, initial=0)  # type: ignore internal incompatibility
+def PointsField(**kwargs):
+    return models.DecimalField(unit=Points, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -26,16 +26,12 @@ class Player(BasePlayer):
     condition = models.StringField()
     disclosure = models.StringField()
     layout = models.StringField()
-    total_score = PointsField()
+    total_score = PointsField(initial=0)
 
 
 class Round(BaseRoundModel):
     player: Player = models.Link(Player)
-    total_score = PointsField()
-
-    @property
-    def is_practice(self) -> bool:
-        return self.pagename == "Practice"
+    total_score = PointsField(initial=0)
 
     def init(self):
         pass
@@ -60,7 +56,7 @@ class Trial(BaseTrialModel):
     param_std = models.FloatField()
     params = dictprop("param_", ("x", "y", "z", "std"))
 
-    score = PointsField()
+    score = PointsField(initial=None)
 
     @property
     def condition(self) -> str:
@@ -92,8 +88,8 @@ class Trial(BaseTrialModel):
             self.score = response.result
 
     def complete(self):
-        self.close("COMPLETED")
         assert self.score is not None
+        self.close("COMPLETED")
         self.iteround.total_score += self.score
 
 
@@ -152,7 +148,6 @@ def custom_export_trials(_):
         "layout",
         #
         "iteround.pagename",
-        "iteround.is_practice",
         "iteround.status",
         "iteround.completion",
         "iteround.processing_time",
@@ -186,7 +181,6 @@ def custom_export_trials(_):
             player.layout,
             #
             iteround.pagename,
-            iteround.is_practice,
             iteround.status,
             iteround.completion,
             f"{iteround.processing_time:.01f}" if iteround.processing_time else None,
@@ -218,7 +212,6 @@ def custom_export_responses(_):
         "layout",
         #
         "iteround.pagename",
-        "iteround.is_practice",
         "iteround.status",
         "iteround.completion",
         "iteround.processing_time",
@@ -262,7 +255,6 @@ def custom_export_responses(_):
             player.layout,
             #
             iteround.pagename,
-            iteround.is_practice,
             iteround.status,
             iteround.completion,
             f"{iteround.processing_time:.01f}" if iteround.processing_time else None,

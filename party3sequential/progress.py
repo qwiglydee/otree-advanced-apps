@@ -22,9 +22,9 @@ class Progress(NamedTuple):
         return self.trial is not None and self.trial.is_running
 
     @property
-    def turn(self) -> str:
-        assert self.trial is not None and self.trial.is_running
-        return C.SEQUENCE[self.trial.progress_turn - 1]
+    def turn(self) -> str | None:
+        assert self.trial is not None
+        return C.SEQUENCE[self.trial.progress_turn - 1] if self.trial.is_running else None
 
 
 def current(page, player: Player) -> Progress:
@@ -45,7 +45,7 @@ def track_trial_continue(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
     trial.update()
     trial.progress_turn = Response.count(trial) + 1
-    return trial.progress_turn <= len(C.SEQUENCE)
+    return trial.progress_turn <= len(C.SEQUENCE) and trial.success != C.PLAYERS_PER_GROUP
 
 
 def advance(progr: Progress) -> Progress:

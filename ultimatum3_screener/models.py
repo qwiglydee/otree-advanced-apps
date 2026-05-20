@@ -10,8 +10,8 @@ from units import Points
 from .conf import C
 
 
-def PointsField():
-    return models.DecimalField(unit=Points, initial=0)  # type: ignore internal incompatibility
+def PointsField(**kwargs):
+    return models.DecimalField(unit=Points, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -64,7 +64,7 @@ class Player(BasePlayer):
 
     @property
     def unqualified(self):
-        return not self.field_maybe_none("comprehended")
+        return self.field_maybe_none("comprehended") is False
 
     @property
     def condition(self) -> str:

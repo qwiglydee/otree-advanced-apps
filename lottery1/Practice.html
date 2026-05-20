@@ -59,7 +59,7 @@
         const BLINK_DELAY = 200;
 
         function switchState(state) {
-            console.debug("switching", state);
+            // console.debug("switching", state);
 
             vars.waiting = false;
             vars.responding = false;
@@ -93,6 +93,7 @@
         ot.onInput("continue", iterateRound);
 
         function initPage() {
+            resetTrial();
             switchState("starting");
             ot.sendLive("load");
         }

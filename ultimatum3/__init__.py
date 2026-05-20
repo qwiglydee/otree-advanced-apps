@@ -1,3 +1,5 @@
+from otree.api import BasePlayer
+
 from .conf import C, config_condition  # noqa
 from .models import Subsession, Group, Player, Round, Trial, Response  # noqa
 from .models import custom_export_responses, custom_export_trials  # noqa
@@ -10,7 +12,7 @@ def creating_session(subsession: Subsession):
     subsession.condition = config_condition(subsession.session)
 
 
-def group_by_arrival_time_method(subsession: Subsession, waiting_players: list[Player]):
+def group_by_arrival_time_method(subsession: Subsession, waiting_players: list[BasePlayer]):
     from ultimatum3_screener import Subsession as ScrSubsession
 
     scrsubsession = ScrSubsession.get_matching(subsession)

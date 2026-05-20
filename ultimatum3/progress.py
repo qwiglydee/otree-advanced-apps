@@ -23,14 +23,14 @@ class Progress(NamedTuple):
         return self.trial is not None and self.trial.is_running
 
     @property
-    def stage(self) -> str:
-        assert self.trial is not None and self.trial.is_running
+    def stage(self) -> str | None:
+        assert self.trial is not None
         return self.trial.progress_stage
 
     @property
-    def turn(self) -> str:
-        assert self.trial is not None and self.trial.is_running
-        return C.STAGEROLES[self.trial.progress_stage]
+    def turn(self) -> str | None:
+        assert self.trial is not None
+        return C.STAGEROLES[self.trial.progress_stage] if self.trial.is_running and self.trial.progress_stage else None
 
 
 def current(page, player: Player) -> Progress:
@@ -128,7 +128,8 @@ def timeout(progr: Progress):
     pagename, player, iteround, trial = progr
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
-    other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
+    # NB: group.get_player_by_role() does not work with hacked roles
+    [other] = [p for p in player.group.get_players() if p.role == C.PARTNEROLES[player.role]]
     other.participant.status = "dropout"
 
     trial.close("TIMEOUT")

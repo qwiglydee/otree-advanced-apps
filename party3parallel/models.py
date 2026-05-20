@@ -8,8 +8,8 @@ from units import Points
 from .conf import C
 
 
-def PointsField():
-    return models.DecimalField(unit=Points, initial=0)  # type: ignore internal incompatibility
+def PointsField(**kwargs):
+    return models.DecimalField(unit=Points, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -21,14 +21,14 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    total_score = PointsField()
+    total_score = PointsField(initial=0)
     progress_round = models.IntegerField()
     progress_trial = models.IntegerField()
 
 
 class Round(BaseRoundModel):
     group: Group = models.Link(Group)
-    total_score = PointsField()
+    total_score = PointsField(initial=0)
 
     def init(self):
         pass
@@ -43,7 +43,7 @@ class Trial(BaseTrialModel):
     iteround: Round = models.Link(Round)
 
     success = models.IntegerField()
-    score = PointsField()
+    score = PointsField(initial=None)
 
     def init(self):
         pass

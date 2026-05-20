@@ -66,7 +66,7 @@
 
         function switchState(state) {
             let stage = vars.stage;
-            console.debug("switching", state, stage);
+            //console.debug("switching", state, stage);
 
             vars.waiting = false;
             vars.responding = false;
@@ -103,6 +103,7 @@
         ot.onInput("continue", iterateRound);
 
         function initPage() {
+            resetTrial();
             switchState("starting");
             ot.sendLive("load");
         }

@@ -3,21 +3,13 @@
 {% block title %}Drop out{% endblock %}
 
 {% block content %}
-    {% if player.dropout %}
-        <div class="alert alert-danger">
+    <div class="alert alert-danger">
+        {% if player.dropout %}
             <p>You haven't payed attention to the pages for too long and got excluded from the study.</p>
-        </div>
-    {% endif %}
-
-    {% if player.misfit %}
-        <div class="alert alert-danger">
+        {% elif player.misfit %}
             <p>Unfortunately, you don't match some criteria to participate in the study.</p>
-        </div>
-    {% endif %}
-
-    {% if player.unqualified %}
-        <div class="alert alert-danger">
+        {% elif player.unqualified %}
             <p>Unfortunately, you're not qualified to participate in the study.</p>
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 {% endblock content %}

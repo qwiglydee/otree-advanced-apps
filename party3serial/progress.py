@@ -22,8 +22,8 @@ class Progress(NamedTuple):
         return self.trial is not None and self.trial.is_running
 
     @property
-    def turn(self) -> int:
-        assert self.trial is not None and self.trial.is_running
+    def turn(self) -> int | None:
+        assert self.trial is not None
         return self.trial.progress_turn
 
 
