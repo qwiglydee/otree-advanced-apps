@@ -54,8 +54,8 @@ class Player(BasePlayer):
 def setup_player(player: Player):
     from ultimatum3_screener import Player as ScrPlayer
 
-    other = ScrPlayer.get_matching(player)
-    copy_fields(other, player, SCREENERFIELDS)
+    scrplayer = ScrPlayer.get_matching(player)
+    copy_fields(scrplayer, player, SCREENERFIELDS)
 
 
 class Round(BaseRoundModel):

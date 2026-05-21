@@ -159,7 +159,7 @@ def timeout(progr: Progress):
     pagename, player, iteround, trial = progr
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
-    other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
+    [other] = player.get_others_in_group()
     other.participant.status = "dropout"
 
     iteround.autorespond_role = other.role

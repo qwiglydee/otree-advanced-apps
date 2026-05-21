@@ -118,7 +118,7 @@ class Main(LivePage):
 
         progress.timeout(current)
 
-        other = player.group.get_player_by_role(C.PARTNEROLES[player.role])
+        [other] = player.get_others_in_group()
         yield other, "progress", {"terminated": True}  # closes the page if still open
 
         if current.iteround.autorespond_role == "P":
