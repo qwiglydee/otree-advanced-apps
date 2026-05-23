@@ -29,19 +29,40 @@ class Misfit(Page):
         return player.misfit
 
 
-class Questions1scales(Page):
+class Slider(Page):
+    page_styles = ["extra-fields.css"]
     form_model = "player"
-    form_fields = ["q_range", "q_scale"]
+    form_fields = ["field_range"]
 
 
-class Questions2grid(Page):
+class RadioScale(Page):
+    page_styles = ["extra-fields.css"]
     form_model = "player"
-    form_fields = ["q_grid_foo", "q_grid_bar", "q_grid_baz"]
+    form_fields = ["field_scale"]
 
 
-class Questions3other(Page):
+class RadioGrid(Page):
+    page_styles = ["extra-fields.css"]
     form_model = "player"
-    form_fields = ["q_foo", "q_foo_other"]
+    form_fields = ["field_foo", "field_bar", "field_baz"]
+
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {
+            "headers": [
+                "Totally agree",
+                "Somewhat agree",
+                "Do not care",
+                "Somewhat disagree",
+                "Totally disagree",
+            ]
+        }
+
+
+class Conditional(Page):
+    page_styles = ["extra-fields.css"]
+    form_model = "player"
+    form_fields = ["field_qux", "field_qux_other"]
 
 
 class Results(Page):
@@ -49,11 +70,12 @@ class Results(Page):
 
 
 page_sequence = [
-    Intro,
-    Dropout,
-    Misfit,
-    Questions1scales,
-    Questions2grid,
-    Questions3other,
+    # Intro,
+    # Dropout,
+    # Misfit,
+    # Conditional,
+    # Slider,
+    # RadioScale,
+    RadioGrid,
     Results,
 ]

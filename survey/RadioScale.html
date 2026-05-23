@@ -1,0 +1,43 @@
+{% extends "ExtPage.html" %}
+
+{% block title %}
+    Questions
+{% endblock title %}
+
+{% block content %}
+    <section class="form">
+        {# radio scale snippet, adjust field name and grid-template-columns #}
+        {% with field = form.field_scale %}
+            <div class="field-scale mb-3 ">
+                <label class="form-label">{{ field.label.text }}</label>
+                <div class="controls" style="grid-template-columns: repeat(9, 1fr)">
+                    {% for choice in field %}
+                        <div class="form-check">
+                            <label for="{{ choice.id }}" class="form-check-label">{{ choice._value }}</label>
+                            <label>
+                                <input
+                                    id="{{ choice.id }}"
+                                    type="radio"
+                                    name="{{ field.name }}"
+                                    required
+                                    value="{{ choice._value }}"
+                                    class="form-check-input"
+                                />
+                            </label>
+                            <label for="{{ choice.id }}"><small class="form-text text-muted">{{ choice.label.text }}</small></label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endwith %}
+    </section>
+    {{ next_button }}
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+        function updateSliderOutput(slider) {
+            document.querySelector(`output[for=${slider.id}]`).textContent = slider.value;
+        }
+    </script>
+{% endblock scripts %}

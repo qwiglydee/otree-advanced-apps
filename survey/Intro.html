@@ -12,7 +12,7 @@
     </section>
 
     <section class="warn">
-        <p>Please note: the show-up fee and bonus will be given only to participants who complete the study.</p>
+        <p>Some warning.</p>
     </section>
 
     <section class="form">
@@ -35,13 +35,8 @@
 
 {% block scripts %}
     <script>
-        ot.onLoad(function () {
-            // auto-preselect gender='other'
-            if (forminputs.gender.value == "") forminputs.gender.value = "O";
-        });
-
         ot.onSubmit(function () {
-            // auto fill the field when the form submitted
+            // auto fill the field when the page is submitted
             forminputs.hidden_localtime.value = new Date().toString();
         });
     </script>

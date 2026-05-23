@@ -1,0 +1,35 @@
+{% extends "ExtPage.html" %}
+
+{% block title %}
+    Questions
+{% endblock title %}
+
+{% block content %}
+    <section class="form">
+        {# radio grid snippet, adjust grid-template-columns #}
+        <div class="field-grid mb-3" style="grid-template-columns: auto repeat(5, 1fr)" ;>
+            <h5>Questions</h5>
+            {% for header in headers %}
+                <label class="grid-label"><small class="form-text text-mute">{{ header }}</small></label>
+            {% endfor %}
+            <hr />
+            {% for field in form %}
+                <div>
+                    <h6>{{ field.label.text }}</h6>
+                </div>
+
+                {% for choice in field %}
+                    <label>
+                        <input type="radio" name="{{ field.name }}" value="{{ choice._value }}" required class="form-check-input" />
+                    </label>
+                {% endfor %}
+                <hr />
+            {% endfor %}
+            <div></div>
+            {% for header in headers %}
+                <label class="grid-label"><small class="form-text text-mute">{{ header }}</small></label>
+            {% endfor %}
+        </div>
+    </section>
+    {{ next_button }}
+{% endblock content %}

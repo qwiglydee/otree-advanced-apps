@@ -14,31 +14,31 @@ class Player(BasePlayer):
 
     age = models.IntegerField(min=18, max=90)
     gender = models.StringField(choices=[("M", "Male"), ("F", "Female"), ("O", "Other")], widget=widgets.RadioSelect)
-    agreement = models.BooleanField(label="I agree with something something", widget=widgets.Checkbox)
+    agreement = models.BooleanField(label="I agree with something", widget=widgets.Checkbox)
 
     dropout = models.BooleanField(initial=False)
     misfit = models.BooleanField(initial=False)
 
     hidden_localtime = models.StringField(label="", blank=True, widget=None)
 
-    q_scale = models.IntegerField(
-        label="How much do you agree with something",
+    field_scale = models.IntegerField(
+        label="How much do you agree with something?",
         choices=[
-            (1, "totally disagree"),
-            (2, "somewhat disagree"),
+            (1, "totally<br>disagree"),
+            (2, "somewhat<br>disagree"),
             (3, ""),
             (4, ""),
-            (5, ""),
+            (5, "do not care"),
             (6, ""),
             (7, ""),
-            (8, "somewhat agree"),
-            (9, "totally agree"),
+            (8, "somewhat<br>agree"),
+            (9, "totally<br>agree"),
         ],
         widget=None,
         help_text="This field is rendered as a horizontal scale using very custom html",  # type: ignore
     )
 
-    q_range = models.IntegerField(
+    field_range = models.IntegerField(
         label="How much do you something?",
         min=1,
         max=100,
@@ -47,31 +47,31 @@ class Player(BasePlayer):
         help_text="This field is rendered as a horizontal scale using very custom html",  # type: ignore
     )
 
-    q_grid_foo = models.IntegerField(
+    field_foo = models.IntegerField(
         label="Something something",
         widget=None,
         choices=[1, 2, 3, 4, 5],
     )
-    q_grid_bar = models.IntegerField(
-        label="Something something something something something",
+    field_bar = models.IntegerField(
+        label="Something something something something",
         widget=None,
         choices=[1, 2, 3, 4, 5],
     )
-    q_grid_baz = models.IntegerField(
-        label="Something something something something something something something something something something something",
+    field_baz = models.IntegerField(
+        label="Something something something something something something",
         widget=None,
         choices=[1, 2, 3, 4, 5],
     )
 
-    q_foo = models.StringField(
-        label="Something something?",
+    field_qux = models.StringField(
+        label="What's your something?",
         choices=[
-            ("F1", "Foo 1"),
-            ("F2", "Foo 2"),
-            ("F3", "Foo 3"),
-            ("F4", "Foo 4"),
+            ("1", "One"),
+            ("2", "Two"),
+            ("3", "Three"),
+            ("4", "Four"),
             ("OTHER", "Other"),
         ],
     )
 
-    q_foo_other = models.StringField(label="Specify your foo", blank=True)
+    field_qux_other = models.StringField(label="Specify your something", blank=True)
