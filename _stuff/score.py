@@ -23,6 +23,6 @@ class ScoreUnit(DecimalUnit):
         if spec in ("n", "+n"):
             _sign, digits, exp = self.as_tuple()
             assert exp not in ("n", "N", "F")
-            prc = len(digits) + exp + self.output_max_places
+            prc = max(0, len(digits) + exp) + self.output_max_places
             return Decimal.__format__(self, f"{spec[:-1]}.{prc}n")
         return Decimal.__format__(self, spec)

@@ -57,7 +57,7 @@ class TrialsPage(LivePage):
             "total": C.NUM_TRIALS[pagename],
             "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
-            "score": f"{iteround.total_score:g}",
+            "score": f"{iteround.total_score:n}",
             "current": trial.iteration if trial else None,
         }
 
@@ -71,7 +71,7 @@ class TrialsPage(LivePage):
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         # format as plain number or leave null
-        outcomes = {k: (f"{v:g}" if v is not None else None) for k, v in response.outcomes.items()}
+        outcomes = {k: (f"{v:n}" if v is not None else None) for k, v in response.outcomes.items()}
         return {
             "final": trial.is_completed,
             "outcomes": arrange(trial.layout, outcomes),
@@ -80,7 +80,7 @@ class TrialsPage(LivePage):
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
         return {
-            "score": f"{trial.score:+n}" if trial.score is not None else None,
+            "score": f"{trial.score:+}" if trial.score is not None else None,
         }
 
 

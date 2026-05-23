@@ -66,7 +66,7 @@ class Main(LivePage):
             "current": trial.iteration if trial else None,
             "pending": not progr.is_running,
             "turn": progr.turn if progr.is_running else None,
-            "score": f"{iteround.total_score:g}",
+            "score": f"{iteround.total_score:n}",
         }
 
     @classmethod
@@ -82,7 +82,7 @@ class Main(LivePage):
 
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
-        return {"score": f"{trial.score:+n}" if trial.score is not None else None}
+        return {"score": f"{trial.score:+}" if trial.score is not None else None}
 
 
 class Intro(Page):

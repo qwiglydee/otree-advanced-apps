@@ -56,7 +56,7 @@ class TrialsPage(LivePage):
             "total": C.NUM_TRIALS[iteround.pagename],
             "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
-            "score": f"{iteround.total_score:g}",
+            "score": f"{iteround.total_score:n}",
             "current": trial.iteration if trial else None,
             "retries": progr.retries_left if trial and trial.is_running else None,
         }
@@ -87,7 +87,7 @@ class Practice(TrialsPage):
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
         return {
-            "score": f"{trial.score:+n}" if trial.score is not None else None,
+            "score": f"{trial.score:+}" if trial.score is not None else None,
             "truth": trial.truth,
         }
 
@@ -102,7 +102,7 @@ class Main(TrialsPage):
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
         return {
-            "score": f"{trial.score:+n}" if trial.score is not None else None,
+            "score": f"{trial.score:+}" if trial.score is not None else None,
         }
 
 
