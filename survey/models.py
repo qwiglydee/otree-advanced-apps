@@ -1,8 +1,5 @@
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models, widgets
 
-from _stuff.widgets.hidden import HiddenWidget
-from _stuff.widgets import slider
-
 
 class Subsession(BaseSubsession):
     pass
@@ -17,84 +14,64 @@ class Player(BasePlayer):
 
     age = models.IntegerField(min=18, max=90)
     gender = models.StringField(choices=[("M", "Male"), ("F", "Female"), ("O", "Other")], widget=widgets.RadioSelect)
-    localtime = models.StringField(label="", blank=True, widget=HiddenWidget)
     agreement = models.BooleanField(label="I agree with something something", widget=widgets.Checkbox)
 
     dropout = models.BooleanField(initial=False)
     misfit = models.BooleanField(initial=False)
 
-    q_range = models.IntegerField(label="How much do you something?", min=1, max=100, step=5, widget=slider.IntegerSlider)  # type: ignore
+    hidden_localtime = models.StringField(label="", blank=True, widget=None)
 
     q_scale = models.IntegerField(
         label="How much do you agree with something",
         choices=[
-            (1, "1<br> totally disagree"),
-            (2, "2<br> somewhat disagree"),
-            (3, "3"),
-            (4, "4<br> somewhat agree"),
-            (5, "5<br> totally agree"),
+            (1, "totally disagree"),
+            (2, "somewhat disagree"),
+            (3, ""),
+            (4, ""),
+            (5, ""),
+            (6, ""),
+            (7, ""),
+            (8, "somewhat agree"),
+            (9, "totally agree"),
         ],
-        widget=widgets.RadioSelectHorizontal,
+        widget=None,
+        help_text="This field is rendered as a horizontal scale using very custom html",  # type: ignore
     )
 
-    q_foo_c1 = models.StringField(
+    q_range = models.IntegerField(
+        label="How much do you something?",
+        min=1,
+        max=100,
+        step=5,  # type: ignore
+        widget=None,
+        help_text="This field is rendered as a horizontal scale using very custom html",  # type: ignore
+    )
+
+    q_grid_foo = models.IntegerField(
+        label="Something something",
+        widget=None,
+        choices=[1, 2, 3, 4, 5],
+    )
+    q_grid_bar = models.IntegerField(
+        label="Something something something something something",
+        widget=None,
+        choices=[1, 2, 3, 4, 5],
+    )
+    q_grid_baz = models.IntegerField(
+        label="Something something something something something something something something something something something",
+        widget=None,
+        choices=[1, 2, 3, 4, 5],
+    )
+
+    q_foo = models.StringField(
         label="Something something?",
         choices=[
             ("F1", "Foo 1"),
-            ("F3", "Foo 3"),
-        ],
-        widget=widgets.RadioSelect,
-    )
-
-    q_foo_c2 = models.StringField(
-        label="Something something?",
-        choices=[
             ("F2", "Foo 2"),
+            ("F3", "Foo 3"),
             ("F4", "Foo 4"),
-        ],
-        widget=widgets.RadioSelect,
-    )
-
-    q_bar_c1 = models.StringField(
-        label="Something something?",
-        choices=[
-            ("B1", "Bar 1"),
-            ("B3", "Bar 3"),
-        ],
-        widget=widgets.RadioSelect,
-    )
-
-    q_bar_c2 = models.StringField(
-        label="Something something?",
-        choices=[
-            ("B2", "Bar 2"),
-            ("B4", "Bar 4"),
-        ],
-        widget=widgets.RadioSelect,
-    )
-
-    q_baz = models.StringField(
-        label="Something something?",
-        choices=[
-            ("Z1", "Baz 1"),
-            ("Z2", "Baz 2"),
-            ("Z3", "Baz 3"),
-            ("Z4", "Baz 4"),
-            ("Z0", "Other"),
+            ("OTHER", "Other"),
         ],
     )
 
-    q_baz_other = models.StringField(label="Specify baz", blank=True)
-
-    q_qux = models.StringField(
-        label="Something something?",
-        choices=[
-            ("Q1", "Qux 1"),
-            ("Q2", "Qux 2"),
-            ("Q3", "Qux 3"),
-            ("Q4", "Qux 4"),
-            ("Q0", "Other"),
-        ],
-    )
-
-    q_qux_other = models.StringField(label="Specify qux", blank=True)
+    q_foo_other = models.StringField(label="Specify your foo", blank=True)

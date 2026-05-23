@@ -1,0 +1,32 @@
+{% extends "ExtPage.html" %}
+
+{% block title %}
+    Questions
+{% endblock title %}
+
+{% block content %}
+    <section class="form">
+        <div class="m-3">
+            <label for="{{ form.q_foo.id }}" class="col-form-label">{{ form.q_foo.label.text }}</label>
+            <select id="{{ form.q_foo.id }}" name="q_foo" ot-input required class="form-select">
+                {% for choice in form.q_foo %}
+                    <option value="{{ choice._value }}">{{ choice.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="m-3" ot-display="vars.otherfoo">
+            <label for="{{ form.q_foo_other.id }}" class="col-form-label">{{ form.q_foo_other.label }}</label>
+            <input id="{{ form.q_foo_other.id }}" type="text" class="form-control" name="q_baz_other" ot-required="vars.otherfoo" />
+        </div>
+    </section>
+    {% next_button %}
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+        ot.onInput("q_foo", function (value) {
+            vars.otherfoo = value == "OTHER";
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "ExtPage.html" %}
+
+{% block title %}
+    Questions
+{% endblock title %}
+
+{% block content %}
+    <section class="form">
+        <div class="m-3">
+            <label class="form-label">{{ form.q_scale.label.text }}</label>
+            <div class="d-grid" style="grid-template-columns: repeat(9, 1fr)">
+                {% for choice in form.q_scale %}
+                    <div class="form-check d-flex flex-column align-items-center">
+                        <input id="{{ choice.id }}" type="radio" name="q_scale" required="" value="{{ choice._value }}" class="form-check-input m-0" />
+                        <label for="{{ choice.id }}" class="form-check-label text-center">
+                            <small>{{ choice._value }}<br />{{ choice.label.text }}</small>
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+            <small class="form-text text-muted">{{ form.q_scale.description }}</small>
+        </div>
+
+        <div class="m-3">
+            <label for="{{ form.q_range.id }}" class="form-label">{{ form.q_range.label.text }}</label>
+            <input
+                id="{{ form.q_range.id }}"
+                type="range"
+                name="q_range"
+                value="form.q_range._value"
+                min="{{ form.q_range.render_kw.min }}"
+                max="{{ form.q_range.render_kw.max }}"
+                step="{{ player.__class__.q_range.form_props.step }}"
+                class="form-range"
+                onchange="updateSliderOutput(this)"
+            />
+            <output for="{{ form.q_range.id }}" class="d-block text-center">...</output>
+            <small class="form-text text-muted">{{ form.q_range.description }}</small>
+        </div>
+    </section>
+    {{ next_button }}
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+        function updateSliderOutput(slider) {
+            document.querySelector(`output[for=${slider.id}]`).textContent = slider.value;
+        }
+    </script>
+{% endblock scripts %}

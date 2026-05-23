@@ -25,14 +25,12 @@
     <section class="info">
         <h3>Consent</h3>
 
-        <p>By clicking the "Next" button, you provide your informed consent to proceed with the experiment.</p>
-
         {{ formfield 'agreement' }}
-
-        {{ next_button }}
     </section>
 
-    {{ formfield 'localtime' }}
+    {{ next_button }}
+
+    <input type="hidden" name="hidden_localtime" />
 {% endblock content %}
 
 {% block scripts %}
@@ -43,8 +41,8 @@
         });
 
         ot.onSubmit(function () {
-            // auto fill the field when the form ubmitted
-            forminputs.localtime.value = new Date().toString();
+            // auto fill the field when the form submitted
+            forminputs.hidden_localtime.value = new Date().toString();
         });
     </script>
 {% endblock scripts %}

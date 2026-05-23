@@ -8,7 +8,7 @@ class Intro(Page):
 
     # this page contains hidden field filled by script
     form_model = "player"
-    form_fields = ["age", "gender", "localtime", "agreement"]
+    form_fields = ["age", "gender", "agreement", "hidden_localtime"]
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened: bool):
@@ -29,36 +29,19 @@ class Misfit(Page):
         return player.misfit
 
 
-class Questions1(Page):
-    # this page contains radio scale
-    template_name = f"{__package__}/Questions.html"
-    page_styles = ["radio-scale.css"]
+class Questions1scales(Page):
     form_model = "player"
     form_fields = ["q_range", "q_scale"]
 
 
-class Questions2(Page):
-    # the page uses condition-dependant field names
-    template_name = f"{__package__}/Questions.html"
+class Questions2grid(Page):
     form_model = "player"
-    form_fields = ["q_foo_", "q_bar_"]
-
-    # FIXME: use normal get_form_fields
-    def _get_form_fields(self):
-        cond = self.player.condition.lower()
-        return [f"{fld}{cond}" for fld in self.form_fields]
+    form_fields = ["q_grid_foo", "q_grid_bar", "q_grid_baz"]
 
 
-class Questions3(Page):
-    # the page uses custom html an conditional fields
-    page_scripts = ["otree-front-form.js"]
+class Questions3other(Page):
     form_model = "player"
-    form_fields = [
-        "q_baz",
-        "q_baz_other",
-        "q_qux",
-        "q_qux_other",
-    ]
+    form_fields = ["q_foo", "q_foo_other"]
 
 
 class Results(Page):
@@ -69,8 +52,8 @@ page_sequence = [
     Intro,
     Dropout,
     Misfit,
-    Questions1,
-    Questions2,
-    Questions3,
+    Questions1scales,
+    Questions2grid,
+    Questions3other,
     Results,
 ]
