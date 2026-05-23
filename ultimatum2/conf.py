@@ -31,4 +31,4 @@ class C(BaseConstants):
 
 
 def config_condition(session):
-    return get_session_param(session, "condition", C.CONDITIONS)
+    return get_session_param(session, "condition", choices=C.CONDITIONS)

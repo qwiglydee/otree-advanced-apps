@@ -51,11 +51,11 @@ class C(BaseConstants):
 
 
 def config_condition(session):
-    return get_session_param(session, "condition", C.CONDITIONS)
+    return get_session_param(session, "condition", choices=C.CONDITIONS)
 
 
 def config_disclosure(session):
-    return get_session_param(session, "disclosure", C.DISCLOSURES)
+    return get_session_param(session, "disclosure", choices=C.DISCLOSURES)
 
 
 def config_layout():

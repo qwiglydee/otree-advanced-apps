@@ -30,8 +30,8 @@ class C(BaseConstants):
 
 
 def config_condition(session):
-    return get_session_param(session, "condition", C.CONDITIONS)
+    return get_session_param(session, "condition", choices=C.CONDITIONS)
 
 
 def config_role(session):
-    return get_session_param(session, "role", C.ROLES)
+    return get_session_param(session, "role", choices=C.ROLES)
