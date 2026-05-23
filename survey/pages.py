@@ -43,6 +43,7 @@ class Questions2(Page):
     form_model = "player"
     form_fields = ["q_foo_", "q_bar_"]
 
+    # FIXME: use normal get_form_fields
     def _get_form_fields(self):
         cond = self.player.condition.lower()
         return [f"{fld}{cond}" for fld in self.form_fields]

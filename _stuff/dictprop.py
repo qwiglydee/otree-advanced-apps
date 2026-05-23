@@ -1,15 +1,5 @@
 """
-Combining multiple fields into single dictionary property
-by qwiglydee@gmail.com
-
-The property retrieves a dictionary with all values from fields.
-Setting a key in the dict updates underlying field
-
-Usage:
-  class Something(ExtraModel):
-      foo_a = models.StringField()
-      foo_b = models.StringField()
-      foos = dictprop('foo_', ('A', 'B'))  # makes dict(A=value_of(foo_a), B=value_of(foo_b))
+FIXME: replace with key_getter and key_setter
 """
 
 from typing import Any

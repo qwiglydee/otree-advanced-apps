@@ -1,7 +1,7 @@
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models, widgets
 
 from _stuff.widgets.hidden import HiddenWidget
-from _stuff.widgets.slider import IntegerSlider
+from _stuff.widgets import slider
 
 
 class Subsession(BaseSubsession):
@@ -23,7 +23,7 @@ class Player(BasePlayer):
     dropout = models.BooleanField(initial=False)
     misfit = models.BooleanField(initial=False)
 
-    q_range = models.IntegerField(label="How much do you something?", min=1, max=100, widget=IntegerSlider)
+    q_range = models.IntegerField(label="How much do you something?", min=1, max=100, step=5, widget=slider.IntegerSlider)  # type: ignore
 
     q_scale = models.IntegerField(
         label="How much do you agree with something",

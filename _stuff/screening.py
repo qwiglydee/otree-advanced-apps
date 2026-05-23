@@ -1,5 +1,5 @@
 from otree.api import BasePlayer
-from otree.database import AnyModel
+from otree.database import AnyModel  # type: ignore
 from otree.settings import PARTICIPANT_FIELDS
 
 assert "assignment" in PARTICIPANT_FIELDS, "screening.py requires `assignment` participant field"

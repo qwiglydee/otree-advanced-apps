@@ -3,6 +3,7 @@ from otree.api import BasePlayer
 from _stuff.itermodels import BaseRoundModel, BaseTrialModel
 
 
+# FIXME: remove
 def track_players(player: BasePlayer, fieldname: str, value: any) -> bool:
     """Track players to check if they have the same value of a field
     return True if all players in group match
