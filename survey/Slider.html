@@ -10,7 +10,9 @@
         {% with field = form.field_range %}
             <div class="field-slider mb-3">
                 <label for="{{ field.id }}" class="form-label">{{ field.label.text }}</label>
-                <output for="{{ field.id }}">{{ field._value }}</output>
+                <div class="output-wrapper">
+                    <output for="{{ field.id }}">{{ field._value }}</output>
+                </div>
                 <input
                     id="{{ field.id }}"
                     type="range"
@@ -20,7 +22,7 @@
                     max="{{ field.render_kw.max }}"
                     step="{{ player.__class__.field_range.form_props.step }}"
                     class="form-range"
-                    onchange="updateSliderOutput(this)"
+                    oninput="updateSliderOutput(this)"
                 />
                 <div class="d-flex justify-content-between">
                     <small class="form-text text-muted">minumum</small>
@@ -31,11 +33,3 @@
     </section>
     {{ next_button }}
 {% endblock content %}
-
-{% block scripts %}
-    <script>
-        function updateSliderOutput(slider) {
-            document.querySelector(`output[for=${slider.id}]`).textContent = slider.value;
-        }
-    </script>
-{% endblock scripts %}

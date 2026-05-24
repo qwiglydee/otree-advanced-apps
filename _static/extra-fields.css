@@ -1,9 +1,15 @@
-.field-slider output {
+.field-slider .output-wrapper {
     display: block;
-    text-align: center;
+    position: relative;
+    width: 100%;
+    /* thumb size is 1rem */
+    padding: 0 0.5rem;
 }
-.field-slider output:empty::before {
-    content: "\00a0";
+
+.field-slider output {
+    display: inline-block;
+    position: relative;
+    transform: translateX(-50%);
 }
 
 .field-scale .controls {

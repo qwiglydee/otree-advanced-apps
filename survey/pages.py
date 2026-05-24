@@ -31,6 +31,7 @@ class Misfit(Page):
 
 class Slider(Page):
     page_styles = ["extra-fields.css"]
+    page_scripts = ["extra-fields.js"]
     form_model = "player"
     form_fields = ["field_range"]
 
@@ -74,8 +75,8 @@ page_sequence = [
     # Dropout,
     # Misfit,
     # Conditional,
-    # Slider,
+    Slider,
     # RadioScale,
-    RadioGrid,
-    Results,
+    # RadioGrid,
+    # Results,
 ]

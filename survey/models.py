@@ -40,9 +40,10 @@ class Player(BasePlayer):
 
     field_range = models.IntegerField(
         label="How much do you something?",
-        min=1,
-        max=100,
+        min=-50,
+        max=50,
         step=5,  # type: ignore
+        initial=0,
         widget=None,
         help_text="This field is rendered as a horizontal scale using very custom html",  # type: ignore
     )
