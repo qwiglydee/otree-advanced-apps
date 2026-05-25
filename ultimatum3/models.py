@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
-from _stuff.dictprop import dictprop
+from _stuff.keyprop import dict_getter, key_getter
 from _stuff.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
 from _stuff.screening import copy_fields, post_assign_role
 from units import Coins
@@ -63,7 +63,7 @@ class Round(BaseRoundModel):
 
     total_score_p = PointsField(initial=0)
     total_score_r = PointsField(initial=0)
-    total_scores = dictprop("total_score_", ("P", "R"))
+    get_score = key_getter("total_score_")
 
     def init(self):
         pass
@@ -83,7 +83,7 @@ class Trial(BaseTrialModel):
 
     score_p = PointsField()
     score_r = PointsField()
-    scores = dictprop("score_", ("P", "R"))
+    get_scores = dict_getter("score_", ("P", "R"))
 
     @property
     def condition(self) -> str:
@@ -130,9 +130,8 @@ class Response(BaseResponseModel):
 
 
 def set_payoff(group: Group, iteround: Round):
-    scores = iteround.total_scores
     for player in group.get_players():
-        player.total_score = scores[player.role]
+        player.total_score = iteround.get_score(player.role)
         if player.participant.status != "dropout":
             player.payoff = player.total_score.to_real_world_currency(player.session)  # type: ignore
 

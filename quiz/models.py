@@ -1,6 +1,6 @@
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
-from _stuff.dictprop import dictprop
+from _stuff.keyprop import dict_getter
 from _stuff.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
 from units import Points
 
@@ -48,7 +48,7 @@ class Trial(BaseTrialModel):
     option_1 = models.StringField()
     option_2 = models.StringField()
     option_3 = models.StringField()
-    options = dictprop("option_", (1, 2, 3))
+    get_options = dict_getter("option_", (1, 2, 3))
 
     success = models.IntegerField()
     score = PointsField(initial=None)

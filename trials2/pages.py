@@ -40,7 +40,7 @@ class TrialsPage(LivePage):
         assert current.iteround is not None and current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
 
-        answer = current.trial.options[button]
+        answer = current.trial.get_option(button)
         response = progress.respond(current, answer, response_time=time, button=button)
 
         yield "progress", page.output_progress(current)
@@ -66,7 +66,7 @@ class TrialsPage(LivePage):
         return {
             "id": trial.id,
             "task": trial.task,
-            "options": trial.options,
+            "options": trial.get_options(),
         }
 
     @classmethod

@@ -104,8 +104,7 @@ class Main(LivePage):
 
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
-        scores = trial.scores
-        return page.output_shares(scores)
+        return page.output_shares(trial.get_scores())
 
     @classmethod
     def live_evaluate(page, player: Player, proposal: int, decision: bool) -> LiveResponding:
@@ -117,7 +116,7 @@ class Main(LivePage):
 
     @classmethod
     def output_shares(page, shares: dict[str, Decimal]) -> LivePayload:
-        """Format scores according to the unit config"""
+        # explicitely convert to coins
         return {k: str(Coins(v)) for k, v in shares.items()}
 
 

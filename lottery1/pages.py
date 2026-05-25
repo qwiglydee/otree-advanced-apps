@@ -65,22 +65,29 @@ class TrialsPage(LivePage):
     def output_trial(page, trial: Trial) -> LivePayload:
         return {
             "id": trial.id,
-            "labels": arrange(trial.layout, trial.labels),
+            "labels": arrange(trial.layout, trial.get_labels()),
         }
 
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
-        # format as plain number or leave null
-        outcomes = {k: (f"{v:n}" if v is not None else None) for k, v in response.outcomes.items()}
+        def fmt(val):
+            # format as plain numbers or leave null
+            return f"{val:n}" if val is not None else None
+
+        outcomes = response.get_outcomes()
         return {
             "final": trial.is_completed,
-            "outcomes": arrange(trial.layout, outcomes),
+            "outcomes": arrange(trial.layout, {key: fmt(val) for key, val in outcomes.items()}),
         }
 
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
+        def fmt(val):
+            # format as signed units or leave null
+            return f"{val:+}" if val is not None else None
+
         return {
-            "score": f"{trial.score:+}" if trial.score is not None else None,
+            "score": fmt(trial.score),
         }
 
 

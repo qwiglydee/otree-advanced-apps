@@ -2,7 +2,7 @@ import random
 
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
-from _stuff.dictprop import dictprop
+from _stuff.keyprop import dict_getter, key_getter
 from _stuff.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
 from _stuff.layout import derange, layoutdict
 from units import Points
@@ -48,13 +48,12 @@ class Trial(BaseTrialModel):
     label_a = models.StringField()
     label_b = models.StringField()
     label_c = models.StringField()
-    labels = dictprop("label_", "ABC")
+    get_labels = dict_getter("label_", ("A", "B", "C"))
 
     param_x = models.FloatField()
     param_y = models.FloatField()
     param_z = models.FloatField()
     param_std = models.FloatField()
-    params = dictprop("param_", ("x", "y", "z", "std"))
 
     score = PointsField(initial=None)
 
@@ -107,20 +106,21 @@ class Response(BaseResponseModel):
     outcome_a = PointsField()
     outcome_b = PointsField()
     outcome_c = PointsField()
-    outcomes = dictprop("outcome_", "ABC")
+    get_outcomes = dict_getter("outcome_", ("A", "B", "C"))
+    get_outcome = key_getter("outcome_")
 
     result = PointsField()
 
     def evaluate(self):
         assert self.choice is not None
-        params = self.trial.params
-        x = params["x"]
-        y = params["y"]
-        z = params["z"]
+        x = self.trial.param_x
+        y = self.trial.param_x
+        z = self.trial.param_x
+        std = self.trial.param_std
 
-        c = Points(z + random.gauss(0, params["std"]))
-        a = Points(c + x)
-        b = Points(c + y)
+        c = Points(z + random.gauss(0, std))
+        a = c + Points(x)
+        b = c + Points(y)
 
         disclosure = self.trial.disclosure
         if disclosure == "FULL" or (disclosure == "FINAL" and self.stage == "FINAL"):
@@ -132,7 +132,7 @@ class Response(BaseResponseModel):
             self.outcome_b = b if self.choice == "B" else None
             self.outcome_c = c if self.choice == "C" else None
 
-        self.result = self.outcomes[self.choice]
+        self.result = self.get_outcome(self.choice)
 
 
 def set_payoff(player: Player, iteround: Round):

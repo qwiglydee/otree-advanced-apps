@@ -121,8 +121,7 @@ class Main(LivePage):
 
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
-        scores = trial.scores
-        return page.output_shares(scores)
+        return page.output_shares(trial.get_scores())
 
     @classmethod
     def live_evaluate(page, player: Player, proposal: int, decision: bool) -> LiveResponding:
