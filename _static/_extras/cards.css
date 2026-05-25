@@ -89,6 +89,8 @@
 .cards .crd.opened {
     transition:
         top var(--card-transition-select),
+        width var(--card-transition-select),
+        height var(--card-transition-select),
         box-shadow var(--card-transition-open),
         background-color var(--card-transition-open);
 }
@@ -96,6 +98,8 @@
 .cards .crd.closed {
     transition:
         top var(--card-transition-select),
+        width var(--card-transition-select),
+        height var(--card-transition-select),
         box-shadow var(--card-transition-close),
         background-color var(--card-transition-close);
 }

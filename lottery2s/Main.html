@@ -6,7 +6,7 @@
     </header>
 
     <main ot-visible="vars.trial">
-        <div class="cards cards-3">
+        <div class="cards cards-3" ot-class="vars.stage">
             <button
                 ot-click-input
                 type="button"
@@ -55,6 +55,18 @@
         <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
     </footer>
 {% endblock content %}
+
+{% block styles %}
+    <style>
+        .cards {
+            --card-size: 200px;
+        }
+
+        .cards.FINAL {
+            --card-size: 216px;
+        }
+    </style>
+{% endblock styles %}
 
 {% block scripts %}
     <script>
@@ -121,6 +133,7 @@
         }
 
         function resetTrial() {
+            vars.stage = null;
             vars.trial = null;
             vars.choice = null;
             vars.feedback = null;
@@ -149,18 +162,12 @@
         async function restartTrial(stage) {
             vars.stage = stage;
             if (stage == "SAMPLING") {
-                // soft reset
                 await ot.delay(SAMPLING_DELAY);
                 resetResponse();
                 switchState("running");
             }
             if (stage == "FINAL") {
-                // hard reset
                 resetResponse();
-                let bak = vars.trial;
-                vars.trial = null;
-                await ot.delay(BLINK_DELAY);
-                vars.trial = bak;
                 switchState("running");
             }
         }
