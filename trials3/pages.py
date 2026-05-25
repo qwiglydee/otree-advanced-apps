@@ -1,6 +1,6 @@
 from otree.api import Page
 
-from _stuff.livepage import LivePage, LivePayload, LiveResponding
+from _extras.livepage import LivePage, LivePayload, LiveResponding
 
 from . import progress
 from .conf import C
@@ -9,8 +9,8 @@ from .progress import Progress
 
 
 class TrialsPage(LivePage):
-    page_styles = ["ot-progress.css", "ot-pulse.css"]
-    page_scripts = ["ot-progress.js", "ot-pulse.js"]
+    page_styles = ["_extras/ot-progress.css", "_extras/ot-pulse.css"]
+    page_scripts = ["_extras/ot-progress.js", "_extras/ot-pulse.js"]
 
     @classmethod
     def live_load(page, player: Player) -> LiveResponding:

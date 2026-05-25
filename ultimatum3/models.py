@@ -2,9 +2,9 @@ from decimal import Decimal
 
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
-from _stuff.keyprop import dict_getter, key_getter
-from _stuff.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
-from _stuff.screening import copy_fields, post_assign_role
+from _extras.keyprop import dict_getter, key_getter
+from _extras.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
+from _extras.screening import copy_fields, post_assign_role
 from units import Coins
 
 from .conf import C

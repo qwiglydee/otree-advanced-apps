@@ -4,7 +4,7 @@ from typing import Self
 
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models, widgets
 
-from _stuff.screening import pre_assign_role
+from _extras.screening import pre_assign_role
 from units import Coins
 
 from .conf import C

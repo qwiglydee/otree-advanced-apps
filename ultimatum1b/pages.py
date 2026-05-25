@@ -1,7 +1,7 @@
 from decimal import Decimal
 from otree.api import Page
 
-from _stuff.livepage import LivePage, LivePayload, LiveResponding, AsyncLiveResponding
+from _extras.livepage import LivePage, LivePayload, LiveResponding, AsyncLiveResponding
 from units import Coins
 
 from . import progress
@@ -19,8 +19,8 @@ def get_template_rolename(page: Page):
 
 class Main(LivePage):
     get_template_name = get_template_rolename
-    page_styles = ["ot-progress.css", "ot-pulse.css"]
-    page_scripts = ["ot-progress.js", "ot-pulse.js"]
+    page_styles = ["_extras/ot-progress.css", "_extras/ot-pulse.css"]
+    page_scripts = ["_extras/ot-progress.js", "_extras/ot-pulse.js"]
 
     @classmethod
     async def live_load(page, player: Player) -> AsyncLiveResponding:

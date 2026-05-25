@@ -2,8 +2,8 @@ import random
 
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
-from _stuff.keyprop import dict_getter, key_getter
-from _stuff.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
+from _extras.keyprop import dict_getter, key_getter
+from _extras.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
 from units import Points
 
 from .conf import C

@@ -30,20 +30,20 @@ class Misfit(Page):
 
 
 class Slider(Page):
-    page_styles = ["extra-fields.css"]
-    page_scripts = ["extra-fields.js"]
+    page_styles = ["_extras/extra-fields.css"]
+    page_scripts = ["_extras/extra-fields.js"]
     form_model = "player"
     form_fields = ["field_range"]
 
 
 class RadioScale(Page):
-    page_styles = ["extra-fields.css"]
+    page_styles = ["_extras/extra-fields.css"]
     form_model = "player"
     form_fields = ["field_scale"]
 
 
 class RadioGrid(Page):
-    page_styles = ["extra-fields.css"]
+    page_styles = ["_extras/extra-fields.css"]
     form_model = "player"
     form_fields = ["field_foo", "field_bar", "field_baz"]
 
@@ -61,7 +61,7 @@ class RadioGrid(Page):
 
 
 class Conditional(Page):
-    page_styles = ["extra-fields.css"]
+    page_styles = ["_extras/extra-fields.css"]
     form_model = "player"
     form_fields = ["field_qux", "field_qux_other"]
 

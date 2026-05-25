@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from _stuff.tracking import track_round_trials
+from _extras.tracking import track_round_trials
 from units import Coins
 
 from .conf import C

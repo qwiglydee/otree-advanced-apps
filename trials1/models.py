@@ -1,6 +1,6 @@
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
-from _stuff.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
+from _extras.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
 from units import Points
 
 from .conf import C

@@ -1,6 +1,6 @@
 from otree.api import BaseConstants
 
-from _stuff.config import get_session_param
+from _extras.config import get_session_param
 from units import Coins
 
 

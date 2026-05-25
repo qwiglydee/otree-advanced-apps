@@ -1,6 +1,6 @@
 from otree.api import BasePlayer
 
-from _stuff.itermodels import BaseRoundModel, BaseTrialModel
+from _extras.itermodels import BaseRoundModel, BaseTrialModel
 
 
 def track_players_all_around(player: BasePlayer, iteround: BaseRoundModel):

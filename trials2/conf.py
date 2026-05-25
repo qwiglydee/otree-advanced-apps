@@ -1,7 +1,7 @@
 from otree.api import BaseConstants
 
-from _stuff import rand
-from _stuff.config import get_session_param
+from _extras import rand
+from _extras.config import get_session_param
 from units import Points
 
 

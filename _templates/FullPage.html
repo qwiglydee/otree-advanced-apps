@@ -15,10 +15,10 @@ In YourPage.html insert:
 
 {% block global_styles %}
     {{ super() }}
-    <link rel="stylesheet" href="{{ static 'fullscreen.css' }}" />
+    <link rel="stylesheet" href="{{ static '_extras/fullscreen.css' }}" />
 {% endblock %}
 
 {% block global_scripts %}
     {{ super() }}
-    <script src="{{ static 'fullscreen.js' }}"></script>
+    <script src="{{ static '_extras/fullscreen.js' }}"></script>
 {% endblock %}

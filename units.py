@@ -3,7 +3,7 @@ from decimal import Decimal
 from otree.decimal import DecimalUnit
 from otree.currency import RealWorldCurrency
 
-from _stuff.score import ScoreUnit
+from _extras.score import ScoreUnit
 
 
 class Points(ScoreUnit):
