@@ -21,6 +21,8 @@ class ScoreUnit(DecimalUnit):
             sgn = "+" if not self.is_signed() and not self.is_zero() > 0 else ""
             return sgn + self._format_for_display()
         if spec in ("n", "+n"):
+            if self == 0:
+                return float.__format__(0.0, f".{self.output_max_places}f")
             _sign, digits, exp = self.as_tuple()
             assert exp not in ("n", "N", "F")
             prc = max(0, len(digits) + exp) + self.output_max_places
