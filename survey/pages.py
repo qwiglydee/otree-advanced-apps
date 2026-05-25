@@ -71,12 +71,12 @@ class Results(Page):
 
 
 page_sequence = [
-    # Intro,
-    # Dropout,
-    # Misfit,
-    # Conditional,
+    Intro,
+    Dropout,
+    Misfit,
+    Conditional,
     Slider,
-    # RadioScale,
-    # RadioGrid,
-    # Results,
+    RadioScale,
+    RadioGrid,
+    Results,
 ]
