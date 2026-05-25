@@ -193,6 +193,8 @@
                 if (vars.choice != null) {
                     vars.styles[vars.choice] = correct ? "is-valid" : "is-invalid";
                 }
+                vars.feedback.iscorrect = correct;
+                vars.feedback.incorrect = !correct;
             }
             ot.updatePage();
         });

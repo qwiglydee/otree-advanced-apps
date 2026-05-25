@@ -138,6 +138,7 @@
 
         function liveResult(result) {
             vars.result = result;
+            console.debug("result:", result);
             completeTrial();
         }
 
@@ -152,6 +153,8 @@
                 if (vars.answer != null) {
                     vars.styles[0] = correct ? "is-valid" : "is-invalid";
                 }
+                vars.feedback.iscorrect = correct;
+                vars.feedback.incorrect = !correct;
             }
             ot.updatePage();
         });
