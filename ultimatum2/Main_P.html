@@ -27,16 +27,17 @@
             <hr />
             <button ot-click-input type="button" name="confirm" class="btn btn-primary" ot-enable="vars.confirming">Confirm</button>
         </section>
-    </main>
 
-    <footer>
-        <div ot-display="vars.evaluation" class="alert alert-info">
+        <div ot-visible="vars.evaluation" class="alert alert-info">
             <h5>If your partner accepts:</h5>
             <ul>
                 <li>You keep: <b ot-text="vars.evaluation.P"></b></li>
                 <li>Your partner receives: <b ot-text="vars.evaluation.R"></b></li>
             </ul>
         </div>
+    </main>
+
+    <footer>
         <section ot-display="vars.result" class="info">
             <h4>Final Result:</h4>
             <ul class="m-0">
@@ -57,6 +58,7 @@
 
         const MYTURN = "{{player.role}}";
         const BLINK_DELAY = 200;
+        const RESULT_DELAY = 300;
         const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
 
         function switchState(state) {
@@ -172,9 +174,10 @@
             vars.evaluation = shares;
         }
 
-        function liveResult(result) {
-            vars.result = result;
+        async function liveResult(result) {
             vars.evaluation = null;
+            await ot.delay(RESULT_DELAY);
+            vars.result = result;
             completeTrial();
         }
 
