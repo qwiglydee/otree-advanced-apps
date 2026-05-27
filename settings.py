@@ -32,7 +32,7 @@ SESSION_CONFIGS = [
         name="lottery1",
         app_sequence=["lottery1"],
         condition="random",
-        disclosure="CHOICE",
+        disclosure="random",
     ),
     dict(
         name="lottery2s",

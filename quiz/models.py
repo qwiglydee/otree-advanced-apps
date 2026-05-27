@@ -50,7 +50,7 @@ class Trial(BaseTrialModel):
     option_3 = models.StringField()
     get_options = dict_getter("option_", (1, 2, 3))
 
-    success = models.IntegerField()
+    success = models.BooleanField()
     score = PointsField(initial=None)
 
     @property
