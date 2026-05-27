@@ -6,11 +6,11 @@ from otree.main import setup
 from otree.cli.prodserver1of2 import run_asgi_server
 from otree.tasks import Worker
 
-dburl = environ.get('DATABASE_URL')
+dburl = environ.get("DATABASE_URL", "")
 assert dburl.startswith("postgres")
 
-addr = environ.get('HOST', "0.0.0.0")
-port = environ.get('PORT', "8000")
+addr = environ.get("HOST", "0.0.0.0")
+port = environ.get("PORT", "8000")
 
 
 class WorkerProcess(Process):
@@ -24,7 +24,7 @@ class WorkerProcess(Process):
 
 setup()
 
-logging.getLogger('root').setLevel(logging.DEBUG)
+logging.getLogger("root").setLevel(logging.DEBUG)
 
 worker = WorkerProcess()
 worker.start()

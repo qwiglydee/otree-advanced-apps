@@ -6,7 +6,7 @@
 
 #### base
 # - creating non-root app user
-FROM python:3.12-slim AS base
+FROM python:3.11-slim AS base
 
 # creating non-root user
 # Note: for bind mounts to work, the IDs should match local user
@@ -32,7 +32,7 @@ WORKDIR /app
 COPY requirements.* /app/
 
 # installs everything into /app/.local/lib
-RUN pip3 install --user -r requirements.txt
+RUN pip install --user -r requirements.txt
 
 #### prod
 # - copying everything into single image
