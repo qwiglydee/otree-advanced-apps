@@ -24,3 +24,10 @@ def track_round_trials(iteround: BaseRoundModel, TrialCls, max_trials: int):
     count: int = TrialCls.count(iteround, status="CLOSED")
     iteround.progress_trials = count  # type: ignore
     return count < max_trials
+
+
+def track_trial_responses(trial: BaseTrialModel, ResponseCls, max_responses: int):
+    """Check if the trial reached maximum responses"""
+    count: int = ResponseCls.count(trial)
+    trial.progress_responses = count  # type: ignore
+    return count < max_responses
