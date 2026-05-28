@@ -84,7 +84,7 @@ def respond(progr: Progress, value: str, **kwargs) -> Response:
     pagename, player, iteround, trial = progr
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
-    response = Response.create_next(trial, player, response=value, **kwargs)
+    response = Response.create_next(trial, player, value=value, **kwargs)
     response.evaluate()
 
     advance_trial(progr, iteround, trial)
