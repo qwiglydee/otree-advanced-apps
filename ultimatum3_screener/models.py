@@ -35,6 +35,26 @@ class Subsession(BaseSubsession):
 
     condition = models.StringField()
 
+    def preassign_player(self, player: BasePlayer):
+        """Pick a role for new participant
+        Using balancing formula to make partners for who is already waiting.
+        The waiting queque contains one particular role.
+
+        Probability of selecting pairing role raises with length of the queue.
+        https://www.desmos.com/calculator/faylavm1ma
+
+        The formula expected to magically balance both the waiting queue and the screening queue.
+        """
+        counters = self.get_counters()
+        mostrole, quelen = counters.most_common(1)[0]
+
+        f = 0.5 * pow(1.0 - C.BALANCING, quelen)  # waiting role factor
+        roles = [mostrole, C.PARTNEROLES[mostrole]]
+        probs = [f, 1.0 - f]
+        [picked] = random.choices(roles, probs)
+
+        pre_assign_role(player, picked)
+
 
 class Group(BaseGroup):
     pass
@@ -69,24 +89,3 @@ class Player(BasePlayer):
     @property
     def condition(self) -> str:
         return self.subsession.condition  # type: ignore
-
-
-def preassign_player(player):
-    """Pick a role for new participant
-    Using balancing formula to make partners for who is already waiting.
-    The waiting queque contains one particular role.
-
-    Probability of selecting pairing role raises with length of the queue.
-    https://www.desmos.com/calculator/faylavm1ma
-
-    The formula expected to magically balance both the waiting queue and the screening queue.
-    """
-    counters = player.subsession.get_counters()
-    mostrole, quelen = counters.most_common(1)[0]
-
-    f = 0.5 * pow(1.0 - C.BALANCING, quelen)  # waiting role factor
-    roles = [mostrole, C.PARTNEROLES[mostrole]]
-    probs = [f, 1.0 - f]
-    [picked] = random.choices(roles, probs)
-
-    pre_assign_role(player, picked)

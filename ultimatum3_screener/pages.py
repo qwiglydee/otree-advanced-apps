@@ -1,7 +1,7 @@
 from otree.api import Page
 
 from .conf import C
-from .models import Player, preassign_player
+from .models import Subsession, Player
 
 
 def get_template_rolename(page: Page):
@@ -28,7 +28,8 @@ class Intro(Page):
             player.participant.status = "dropout"
 
         if not player.dropout and not player.misfit:
-            preassign_player(player)
+            subsession: Subsession = player.subsession  # type: ignore
+            subsession.preassign_player(player)
 
 
 class Instructions(Page):
