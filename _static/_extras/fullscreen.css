@@ -17,6 +17,10 @@
     margin-top: 0;
 }
 
+.otree-title {
+    display: none;
+}
+
 .otree-content {
     height: var(--vh100, 100vh);
     display: flex;
