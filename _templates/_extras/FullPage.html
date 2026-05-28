@@ -1,0 +1,10 @@
+{# Full screen page template Stretches page to full height and centers all content Adds all scripts and styles as
+ExtPage.html In YourPage.html insert: {% extends "_extras/FullPage.html" %} {% block content %}
+<header>...</header>
+<main>...</main>
+<footer>...</footer>
+{% endblock %} #} {% extends "_extras/ExtPage.html" %} {% block global_styles %} {{ super() }}
+<link rel="stylesheet" href="{{ static '_extras/fullscreen.css' }}" />
+{% endblock %} {% block global_scripts %} {{ super() }}
+<script src="{{ static '_extras/fullscreen.js' }}"></script>
+{% endblock %}

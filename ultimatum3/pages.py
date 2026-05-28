@@ -18,7 +18,7 @@ def get_template_rolename(page: Page):
 
 
 class Gather(WaitPage):
-    template_name = "WaitPage.html"
+    template_name = "_extras/WaitPage.html"
     group_by_arrival_time = True
     after_all_players_arrive = setup_group
 

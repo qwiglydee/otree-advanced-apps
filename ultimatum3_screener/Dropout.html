@@ -1,15 +1,11 @@
-{% extends "ExtPage.html" %}
-
-{% block title %}Drop out{% endblock %}
-
-{% block content %}
-    <div class="alert alert-danger">
-        {% if player.dropout %}
-            <p>You haven't payed attention to the pages for too long and got excluded from the study.</p>
-        {% elif player.misfit %}
-            <p>Unfortunately, you don't match some criteria to participate in the study.</p>
-        {% elif player.unqualified %}
-            <p>Unfortunately, you're not qualified to participate in the study.</p>
-        {% endif %}
-    </div>
+{% extends "_extras/ExtPage.html" %} {% block title %}Drop out{% endblock %} {% block content %}
+<div class="alert alert-danger">
+    {% if player.dropout %}
+    <p>You haven't payed attention to the pages for too long and got excluded from the study.</p>
+    {% elif player.misfit %}
+    <p>Unfortunately, you don't match some criteria to participate in the study.</p>
+    {% elif player.unqualified %}
+    <p>Unfortunately, you're not qualified to participate in the study.</p>
+    {% endif %}
+</div>
 {% endblock content %}

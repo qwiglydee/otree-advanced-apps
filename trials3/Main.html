@@ -1,268 +1,269 @@
-{% extends "FullPage.html" %}
-{% block content %}
-    <header>
-        <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
-        <div class="alert alert-secondary m-2">Total score: <span ot-text="vars.progress.score"></span></div>
-    </header>
+{% extends "_extras/FullPage.html" %} {% block content %}
+<header>
+    <ot-progress
+        ticks="1"
+        max="vars.progress.total"
+        value="vars.progress.passed"
+        value2="vars.progress.current"></ot-progress>
+    <div class="alert alert-secondary m-2">Total score: <span ot-text="vars.progress.score"></span></div>
+</header>
 
-    <main ot-visible="vars.trial" class="justify-content-start">
-        <section class="paper fs-4 text-center"><b ot-text="vars.trial.task"></b> =</section>
+<main ot-visible="vars.trial" class="justify-content-start">
+    <section class="paper fs-4 text-center"><b ot-text="vars.trial.task"></b> =</section>
 
-        <section class="form text-center">
-            <div class="btn-group">
-                <input ot-input type="radio" class="btn-check" name="decision" value="INPUT" id="decision1" ot-enable="vars.deciding" />
-                <label class="btn btn-outline-primary" for="decision1">Type-in<br />an answer</label>
-
-                <input ot-input type="radio" class="btn-check" name="decision" value="CHOOSE" id="decision2" ot-enable="vars.deciding" />
-                <label class="btn btn-outline-primary" for="decision2">Choose<br />an option</label>
-            </div>
-        </section>
-
-        <section class="form" ot-display="vars.inputing">
+    <section class="form text-center">
+        <div class="btn-group">
             <input
                 ot-input
-                type="number"
-                name="answer"
-                class="form-control"
-                ot-key-input="Enter"
-                autofocus
-                ot-class="vars.styles.0"
+                type="radio"
+                class="btn-check"
+                name="decision"
+                value="INPUT"
+                id="decision1"
+                ot-enable="vars.deciding" />
+            <label class="btn btn-outline-primary" for="decision1">Type-in<br />an answer</label>
+
+            <input
+                ot-input
+                type="radio"
+                class="btn-check"
+                name="decision"
+                value="CHOOSE"
+                id="decision2"
+                ot-enable="vars.deciding" />
+            <label class="btn btn-outline-primary" for="decision2">Choose<br />an option</label>
+        </div>
+    </section>
+
+    <section class="form" ot-display="vars.inputing">
+        <input
+            ot-input
+            type="number"
+            name="answer"
+            class="form-control"
+            ot-key-input="Enter"
+            autofocus
+            ot-class="vars.styles.0"
+            ot-enable="vars.responding" />
+    </section>
+
+    <section class="form" ot-display="vars.choosing">
+        <div class="form-check">
+            <input
+                id="choice1"
+                ot-input
+                type="radio"
+                name="choice"
+                value="1"
+                class="form-check-input"
                 ot-enable="vars.responding"
-            />
-        </section>
+                ot-class="vars.styles.1" />
+            <label for="choice1" ot-text="vars.trial.options.1" class="form-check-label"></label>
+        </div>
 
-        <section class="form" ot-display="vars.choosing">
-            <div class="form-check">
-                <input
-                    id="choice1"
-                    ot-input
-                    type="radio"
-                    name="choice"
-                    value="1"
-                    class="form-check-input"
-                    ot-enable="vars.responding"
-                    ot-class="vars.styles.1"
-                />
-                <label for="choice1" ot-text="vars.trial.options.1" class="form-check-label"></label>
-            </div>
+        <div class="form-check">
+            <input
+                id="choice2"
+                ot-input
+                type="radio"
+                name="choice"
+                value="2"
+                class="form-check-input"
+                ot-enable="vars.responding"
+                ot-class="vars.styles.2" />
+            <label for="choice2" ot-text="vars.trial.options.2" class="form-check-label"></label>
+        </div>
 
-            <div class="form-check">
-                <input
-                    id="choice2"
-                    ot-input
-                    type="radio"
-                    name="choice"
-                    value="2"
-                    class="form-check-input"
-                    ot-enable="vars.responding"
-                    ot-class="vars.styles.2"
-                />
-                <label for="choice2" ot-text="vars.trial.options.2" class="form-check-label"></label>
-            </div>
+        <div class="form-check">
+            <input
+                id="choice3"
+                ot-input
+                type="radio"
+                name="choice"
+                value="3"
+                class="form-check-input"
+                ot-enable="vars.responding"
+                ot-class="vars.styles.3" />
+            <label for="choice3" ot-text="vars.trial.options.3" class="form-check-label"></label>
+        </div>
 
-            <div class="form-check">
-                <input
-                    id="choice3"
-                    ot-input
-                    type="radio"
-                    name="choice"
-                    value="3"
-                    class="form-check-input"
-                    ot-enable="vars.responding"
-                    ot-class="vars.styles.3"
-                />
-                <label for="choice3" ot-text="vars.trial.options.3" class="form-check-label"></label>
-            </div>
+        <button ot-click-input type="button" name="confirm" class="btn btn-primary m-3" ot-enable="vars.confirming">
+            Confirm
+        </button>
+    </section>
+</main>
 
-            <button ot-click-input type="button" name="confirm" class="btn btn-primary m-3" ot-enable="vars.confirming">Confirm</button>
-        </section>
-    </main>
+<footer>
+    <div ot-display="vars.result">Scored: <i ot-text="vars.result.score"></i></div>
+    <div class="flex-fill"></div>
+    <div ot-display="vars.prompting.deciding">Choose your strategy to solve the task...</div>
+    <div ot-display="vars.prompting.choosing">Select and <kbd>Confirm</kbd> your answer...</div>
+    <div ot-display="vars.prompting.inputing">Enter your answer and press <kbd>Enter</kbd>...</div>
+    <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+</footer>
+{% endblock content %} {% block scripts %}
+<script>
+    "use strict";
 
-    <footer>
-        <div ot-display="vars.result">Scored: <i ot-text="vars.result.score"></i></div>
-        <div class="flex-fill"></div>
-        <div ot-display="vars.prompting.deciding">Choose your strategy to solve the task...</div>
-        <div ot-display="vars.prompting.choosing">Select and <kbd>Confirm</kbd> your answer...</div>
-        <div ot-display="vars.prompting.inputing">Enter your answer and press <kbd>Enter</kbd>...</div>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
-    </footer>
-{% endblock content %}
+    const BLINK_DELAY = 200;
+    const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
 
-{% block scripts %}
-    <script>
-        "use strict";
+    function switchState(state) {
+        let stage = vars.progress ? vars.progress.stage : null;
+        let strategy = vars.trial ? vars.trial.strategy : null;
+        if (state == "running") state += `/${stage}`;
+        // console.debug("switching", state, stage, strategy);
 
-        const BLINK_DELAY = 200;
-        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
+        // display in all states
+        vars.inputing = strategy == "INPUT";
+        vars.choosing = strategy == "CHOOSE";
 
-        function switchState(state) {
-            let stage = vars.progress ? vars.progress.stage : null;
-            let strategy = vars.trial ? vars.trial.strategy : null;
-            if (state == "running") state += `/${stage}`;
-            // console.debug("switching", state, stage, strategy);
+        vars.waiting = false;
+        vars.deciding = false;
+        vars.responding = false;
+        vars.confirming = false;
+        vars.prompting = {};
 
-            // display in all states
-            vars.inputing = strategy == "INPUT";
-            vars.choosing = strategy == "CHOOSE";
+        switch (state) {
+            case "starting":
+            case "processing":
+                vars.waiting = true;
+                break;
+            case "completing":
+                vars.waiting = true;
+                break;
+            case "running/DECISION":
+                vars.deciding = true;
+                vars.prompting = { deciding: true };
+                break;
+            case "running/ANSWER":
+                vars.responding = true;
+                vars.confirming = vars.choosing && vars.choice != null;
+                vars.prompting = { inputing: vars.inputing, choosing: vars.choosing };
+                break;
+            default:
+                throw Error(`Bogus state switch: ${state}`);
+        }
+        ot.updatePage();
+    }
 
-            vars.waiting = false;
-            vars.deciding = false;
-            vars.responding = false;
-            vars.confirming = false;
-            vars.prompting = {};
+    ot.onLoad(initPage);
+    ot.onLive("progress", liveProgress);
+    ot.onLive("trial", startTrial);
+    ot.onLive("update", updateTrial);
+    ot.onInput("decision", inputDecision);
+    ot.onInput("answer", inputResponse);
+    ot.onInput("choice", inputChoice);
+    ot.onInput("confirm", confirmChoice);
+    ot.onLive("feedback", liveFeedback);
+    ot.onLive("result", liveResult);
+    ot.onInput("continue", iterateRound);
 
-            switch (state) {
-                case "starting":
-                case "processing":
-                    vars.waiting = true;
-                    break;
-                case "completing":
-                    vars.waiting = true;
-                    break;
-                case "running/DECISION":
-                    vars.deciding = true;
-                    vars.prompting = { deciding: true };
-                    break;
-                case "running/ANSWER":
-                    vars.responding = true;
-                    vars.confirming = vars.choosing && vars.choice != null;
-                    vars.prompting = { inputing: vars.inputing, choosing: vars.choosing };
-                    break;
-                default:
-                    throw Error(`Bogus state switch: ${state}`);
+    function initPage() {
+        resetTrial();
+        switchState("starting");
+        ot.sendLive("load");
+    }
+
+    async function iterateRound() {
+        resetTrial();
+        switchState("starting");
+        await ot.delay(BLINK_DELAY);
+        ot.sendLive("iterate");
+    }
+
+    function liveProgress(progress) {
+        vars.progress = progress;
+        if (progress.terminated) ot.completePage();
+    }
+
+    function resetTrial() {
+        vars.trial = null;
+        vars.decision = null;
+        vars.choice = null;
+        vars.answer = null;
+        vars.feedback = null;
+        vars.result = null;
+        vars.styles = {};
+        ot.resetInputs();
+    }
+
+    function updateTrial(update) {
+        Object.assign(vars.trial, update);
+        switchState("running");
+    }
+
+    function startTrial(trial) {
+        vars.trial = trial;
+        switchState("running");
+        ot.beginTimeMeasurement(); // NB: restarts on page reload
+    }
+
+    function resetResponse() {
+        vars.choice = null;
+        vars.answer = null;
+        vars.feedback = null;
+        vars.result = null;
+        vars.styles = {};
+        ot.resetInputs(["choice", "answer"]); // keep 'decision'
+    }
+
+    async function restartTrial() {
+        await ot.delay(RETRY_DELAY);
+        resetResponse();
+        switchState("running");
+    }
+
+    function inputDecision(decision) {
+        vars.decision = decision;
+        switchState("processing");
+        ot.sendLive("decision", { trialid: vars.trial.id, time: ot.getTimeMeasurement(), decision });
+    }
+
+    function inputResponse(answer) {
+        vars.answer = String(answer);
+        switchState("processing");
+        ot.sendLive("answer", { trialid: vars.trial.id, time: ot.getTimeMeasurement(), answer: vars.answer });
+    }
+
+    function inputChoice(choice) {
+        vars.choice = Number(choice);
+        switchState("running");
+    }
+
+    function confirmChoice() {
+        switchState("processing");
+        ot.sendLive("choice", { trialid: vars.trial.id, time: ot.getTimeMeasurement(), button: vars.choice });
+    }
+
+    function liveFeedback(feedback) {
+        vars.feedback = feedback;
+        if (!feedback.final) restartTrial();
+    }
+
+    function liveResult(result) {
+        vars.result = result;
+        completeTrial();
+    }
+
+    async function completeTrial() {
+        switchState("completing");
+        await ot.delay(ITER_DELAY);
+        iterateRound();
+    }
+
+    ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {
+        if (correct != null) {
+            if (vars.choice != null) {
+                vars.styles[vars.choice] = correct ? "is-valid" : "is-invalid";
             }
-            ot.updatePage();
-        }
-
-        ot.onLoad(initPage);
-        ot.onLive("progress", liveProgress);
-        ot.onLive("trial", startTrial);
-        ot.onLive("update", updateTrial);
-        ot.onInput("decision", inputDecision);
-        ot.onInput("answer", inputResponse);
-        ot.onInput("choice", inputChoice);
-        ot.onInput("confirm", confirmChoice);
-        ot.onLive("feedback", liveFeedback);
-        ot.onLive("result", liveResult);
-        ot.onInput("continue", iterateRound);
-
-        function initPage() {
-            resetTrial();
-            switchState("starting");
-            ot.sendLive("load");
-        }
-
-        async function iterateRound() {
-            resetTrial();
-            switchState("starting");
-            await ot.delay(BLINK_DELAY);
-            ot.sendLive("iterate");
-        }
-
-        function liveProgress(progress) {
-            vars.progress = progress;
-            if (progress.terminated) ot.completePage();
-        }
-
-        function resetTrial() {
-            vars.trial = null;
-            vars.decision = null;
-            vars.choice = null;
-            vars.answer = null;
-            vars.feedback = null;
-            vars.result = null;
-            vars.styles = {};
-            ot.resetInputs();
-        }
-
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
-            switchState("running");
-        }
-
-        function startTrial(trial) {
-            vars.trial = trial;
-            switchState("running");
-            ot.beginTimeMeasurement(); // NB: restarts on page reload
-        }
-
-        function resetResponse() {
-            vars.choice = null;
-            vars.answer = null;
-            vars.feedback = null;
-            vars.result = null;
-            vars.styles = {};
-            ot.resetInputs(["choice", "answer"]); // keep 'decision'
-        }
-
-        async function restartTrial() {
-            await ot.delay(RETRY_DELAY);
-            resetResponse();
-            switchState("running");
-        }
-
-        function inputDecision(decision) {
-            vars.decision = decision;
-            switchState("processing");
-            ot.sendLive("decision", {
-                trialid: vars.trial.id,
-                time: ot.getTimeMeasurement(),
-                decision,
-            });
-        }
-
-        function inputResponse(answer) {
-            vars.answer = String(answer);
-            switchState("processing");
-            ot.sendLive("answer", {
-                trialid: vars.trial.id,
-                time: ot.getTimeMeasurement(),
-                answer: vars.answer,
-            });
-        }
-
-        function inputChoice(choice) {
-            vars.choice = Number(choice);
-            switchState("running");
-        }
-
-        function confirmChoice() {
-            switchState("processing");
-            ot.sendLive("choice", {
-                trialid: vars.trial.id,
-                time: ot.getTimeMeasurement(),
-                button: vars.choice,
-            });
-        }
-
-        function liveFeedback(feedback) {
-            vars.feedback = feedback;
-            if (!feedback.final) restartTrial();
-        }
-
-        function liveResult(result) {
-            vars.result = result;
-            completeTrial();
-        }
-
-        async function completeTrial() {
-            switchState("completing");
-            await ot.delay(ITER_DELAY);
-            iterateRound();
-        }
-
-        ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {
-            if (correct != null) {
-                if (vars.choice != null) {
-                    vars.styles[vars.choice] = correct ? "is-valid" : "is-invalid";
-                }
-                if (vars.answer != null) {
-                    vars.styles[0] = correct ? "is-valid" : "is-invalid";
-                }
-                vars.feedback.iscorrect = correct;
-                vars.feedback.incorrect = !correct;
+            if (vars.answer != null) {
+                vars.styles[0] = correct ? "is-valid" : "is-invalid";
             }
-            ot.updatePage();
-        });
-    </script>
+            vars.feedback.iscorrect = correct;
+            vars.feedback.incorrect = !correct;
+        }
+        ot.updatePage();
+    });
+</script>
 {% endblock scripts %}

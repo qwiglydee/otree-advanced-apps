@@ -1,7 +1,4 @@
-{% extends "ExtPage.html" %}
+{% extends "_extras/ExtPage.html" %} {% block content %}
+<div class="alert alert-info">You're playing {{ player.role }}</div>
 
-{% block content %}
-    <div class="alert alert-info">You're playing {{ player.role }}</div>
-
-    {{ next_button }}
-{% endblock content %}
+{{ next_button }} {% endblock content %}

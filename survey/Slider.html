@@ -1,35 +1,26 @@
-{% extends "ExtPage.html" %}
-
-{% block title %}
-    Questions
-{% endblock title %}
-
-{% block content %}
-    <section class="form">
-        {# slider scale snippet: adjust field name and step attribute #}
-        {% with field = form.field_range %}
-            <div class="field-slider mb-3">
-                <label for="{{ field.id }}" class="form-label">{{ field.label.text }}</label>
-                <div class="output-wrapper">
-                    <output for="{{ field.id }}">{{ field._value }}</output>
-                </div>
-                <input
-                    id="{{ field.id }}"
-                    type="range"
-                    name="{{ field.name }}"
-                    value="{{ field._value }}"
-                    min="{{ field.render_kw.min }}"
-                    max="{{ field.render_kw.max }}"
-                    step="{{ player.__class__.field_range.form_props.step }}"
-                    class="form-range"
-                    oninput="updateSliderOutput(this)"
-                />
-                <div class="d-flex justify-content-between">
-                    <small class="form-text text-muted">minumum</small>
-                    <small class="form-text text-muted">maximum</small>
-                </div>
-            </div>
-        {% endwith %}
-    </section>
-    {{ next_button }}
-{% endblock content %}
+{% extends "_extras/ExtPage.html" %} {% block title %} Questions {% endblock title %} {% block content %}
+<section class="form">
+    {# slider scale snippet: adjust field name and step attribute #} {% with field = form.field_range %}
+    <div class="field-slider mb-3">
+        <label for="{{ field.id }}" class="form-label">{{ field.label.text }}</label>
+        <div class="output-wrapper">
+            <output for="{{ field.id }}">{{ field._value }}</output>
+        </div>
+        <input
+            id="{{ field.id }}"
+            type="range"
+            name="{{ field.name }}"
+            value="{{ field._value }}"
+            min="{{ field.render_kw.min }}"
+            max="{{ field.render_kw.max }}"
+            step="{{ player.__class__.field_range.form_props.step }}"
+            class="form-range"
+            oninput="updateSliderOutput(this)" />
+        <div class="d-flex justify-content-between">
+            <small class="form-text text-muted">minumum</small>
+            <small class="form-text text-muted">maximum</small>
+        </div>
+    </div>
+    {% endwith %}
+</section>
+{{ next_button }} {% endblock content %}

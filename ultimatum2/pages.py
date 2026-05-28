@@ -18,7 +18,7 @@ def get_template_rolename(page: Page):
 
 
 class Gather(WaitPage):
-    template_name = "WaitPage.html"
+    template_name = "_extras/WaitPage.html"
 
 
 class Main(LivePage):
