@@ -98,7 +98,7 @@ def respond_decision(progr: Progress, decision: str, **kwargs):
     assert trial.progress_stage == "DECISION", "Invalid responding in wrong stage"
 
     response = Response.create_next(trial, player, stage=trial.progress_stage, decision=decision, **kwargs)
-    track_trial_continue(trial)
+    response.evaluate()
 
     advance_trial(progr, iteround, trial)
     return response
