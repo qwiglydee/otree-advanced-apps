@@ -36,18 +36,18 @@ class Main(LivePage):
     @classmethod
     async def live_iterate(page, player: Player) -> AsyncLiveResponding:
         current = progress.current(page, player)
-        current = progress.advance(current)
+        advanced = progress.advance(current)
 
-        if current.trial is None:
+        if advanced.trial is None:
             # no more trials
-            yield "progress", page.output_progress(current)
+            yield "progress", page.output_progress(advanced)
         else:
-            yield "progress", page.output_progress(current)
-            yield "trial", page.output_trial(current.trial)
+            yield "progress", page.output_progress(advanced)
+            yield "trial", page.output_trial(advanced.trial)
 
-            assert current.iteround
-            if current.iteround.autorespond_role == "P":
-                async for r in page.auto_proposal(current):
+            assert advanced.iteround
+            if advanced.iteround.autorespond_role == "P":
+                async for r in page.auto_proposal(advanced):
                     yield r
 
     @classmethod

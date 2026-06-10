@@ -27,18 +27,18 @@ class Main(LivePage):
     @classmethod
     def live_iterate(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
-        current = progress.advance(current)
-        group = current.group
+        advanced = progress.advance(current)
+        group = advanced.group
 
-        if current.trial is None:
+        if advanced.trial is None:
             # no more trials
-            yield group, "progress", page.output_progress(current)
-        elif not current.trial.is_running:
+            yield group, "progress", page.output_progress(advanced)
+        elif not advanced.trial.is_running:
             # pending state
-            yield player, "progress", page.output_progress(current)
+            yield player, "progress", page.output_progress(advanced)
         else:
-            yield group, "progress", page.output_progress(current)
-            yield group, "trial", page.output_trial(current.trial)
+            yield group, "progress", page.output_progress(advanced)
+            yield group, "trial", page.output_trial(advanced.trial)
 
     @classmethod
     def live_response(page, player: Player, trialid: int, utterance: str) -> LiveResponding:
