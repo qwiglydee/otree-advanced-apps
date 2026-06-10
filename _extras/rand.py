@@ -78,7 +78,9 @@ class Normal:
 
 @dataclass(slots=True)
 class Discrete:
-    """Discrete distribution defined by outcomes and weights"""
+    """Discrete distribution defined by outcomes and weights
+    Usage: rand.Discrete(("A", 90), ("B", 10))
+    """
 
     outcomes: tuple
     weights: tuple
@@ -92,14 +94,17 @@ class Discrete:
         return f"Discrete{args}"
 
     def sample(self):
-        return self.samples(1)[0]
+        [result] = random.choices(self.outcomes, self.weights, k=1)
+        return result
 
     def samples(self, n):
-        return tuple(self.sample() for _ in range(n))
+        return random.choices(self.outcomes, self.weights, k=n)
 
 
 def Outcomes(**kwargs):
-    """Discrete distribution by kwargs notation (outcome=weight, ...)"""
+    """Discrete distribution by kwargs notation (outcome=weight, ...)
+    Usage: rand.Discrete(A=90, B=10)
+    """
     return Discrete(*kwargs.items())
 
 
