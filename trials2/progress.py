@@ -31,15 +31,13 @@ def current(page, player: Player) -> Progress:
     return Progress(pagename, player, iteround, trial)
 
 
-def track_round_continue(iteround: Round) -> bool:
+def track_round(iteround: Round) -> bool:
     """Track round progress state and decide if to continue"""
-    iteround.update()
     return count_max_trials(iteround, Trial, C.NUM_TRIALS[iteround.pagename])
 
 
-def track_trial_continue(trial: Trial) -> bool:
+def track_trial(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
-    trial.update()
     trial.progress_retries = Response.count(trial)
     return trial.progress_retries < C.NUM_RETRIES.get(trial.iteround.pagename, 1) and not trial.success
 
@@ -64,7 +62,9 @@ def advance_round(current: Progress, iteround: Round | None) -> Round:
     if iteround.is_pristine:
         iteround.start()
 
-    if iteround.is_running and not track_round_continue(iteround):
+    iteround.update()
+
+    if iteround.is_running and not track_round(iteround):
         iteround.complete()
         set_payoff(current.player, iteround)
 
@@ -78,10 +78,12 @@ def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Tr
     if trial.is_pristine:
         trial.start()
 
-    if trial.is_running and not track_trial_continue(trial):
+    trial.update()
+
+    if trial.is_running and not track_trial(trial):
         trial.complete()
 
-    track_round_continue(iteround)
+    track_round(iteround)
 
     return trial
 
