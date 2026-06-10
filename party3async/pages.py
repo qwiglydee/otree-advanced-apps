@@ -56,15 +56,15 @@ class Main(LivePage):
             yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    def output_progress(page, progr: Progress) -> LivePayload:
-        pagename, player, iteround, trial = progr
+    def output_progress(page, current: Progress) -> LivePayload:
+        pagename, player, iteround, trial = current
         assert iteround
         return {
             "terminated": iteround.is_closed,
             "total": C.NUM_TRIALS,
             "passed": iteround.progress_trials,
             "current": trial.iteration if trial else None,
-            "pending": not progr.is_running,
+            "pending": not current.is_running,
             "score": f"{iteround.total_score:n}",
         }
 

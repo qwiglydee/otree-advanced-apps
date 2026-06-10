@@ -38,34 +38,34 @@ def track_trial_continue(trial: Trial) -> bool:
     return Response.count(trial) == 0
 
 
-def advance(progr: Progress) -> Progress:
+def advance(current: Progress) -> Progress:
     """Advance current round one iteration further"""
-    pagename, player, iteround, trial = progr
+    pagename, player, iteround, trial = current
     assert trial is None or trial.is_closed, "Invalid advancing over incomplete trial"
 
-    iteround = advance_round(progr, iteround)
+    iteround = advance_round(current, iteround)
 
     if not iteround.is_closed:
-        trial = advance_trial(progr, iteround, trial)
+        trial = advance_trial(current, iteround, trial)
 
     return Progress(pagename, player, iteround, trial)
 
 
-def advance_round(progr: Progress, iteround: Round | None) -> Round:
+def advance_round(current: Progress, iteround: Round | None) -> Round:
     if iteround is None:
-        iteround = Round.pick(progr.pagename, player=progr.player)
+        iteround = Round.pick(current.pagename, player=current.player)
 
     if iteround.is_pristine:
         iteround.start()
 
     if iteround.is_running and not track_round_continue(iteround):
         iteround.complete()
-        set_payoff(progr.player, iteround)
+        set_payoff(current.player, iteround)
 
     return iteround
 
 
-def advance_trial(progr: Progress, iteround: Round, trial: Trial | None) -> Trial:
+def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Trial:
     if trial is None:
         trial = Trial.pick_next(iteround)
 
@@ -80,12 +80,12 @@ def advance_trial(progr: Progress, iteround: Round, trial: Trial | None) -> Tria
     return trial
 
 
-def respond(progr: Progress, choice: str, **kwargs) -> Response:
-    pagename, player, iteround, trial = progr
+def respond(current: Progress, choice: str, **kwargs) -> Response:
+    pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
     response = Response.create_next(trial, player, choice=choice, **kwargs)
     response.evaluate()
 
-    advance_trial(progr, iteround, trial)
+    advance_trial(current, iteround, trial)
     return response

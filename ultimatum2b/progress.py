@@ -65,38 +65,38 @@ def track_trial_continue(trial: Trial) -> bool:
     return trial.progress_stage != ""
 
 
-def advance(progr: Progress) -> Progress:
+def advance(current: Progress) -> Progress:
     """Advance current round one iteration further"""
-    pagename, player, iteround, trial = progr
+    pagename, player, iteround, trial = current
     assert trial is None or trial.is_closed, "Invalid advancing over incomplete trial"
 
-    iteround = advance_round(progr, iteround)
+    iteround = advance_round(current, iteround)
 
     if not iteround.is_closed:
-        trial = advance_trial(progr, iteround, trial)
+        trial = advance_trial(current, iteround, trial)
 
     return Progress(pagename, player, iteround, trial)
 
 
-def advance_round(progr: Progress, iteround: Round | None) -> Round:
+def advance_round(current: Progress, iteround: Round | None) -> Round:
     if iteround is None:
-        iteround = Round.pick(progr.pagename, group=progr.group)
+        iteround = Round.pick(current.pagename, group=current.group)
 
-    if iteround.is_pristine and track_players_all_around(progr.player, iteround):
+    if iteround.is_pristine and track_players_all_around(current.player, iteround):
         iteround.start()
 
     if iteround.is_running and not track_round_continue(iteround):
         iteround.complete()
-        set_payoff(progr.group, iteround)
+        set_payoff(current.group, iteround)
 
     return iteround
 
 
-def advance_trial(progr: Progress, iteround: Round, trial: Trial | None) -> Trial:
+def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Trial:
     if trial is None:
         trial = Trial.pick_next(iteround)
 
-    if trial.is_pristine and track_players_all_atrial(progr.player, trial):
+    if trial.is_pristine and track_players_all_atrial(current.player, trial):
         trial.start()
 
     if trial.is_running and not track_trial_continue(trial):
@@ -107,60 +107,60 @@ def advance_trial(progr: Progress, iteround: Round, trial: Trial | None) -> Tria
     return trial
 
 
-def respond_proposal(progr: Progress, proposal: Coins, **kwargs) -> Response:
-    pagename, player, iteround, trial = progr
+def respond_proposal(current: Progress, proposal: Coins, **kwargs) -> Response:
+    pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
-    assert player.role == progr.turn
+    assert player.role == current.turn
     response = Response.create_next(trial, player, stage=trial.progress_stage, p_proposal=proposal, **kwargs)
 
-    advance_trial(progr, iteround, trial)
+    advance_trial(current, iteround, trial)
     return response
 
 
-def respond_decision(progr: Progress, decision: str, **kwargs) -> Response:
-    pagename, player, iteround, trial = progr
+def respond_decision(current: Progress, decision: str, **kwargs) -> Response:
+    pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
-    assert player.role == progr.turn
+    assert player.role == current.turn
     response = Response.create_next(trial, player, stage=trial.progress_stage, r_decision=decision, **kwargs)
 
-    advance_trial(progr, iteround, trial)
+    advance_trial(current, iteround, trial)
     return response
 
 
-async def autorespond_proposal(progr: Progress) -> Response:
-    pagename, player, iteround, trial = progr
+async def autorespond_proposal(current: Progress) -> Response:
+    pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
     assert trial.progress_stage == "PROPOSING"
 
     response = Response.create_next(trial, player, stage=trial.progress_stage)
     await make_proposal(trial, response)
 
-    advance_trial(progr, iteround, trial)
+    advance_trial(current, iteround, trial)
     return response
 
 
-async def autorespond_decision(progr: Progress) -> Response:
+async def autorespond_decision(current: Progress) -> Response:
     # TODO: seperate into 2 autorespond_ s
-    pagename, player, iteround, trial = progr
+    pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
     assert trial.progress_stage == "DECIDING"
 
     response = Response.create_next(trial, player, stage=trial.progress_stage)
     await make_decision(trial, response)
 
-    advance_trial(progr, iteround, trial)
+    advance_trial(current, iteround, trial)
     return response
 
 
-def timeout(progr: Progress):
+def timeout(current: Progress):
     """Handle timeout, reported from a waiting (live) player"""
-    pagename, player, iteround, trial = progr
+    pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
     [other] = player.get_others_in_group()
     other.participant.status = "dropout"
 
     iteround.autorespond_role = other.role
-    advance_trial(progr, iteround, trial)
+    advance_trial(current, iteround, trial)

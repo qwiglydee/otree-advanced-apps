@@ -49,8 +49,8 @@ class TrialsPage(LivePage):
             yield "result", page.output_result(current.trial)
 
     @classmethod
-    def output_progress(page, progr: Progress) -> LivePayload:
-        pagename, player, iteround, trial = progr
+    def output_progress(page, current: Progress) -> LivePayload:
+        pagename, player, iteround, trial = current
         assert iteround is not None
         return {
             "total": C.NUM_TRIALS[pagename],

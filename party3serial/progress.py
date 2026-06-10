@@ -49,39 +49,39 @@ def track_trial_continue(trial: Trial) -> bool:
     return trial.progress_turn <= C.PLAYERS_PER_GROUP
 
 
-def advance(progr: Progress) -> Progress:
+def advance(current: Progress) -> Progress:
     """Advance current round one iteration further"""
-    pagename, player, iteround, trial = progr
+    pagename, player, iteround, trial = current
     assert trial is None or trial.is_closed, "Invalid advancing over incomplete trial"
 
-    iteround = advance_round(progr, iteround)
+    iteround = advance_round(current, iteround)
 
     if not iteround.is_closed:
-        trial = advance_trial(progr, iteround, trial)
+        trial = advance_trial(current, iteround, trial)
 
     return Progress(pagename, player, iteround, trial)
 
 
-def advance_round(progr: Progress, iteround: Round | None) -> Round:
+def advance_round(current: Progress, iteround: Round | None) -> Round:
 
     if iteround is None:
-        iteround = Round.pick(progr.pagename, group=progr.group)
+        iteround = Round.pick(current.pagename, group=current.group)
 
-    if iteround.is_pristine and track_players_all_around(progr.player, iteround):
+    if iteround.is_pristine and track_players_all_around(current.player, iteround):
         iteround.start()
 
     if iteround.is_running and not track_round_continue(iteround):
         iteround.complete()
-        set_payoff(progr.group, iteround)
+        set_payoff(current.group, iteround)
 
     return iteround
 
 
-def advance_trial(progr: Progress, iteround: Round, trial: Trial | None) -> Trial:
+def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Trial:
     if trial is None:
         trial = Trial.pick_next(iteround)
 
-    if trial.is_pristine and track_players_all_atrial(progr.player, trial):
+    if trial.is_pristine and track_players_all_atrial(current.player, trial):
         trial.start()
 
     if trial.is_running and not track_trial_continue(trial):
@@ -92,12 +92,12 @@ def advance_trial(progr: Progress, iteround: Round, trial: Trial | None) -> Tria
     return trial
 
 
-def respond(progr: Progress, utterance: str, **kwargs) -> Response:
-    pagename, player, iteround, trial = progr
+def respond(current: Progress, utterance: str, **kwargs) -> Response:
+    pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
 
-    assert player.id_in_group == progr.turn
+    assert player.id_in_group == current.turn
     response = Response.create_next(trial, player, utterance=utterance, **kwargs)
 
-    advance_trial(progr, iteround, trial)
+    advance_trial(current, iteround, trial)
     return response
