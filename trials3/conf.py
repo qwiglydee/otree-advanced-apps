@@ -26,7 +26,7 @@ class C(BaseConstants):
         "C2": rand.Choices(12, 14, 16, 18),
     }
 
-    STAGES = ["DECISION", "ANSWER"]
+    STAGES = ["DECIDING", "ANSWERING"]
     STRATEGIES = ["INPUT", "CHOOSE"]
 
     SCORING = {

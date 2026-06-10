@@ -76,9 +76,9 @@ class Trial(BaseTrialModel):
         self.option_3 = str(options[2])
 
     def update(self):
-        response = Response.last(self, stage="DECISION")
+        response = Response.last(self, stage="DECIDING")
         self.strategy = response.decision if response else None
-        response = Response.last(self, stage="ANSWER")
+        response = Response.last(self, stage="ANSWERING")
         self.success = response.correct if response else None
 
     def complete(self):
@@ -105,7 +105,7 @@ class Response(BaseResponseModel):
     correct = models.BooleanField()
 
     def evaluate(self):
-        if self.stage == "ANSWER":
+        if self.stage == "ANSWERING":
             assert self.answer is not None
             self.correct = self.answer == self.trial.truth
 

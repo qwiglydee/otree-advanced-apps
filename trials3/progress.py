@@ -43,12 +43,12 @@ def track_round(iteround: Round) -> bool:
 
 def track_trial(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
-    decided = Response.count(trial, stage="DECISION")
+    decided = Response.count(trial, stage="DECIDING")
     if not decided:
-        trial.progress_stage = "DECISION"
+        trial.progress_stage = "DECIDING"
     else:
-        trial.progress_stage = "ANSWER"
-    trial.progress_retries = Response.count(trial, stage="ANSWER")
+        trial.progress_stage = "ANSWERING"
+    trial.progress_retries = Response.count(trial, stage="ANSWERING")
     return trial.progress_retries < C.NUM_RETRIES.get(trial.iteround.pagename, 1) and not trial.success
 
 
@@ -101,7 +101,7 @@ def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Tr
 def respond_decision(current: Progress, decision: str, **kwargs):
     pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
-    assert trial.progress_stage == "DECISION", "Invalid responding in wrong stage"
+    assert trial.progress_stage == "DECIDING", "Invalid responding in wrong stage"
 
     response = Response.create_next(trial, player, stage=trial.progress_stage, decision=decision, **kwargs)
     response.evaluate()
@@ -113,7 +113,7 @@ def respond_decision(current: Progress, decision: str, **kwargs):
 def respond_answer(current: Progress, answer: str, **kwargs) -> Response:
     pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
-    assert trial.progress_stage == "ANSWER", "Invalid responding in wrong stage"
+    assert trial.progress_stage == "ANSWERING", "Invalid responding in wrong stage"
 
     response = Response.create_next(trial, player, stage=trial.progress_stage, answer=answer, **kwargs)
     response.evaluate()
