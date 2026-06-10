@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from _extras.tracking import track_round_trials
+from _extras.tracking import count_max_trials
 
 from .conf import C  # noqa
 from .models import Player, Response, Round, Trial, set_payoff
@@ -33,7 +33,7 @@ def current(page, player: Player) -> Progress:
 def track_round_continue(iteround: Round) -> bool:
     """Track round progress state and decide if to continue"""
     iteround.update()
-    return track_round_trials(iteround, Trial, C.NUM_TRIALS[iteround.pagename])
+    return count_max_trials(iteround, Trial, C.NUM_TRIALS[iteround.pagename])
 
 
 def track_trial_continue(trial: Trial) -> bool:

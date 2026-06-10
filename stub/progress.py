@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from _extras.tracking import track_round_trials, track_trial_responses
+from _extras.tracking import count_max_trials, count_max_responses
 
 from .conf import C
 from .models import Player, Round, Trial, Response
@@ -29,13 +29,13 @@ def current(page, player: Player) -> Progress:
 def track_round_continue(iteround: Round) -> bool:
     """Track round progress state and decide if to continue"""
     iteround.update()
-    return track_round_trials(iteround, Trial, C.NUM_TRIALS)
+    return count_max_trials(iteround, Trial, C.NUM_TRIALS)
 
 
 def track_trial_continue(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
     trial.update()
-    return track_trial_responses(trial, Response, 1)
+    return count_max_responses(trial, Response, 1)
 
 
 def advance(current: Progress) -> Progress:

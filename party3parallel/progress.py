@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-from _extras.tracking import track_players_all_around, track_players_all_atrial, track_round_trials
+from _extras.tracking import all_players_around, all_players_atrial, count_max_trials
 
 from .conf import C  # noqa
 from .models import Player, Group, Round, Trial, Response
@@ -33,7 +33,7 @@ def current(page, player: Player) -> Progress:
 def track_round_continue(iteround: Round) -> bool:
     """Track round progress state and decide if to continue"""
     iteround.update()
-    return track_round_trials(iteround, Trial, C.NUM_TRIALS)
+    return count_max_trials(iteround, Trial, C.NUM_TRIALS)
 
 
 def track_trial_continue(trial: Trial) -> bool:
@@ -61,7 +61,7 @@ def advance_round(current: Progress, iteround: Round | None) -> Round:
     if iteround is None:
         iteround = Round.pick(current.pagename, group=current.group)
 
-    if iteround.is_pristine and track_players_all_around(current.player, iteround):
+    if iteround.is_pristine and all_players_around(current.player, iteround):
         iteround.start()
 
     if iteround.is_running and not track_round_continue(iteround):
@@ -75,7 +75,7 @@ def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Tr
     if trial is None:
         trial = Trial.pick_next(iteround)
 
-    if trial.is_pristine and track_players_all_atrial(current.player, trial):
+    if trial.is_pristine and all_players_atrial(current.player, trial):
         trial.start()
 
     if trial.is_running and not track_trial_continue(trial):
