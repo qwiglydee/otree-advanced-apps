@@ -23,19 +23,15 @@ class Main(LivePage):
     page_scripts = ["_extras/ot-progress.js", "_extras/ot-pulse.js"]
 
     @classmethod
-    async def live_load(page, player: Player) -> AsyncLiveResponding:
-        current = progress.current(page, player)
-
-        if current.trial is None:
-            async for r in page.live_iterate(player):
-                yield r
-        else:
-            yield "progress", page.output_progress(current)
-            yield "trial", page.output_trial(current.trial)
-
-    @classmethod
     async def live_iterate(page, player: Player) -> AsyncLiveResponding:
         current = progress.current(page, player)
+
+        if current.trial is not None:
+            # page reloaded while running trial
+            yield "progress", page.output_progress(current)
+            yield "trial", page.output_trial(current.trial)
+            return
+
         advanced = progress.advance(current)
 
         if advanced.trial is None:
