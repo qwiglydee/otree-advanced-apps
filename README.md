@@ -54,9 +54,7 @@ Their content is intentionally dull with arbitrary parameters.
 - [Parallel Party](party3parallel): the party game with parallel responses
     - players respond in random order, but they only observe partners' responses after all responded
 - [Serial Party](party3serial): the party game with serial responding
-    - players respond in turns by their group membership and they observe partners' responses as they're given
-- [Sequential Party](party3sequential): the party game with sequential responding
-    - players respond in turns following a custom sequence that may have several turns for each role
+    - players respond in turns defined by a sequence and they observe partners' responses as they're given
 - [Stub](stub): just a minimal app with round/trial/response/feedback/result scheme
 - TODO: Sliders: the classic real effort task
 

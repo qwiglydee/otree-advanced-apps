@@ -22,9 +22,11 @@ class Progress(NamedTuple):
         return self.trial is not None and self.trial.is_running
 
     @property
-    def turn(self) -> int | None:
+    def turn(self) -> str | None:
         assert self.trial is not None
-        return self.trial.progress_turn
+        if not self.trial.is_running:
+            return None
+        return C.SEQUENCE[self.trial.progress_turn - 1]
 
 
 def current(page, player: Player) -> Progress:
@@ -43,7 +45,8 @@ def track_round(iteround: Round) -> bool:
 def track_trial(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
     trial.progress_turn = Response.count(trial) + 1
-    return trial.progress_turn <= C.PLAYERS_PER_GROUP
+    # continue until all responded or everyone agreed
+    return trial.progress_turn <= C.CHAT_LEN and trial.agreed < C.PLAYERS_PER_GROUP
 
 
 def advance(current: Progress) -> Progress:
@@ -96,8 +99,8 @@ def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Tr
 def respond(current: Progress, utterance: str, **kwargs) -> Response:
     pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
+    assert player.role == current.turn
 
-    assert player.id_in_group == current.turn
     response = Response.create_next(trial, player, utterance=utterance, **kwargs)
 
     advance_trial(current, iteround, trial)

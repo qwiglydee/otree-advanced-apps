@@ -42,27 +42,26 @@ class Round(BaseRoundModel):
 class Trial(BaseTrialModel):
     iteround: Round = models.Link(Round)
 
-    success = models.IntegerField()
+    agreed = models.IntegerField()
     score = PointsField(initial=None)
 
     def init(self):
         pass
 
     def update(self):
-        responses = Response.allast(self)
-        counts = Counter([r.utterance for r in responses])
-        if not counts:
-            return
-        _, topcnt = counts.most_common(1)[0]
-        self.success = topcnt
+        responded = Response.allast(self)
+        if responded:
+            counts = Counter([r.utterance for r in responded])
+            _, topcnt = counts.most_common(1)[0]
+            self.agreed = topcnt
 
     def complete(self):
-        assert self.success is not None
+        assert self.agreed is not None
         self.close("COMPLETED")
-        self.score = C.SCORING[self.success]
+        self.score = C.SCORING[self.agreed]
         self.iteround.total_score += self.score
 
-    progress_responded = models.IntegerField()
+    progress_turn = models.IntegerField()
 
 
 class Response(BaseResponseModel):

@@ -12,9 +12,12 @@ class C(BaseConstants):
 
     RESPONSES = ["MEOW", "WOOF"]
 
+    # { num_agreed : score }
     SCORING = {
         2: Points(1.0),
         3: Points(10.0),
     }
 
     ITER_DELAY = 2
+
+    CHAT_LEN = PLAYERS_PER_GROUP

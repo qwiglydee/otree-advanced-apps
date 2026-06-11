@@ -37,8 +37,9 @@ def track_round(iteround: Round) -> bool:
 
 def track_trial(trial: Trial) -> bool:
     """Track trial progress state and decide if to continue"""
-    trial.progress_responded = Response.count(trial)
-    return trial.progress_responded < C.PLAYERS_PER_GROUP
+    trial.progress_turn = Response.count(trial) + 1
+    # continue until all responded
+    return trial.progress_turn <= C.CHAT_LEN
 
 
 def advance(current: Progress) -> Progress:

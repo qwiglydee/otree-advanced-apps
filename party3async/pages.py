@@ -12,6 +12,10 @@ class Main(LivePage):
     page_styles = ["_extras/ot-progress.css", "_extras/ot-pulse.css"]
     page_scripts = ["_extras/ot-progress.js", "_extras/ot-pulse.js"]
 
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {"chat_seq": list(range(C.CHAT_LEN))}
+
     @classmethod
     def live_iterate(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
@@ -67,8 +71,14 @@ class Main(LivePage):
 
     @classmethod
     def output_trial(page, trial: Trial) -> LivePayload:
-        chat = [{"id": r.player.id, "response": r.utterance} for r in Response.all(trial)]
-        return {"id": trial.id, "responses": chat}
+        return {
+            "id": trial.id,
+            "chat": page.output_chat(Response.all(trial)),
+        }
+
+    @classmethod
+    def output_chat(page, responses: list[Response]):
+        return [{"id": r.player.id, "response": r.utterance} for r in responses]
 
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:

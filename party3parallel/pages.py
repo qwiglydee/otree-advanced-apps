@@ -12,6 +12,10 @@ class Main(LivePage):
     page_styles = ["_extras/ot-progress.css", "_extras/ot-pulse.css"]
     page_scripts = ["_extras/ot-progress.js", "_extras/ot-pulse.js"]
 
+    @staticmethod
+    def vars_for_template(player: Player):
+        return {"chat_seq": list(range(C.CHAT_LEN))}
+
     @classmethod
     def live_iterate(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
@@ -47,15 +51,18 @@ class Main(LivePage):
         response = progress.respond(current, utterance)
 
         yield group, "progress", page.output_progress(current)
-        yield group, "update", page.output_trial(current.trial)
         yield player, "feedback", page.output_feedback(current.trial, response)
         if current.trial.is_completed:
+            yield group, "update", page.output_trial(current.trial)
             yield group, "result", page.output_result(current.trial)
+        else:
+            # to see own message
+            yield player, "update", {"chat": page.output_chat([response])}
 
     @classmethod
     def output_progress(page, current: Progress) -> LivePayload:
         pagename, player, iteround, trial = current
-        assert iteround is not None
+        assert iteround
         return {
             "terminated": iteround.is_closed,
             "total": C.NUM_TRIALS,
@@ -67,17 +74,19 @@ class Main(LivePage):
 
     @classmethod
     def output_trial(page, trial: Trial) -> LivePayload:
-        if trial.is_completed:
-            responses = Response.allast(trial)
-            chat = [{"id": r.player.id, "response": r.utterance} for r in responses]
-        else:
-            chat = None
+        return {
+            "id": trial.id,
+            "chat": page.output_chat(Response.all(trial)) if trial.is_completed else None,
+        }
 
-        return {"id": trial.id, "responses": chat}
+    @classmethod
+    def output_chat(page, responses: list[Response]):
+        return [{"id": r.player.id, "response": r.utterance} for r in responses]
 
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
-        return {"response": response.utterance}
+        assert response
+        return {}
 
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:

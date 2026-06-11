@@ -8,9 +8,9 @@
     <main ot-visible="vars.trial">
         <section class="paper w-50">
             <h5>Your party responses:</h5>
-            <div ot-html="vars.chat.0"></div>
-            <div ot-html="vars.chat.1"></div>
-            <div ot-html="vars.chat.2"></div>
+            {% for i in chat_seq %}
+                <div ot-html="vars.chat.{{ i }}"></div>
+            {% endfor %}
         </section>
         <div class="flex-fill"></div>
         <section class="form">
@@ -103,6 +103,7 @@
             vars.result = null;
             ot.resetInputs();
         }
+
         function resetResponse() {
             vars.response = null;
             vars.feedback = null;
@@ -142,9 +143,9 @@
             iterateRound();
         }
 
-        ot.onUpdate("vars.trial.responses", function (responses) {
-            if (responses == null) vars.chat = [];
-            else vars.chat = vars.trial.responses.map(formatChat);
+        ot.onUpdate("vars.trial.chat", function displayChat(chat) {
+            if (chat == null) vars.chat = [];
+            else vars.chat = chat.map(formatChat);
             ot.updatePage();
         });
 
