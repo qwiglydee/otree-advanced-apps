@@ -101,8 +101,8 @@
 
         function switchState(state) {
             let stage = vars.progress ? vars.progress.stage : null;
-            let strategy = vars.trial ? vars.trial.strategy : null;
             if (state == "running") state += `/${stage}`;
+            let strategy = vars.trial ? vars.trial.strategy : null;
             // console.debug("switching", state, stage, strategy);
 
             // display in all states
@@ -124,11 +124,11 @@
                 case "completing":
                     vars.completing = true;
                     break;
-                case "running/DECISION":
+                case "running/DECIDING":
                     vars.deciding = true;
                     vars.prompting = { deciding: true };
                     break;
-                case "running/ANSWER":
+                case "running/ANSWERING":
                     vars.responding = true;
                     vars.confirming = vars.choosing && vars.choice != null;
                     vars.prompting = { inputing: vars.inputing, choosing: vars.choosing };
