@@ -63,7 +63,8 @@
         const WAITING_TIMEOUT = 1000 * "{{C.WAITING_TIMEOUT}}";
 
         function switchState(state) {
-            let turn = vars.progress ? vars.progress.turn : null;
+            let stage = vars.progress ? vars.progress.stage : null;
+            if (state == "running") state += `/${stage}`;
             // console.debug(`switching: ${state}/${turn}`, `/${MYTURN}/`);
 
             vars.waiting = false;
@@ -84,12 +85,14 @@
                 case "completing":
                     vars.waiting = true;
                     break;
-                case "running":
-                    vars.responding = turn == MYTURN;
-                    vars.confirming = vars.responding && vars.response != null;
-                    vars.prompting = vars.responding;
-                    vars.pending = !vars.responding;
-                    vars.waiting = vars.pending;
+                case "running/PROPOSING":
+                    vars.pending = true;
+                    vars.waiting = true;
+                    break;
+                case "running/DECIDING":
+                    vars.responding = true;
+                    vars.confirming = vars.response != null;
+                    vars.prompting = true;
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);

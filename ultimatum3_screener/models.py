@@ -7,7 +7,7 @@ from otree.api import BaseGroup, BasePlayer, BaseSubsession, models, widgets
 from _extras.screening import pre_assign_role
 from units import Coins
 
-from .conf import C
+from .conf import C, partnerole
 
 
 def PointsField(**kwargs):
@@ -37,22 +37,16 @@ class Subsession(BaseSubsession):
 
     def preassign_player(self, player: BasePlayer):
         """Pick a role for new participant
-        Using balancing formula to make partners for who is already waiting.
-        The waiting queque contains one particular role.
+        The newcomer role is selectied to compensate waiting queue.
 
-        Probability of selecting pairing role raises with length of the queue.
+        The algorithm is expected to magically balance
+        both waiting queue (in the main app) and newcomers queue (in the screener app).
+
         https://www.desmos.com/calculator/faylavm1ma
-
-        The formula expected to magically balance both the waiting queue and the screening queue.
         """
-        counters = self.get_counters()
-        mostrole, quelen = counters.most_common(1)[0]
-
-        f = 0.5 * pow(1.0 - C.BALANCING, quelen)  # waiting role factor
-        roles = [mostrole, C.PARTNEROLES[mostrole]]
-        probs = [f, 1.0 - f]
-        [picked] = random.choices(roles, probs)
-
+        waiting, quelen = self.get_counters().most_common(1)[0]
+        f = 0.5 * pow(1.0 - C.BALANCING, quelen)  # the balancing factor
+        picked = random.choices([waiting, partnerole(waiting)], [f, 1.0 - f], k=1)[0]
         pre_assign_role(player, picked)
 
 

@@ -26,11 +26,6 @@ class Progress(NamedTuple):
         assert self.trial is not None
         return self.trial.progress_stage
 
-    @property
-    def turn(self) -> str | None:
-        assert self.trial is not None
-        return C.STAGEROLES[self.trial.progress_stage] if self.trial.is_running and self.trial.progress_stage else None
-
 
 def current(page, player: Player) -> Progress:
     """Get current round and trial (maybe none yet)"""
@@ -107,8 +102,8 @@ def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Tr
 def respond_proposal(current: Progress, proposal: Coins, **kwargs) -> Response:
     pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
+    assert current.stage == "PROPOSING" and player.role == "P"
 
-    assert player.role == current.turn
     response = Response.create_next(trial, player, stage=trial.progress_stage, p_proposal=proposal, **kwargs)
 
     advance_trial(current, iteround, trial)
@@ -118,8 +113,8 @@ def respond_proposal(current: Progress, proposal: Coins, **kwargs) -> Response:
 def respond_decision(current: Progress, decision: str, **kwargs) -> Response:
     pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
+    assert current.stage == "DECIDING" and player.role == "R"
 
-    assert player.role == current.turn
     response = Response.create_next(trial, player, stage=trial.progress_stage, r_decision=decision, **kwargs)
 
     advance_trial(current, iteround, trial)

@@ -8,11 +8,10 @@ import ultimatum3 as mainapp
 
 class C(BaseConstants):
     NAME_IN_URL = __package__
-    NUM_ROUNDS = 1  # should be =1
+    NUM_ROUNDS = 1
     PLAYERS_PER_GROUP = None
 
     ROLES = mainapp.C.ROLES
-    PARTNEROLES = mainapp.C.PARTNEROLES
     CONDITIONS = mainapp.C.CONDITIONS
     ENDOWMENT = mainapp.C.ENDOWMENT
 
@@ -28,3 +27,9 @@ class C(BaseConstants):
 
 def config_condition(session):
     return get_session_param(session, "condition", choices=C.CONDITIONS)
+
+
+def partnerole(role: str):
+    roles = list(C.ROLES)
+    roles.remove(role)
+    return roles[0]

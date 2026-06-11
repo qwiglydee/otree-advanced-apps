@@ -64,7 +64,7 @@ class Main(LivePage):
 
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
-        if current.trial.is_completed:
+        if current.trial.is_completed:  # WTF ???
             yield group, "result", page.output_result(current.trial)
 
     @classmethod
@@ -100,7 +100,7 @@ class Main(LivePage):
             "passed": iteround.progress_trials,
             "pending": not current.is_running,
             "current": trial.iteration if trial else None,
-            "turn": current.turn if current.is_running else None,
+            "stage": current.stage,
         }
 
     @classmethod

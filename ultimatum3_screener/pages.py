@@ -12,7 +12,11 @@ def get_template_rolename(page: Page):
 
 
 def common_vars(player: Player):
-    return {"condition": player.condition, "endowment": C.ENDOWMENT[player.condition]}
+    return {
+        "condition": player.condition,
+        "endowment": C.ENDOWMENT[player.condition],
+        "queue": player.subsession.get_counters(),  # type: ignore
+    }
 
 
 class Intro(Page):

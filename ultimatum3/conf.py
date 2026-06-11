@@ -11,11 +11,10 @@ class C(BaseConstants):
 
     PLAYERS_PER_GROUP = 2
     # NB: no _ROLE constants to avoid automatic assignment
+
     ROLES = ["P", "R"]
-    PARTNEROLES = {"P": "R", "R": "P"}
 
     STAGES = ["PROPOSING", "DECIDING"]
-    STAGEROLES = {"PROPOSING": "P", "DECIDING": "R"}
 
     DECISIONS = ["ACCEPT", "REJECT"]
 
