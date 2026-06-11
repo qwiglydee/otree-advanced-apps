@@ -253,5 +253,10 @@
             }
             ot.updatePage();
         });
+
+        ot.onUpdate("vars.trial.strategy", function (val) {
+            // restoring value on page reload
+            forminputs.decision.value = val;
+        });
     </script>
 {% endblock scripts %}
