@@ -1,7 +1,5 @@
 from typing import NamedTuple
 
-from _extras.tracking import count_max_trials
-
 from .conf import C  # noqa
 from .models import Player, Response, Round, Trial, set_payoff
 
@@ -19,30 +17,27 @@ class Progress(NamedTuple):
     @property
     def retries_left(self) -> int | None:
         assert self.trial is not None
-        return C.NUM_RETRIES.get(self.pagename, 1) - self.trial.progress_retries if self.trial.is_running else None
+        return C.MAX_RETRIES.get(self.pagename, 1) - self.trial.progress_retries if self.trial.is_running else None
 
 
 def current(page, player: Player) -> Progress:
-    """Get current round and trial (maybe none yet)"""
     pagename = page.__name__
     iteround = Round.current(pagename, player=player)
     trial = Trial.current(iteround) if iteround else None
     return Progress(pagename, player, iteround, trial)
 
 
-def track_round(iteround: Round) -> bool:
-    """Track round progress state and decide if to continue"""
-    return count_max_trials(iteround, Trial, C.NUM_TRIALS[iteround.pagename])
+def track_round_progress(iteround: Round) -> bool:
+    iteround.progress_trials = Trial.count(iteround, status="CLOSED")
+    return iteround.progress_trials < C.NUM_TRIALS[iteround.pagename]
 
 
-def track_trial(trial: Trial) -> bool:
-    """Track trial progress state and decide if to continue"""
+def track_trial_progress(trial: Trial) -> bool:
     trial.progress_retries = Response.count(trial)
-    return trial.progress_retries < C.NUM_RETRIES.get(trial.iteround.pagename, 1) and not trial.success
+    return not trial.success and trial.progress_retries < C.MAX_RETRIES[trial.iteround.pagename]
 
 
 def advance(current: Progress) -> Progress:
-    """Advance current round one iteration further"""
     pagename, player, iteround, trial = current
     assert trial is None or trial.is_closed, "Invalid advancing over incomplete trial"
 
@@ -63,7 +58,7 @@ def advance_round(current: Progress, iteround: Round | None) -> Round:
 
     iteround.update()
 
-    if iteround.is_running and not track_round(iteround):
+    if iteround.is_running and not track_round_progress(iteround):
         iteround.complete()
         set_payoff(current.player, iteround)
 
@@ -79,10 +74,10 @@ def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Tr
 
     trial.update()
 
-    if trial.is_running and not track_trial(trial):
+    if trial.is_running and not track_trial_progress(trial):
         trial.complete()
 
-    track_round(iteround)
+    track_round_progress(iteround)
 
     return trial
 

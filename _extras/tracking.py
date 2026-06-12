@@ -17,17 +17,3 @@ def all_players_atrial(player: BasePlayer, trial: BaseTrialModel):
     player.progress_trial = current  # type: ignore
     others = [p for p in player.get_others_in_group() if p.participant.status != "dropout"]
     return all(p.field_maybe_none("progress_trial") == current for p in others)
-
-
-def count_max_trials(iteround: BaseRoundModel, TrialCls, max_trials: int):
-    """Check if the round reached maximum trials"""
-    count: int = TrialCls.count(iteround, status="CLOSED")
-    iteround.progress_trials = count  # type: ignore
-    return count < max_trials
-
-
-def count_max_responses(trial: BaseTrialModel, ResponseCls, max_responses: int):
-    """Check if the trial reached maximum responses"""
-    count: int = ResponseCls.count(trial)
-    trial.progress_responses = count  # type: ignore
-    return count < max_responses
