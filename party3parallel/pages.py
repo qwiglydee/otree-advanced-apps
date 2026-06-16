@@ -76,7 +76,7 @@ class Main(LivePage):
     def output_trial(page, trial: Trial) -> LivePayload:
         return {
             "id": trial.id,
-            "chat": page.output_chat(Response.all(trial)) if trial.is_completed else None,
+            "chat": page.output_chat(Response.allast(trial)) if trial.is_completed else None,
         }
 
     @classmethod

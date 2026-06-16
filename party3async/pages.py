@@ -73,7 +73,7 @@ class Main(LivePage):
     def output_trial(page, trial: Trial) -> LivePayload:
         return {
             "id": trial.id,
-            "chat": page.output_chat(Response.all(trial)),
+            "chat": page.output_chat(Response.allast(trial)),
         }
 
     @classmethod

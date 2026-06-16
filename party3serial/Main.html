@@ -49,8 +49,8 @@
 
         function switchState(state) {
             let turn = vars.progress ? vars.progress.turn : null;
-            let committed = vars.feedback != null;
-            // console.debug(`switching: ${state}/${turn}/${committed}`, `/${MYTURN}/`);
+            let responded = vars.feedback != null;
+            // console.debug(`switching: ${state}/${turn}/${responded}`, `/${MYTURN}/`);
 
             vars.waiting = false;
             vars.pending = false;
@@ -66,8 +66,8 @@
                     vars.waiting = true;
                     break;
                 case "running":
-                    vars.responding = !committed && turn == MYTURN;
-                    vars.pending = turn != MYTURN;
+                    vars.responding = !responded && turn == MYTURN;
+                    vars.pending = responded || turn != MYTURN;
                     vars.waiting = vars.pending;
                     break;
                 case "completing":

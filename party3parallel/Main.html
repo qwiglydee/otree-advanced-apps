@@ -47,8 +47,8 @@
         const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
 
         function switchState(state) {
-            let committed = vars.feedback != null;
-            // console.debug(`switching: ${state}/${committed}`);
+            let responded = vars.feedback != null;
+            // console.debug(`switching: ${state}/${responded}`);
 
             vars.waiting = false;
             vars.pending = false;
@@ -64,8 +64,8 @@
                     vars.waiting = true;
                     break;
                 case "running":
-                    vars.responding = !committed;
-                    vars.pending = !vars.responding;
+                    vars.responding = !responded;
+                    vars.pending = responded;
                     vars.waiting = vars.pending;
                     break;
                 case "completing":
