@@ -1,12 +1,9 @@
-from decimal import Decimal
-
-from otree.decimal import DecimalUnit
-from otree.currency import RealWorldCurrency
+from otree.api import DecimalUnit
 
 from _extras.score import ScoreUnit
 
 
-class Points(ScoreUnit):
+class Points(ScoreUnit, DecimalUnit):
     storage_places = 4
     output_max_places = 2
     output_min_places = 2
@@ -16,12 +13,8 @@ class Points(ScoreUnit):
     def output(formatted, raw):
         return f"{formatted} points"
 
-    def to_real_world_currency(self, session):
-        rate = Decimal(session.config["real_world_currency_per_point"])
-        return RealWorldCurrency(self * rate)  # converted to configured CURRENCY_UNIT
 
-
-class Coins(ScoreUnit):
+class Coins(ScoreUnit, DecimalUnit):
     storage_places = 0
     output_max_places = 0
     output_min_places = 0
@@ -35,10 +28,6 @@ class Coins(ScoreUnit):
             return "a coin"
         else:
             return f"{formatted} coins"
-
-    def to_real_world_currency(self, session):
-        rate = Decimal(session.config["real_world_currency_per_point"])
-        return RealWorldCurrency(self * rate)  # converted to configured CURRENCY_UNIT
 
 
 class EUR(DecimalUnit):

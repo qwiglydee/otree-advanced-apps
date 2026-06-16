@@ -3,13 +3,11 @@ import random
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
 from _extras.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
+from _extras.score import score_to_currency
+
 from units import Points
 
 from .conf import C
-
-
-def PointsField(**kwargs):
-    return models.DecimalField(unit=Points, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -22,13 +20,13 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     condition = models.StringField()
-    total_score = PointsField(initial=0)
+    total_score = models.DecimalField(unit=Points, initial=0)
 
 
 class Round(BaseRoundModel):
     player: Player = models.Link(Player)
 
-    total_score = PointsField(initial=0)
+    total_score = models.DecimalField(unit=Points, initial=0)
 
     @property
     def condition(self) -> str:
@@ -50,7 +48,7 @@ class Trial(BaseTrialModel):
     task = models.StringField()
 
     outcome = models.StringField()
-    score = PointsField(initial=None)
+    score = models.DecimalField(unit=Points)
 
     @property
     def condition(self) -> str:
@@ -93,7 +91,7 @@ class Response(BaseResponseModel):
 def set_payoff(player: Player, iteround: Round):
     # use `if` to skip paractice round
     player.total_score += iteround.total_score
-    player.payoff = player.total_score.to_real_world_currency(player.session)  # type: ignore
+    player.payoff = score_to_currency(player.total_score, player.session)  # type: ignore currency incompatibility
 
 
 def custom_export(_):

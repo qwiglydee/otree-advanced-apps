@@ -3,13 +3,11 @@ from collections import Counter
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
 from _extras.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
+from _extras.score import score_to_currency
+
 from units import Points
 
 from .conf import C
-
-
-def PointsField(**kwargs):
-    return models.DecimalField(unit=Points, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -21,14 +19,14 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    total_score = PointsField(initial=0)
+    total_score = models.DecimalField(unit=Points, initial=0)
     progress_round = models.IntegerField()
     progress_trial = models.IntegerField()
 
 
 class Round(BaseRoundModel):
     group: Group = models.Link(Group)
-    total_score = PointsField(initial=0)
+    total_score = models.DecimalField(unit=Points, initial=0)
 
     def init(self):
         pass
@@ -43,7 +41,7 @@ class Trial(BaseTrialModel):
     iteround: Round = models.Link(Round)
 
     agreed = models.IntegerField(initial=0)
-    score = PointsField(initial=None)
+    score = models.DecimalField(unit=Points)
 
     def init(self):
         pass
@@ -75,7 +73,7 @@ class Response(BaseResponseModel):
 def set_payoff(group: Group, iteround: Round):
     for player in group.get_players():
         player.total_score = iteround.total_score
-        player.payoff = player.total_score.to_real_world_currency(player.session)  # type: ignore
+        player.payoff = score_to_currency(player.total_score, player.session)  # type: ignore currency incompatibility
 
 
 def custom_export_responses(_):

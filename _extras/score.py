@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from otree.decimal import DecimalUnit
+from otree.currency import RealWorldCurrency
 
 
 class ScoreUnit(DecimalUnit):
@@ -28,3 +29,12 @@ class ScoreUnit(DecimalUnit):
             prc = max(0, len(digits) + exp) + self.output_max_places
             return Decimal.__format__(self, f"{spec[:-1]}.{prc}n")
         return Decimal.__format__(self, spec)
+
+
+def score_to_currency(score: Decimal, session):
+    """Converting points to real world currency
+    using sesion parameter `real_world_currency_per_point`
+    using configured CURRENCY_UNIT
+    """
+    rate = Decimal(session.config["real_world_currency_per_point"])
+    return RealWorldCurrency(score * rate)

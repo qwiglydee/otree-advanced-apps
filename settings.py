@@ -1,5 +1,5 @@
 from os import environ
-from decimal import Decimal as D
+from decimal import Decimal
 
 SESSION_CONFIGS = [
     dict(
@@ -60,16 +60,19 @@ SESSION_CONFIGS = [
         name="ultimatum2",
         app_sequence=["ultimatum2"],
         condition="random",
+        real_world_currency_per_point=Decimal("0.01"),
     ),
     dict(
         name="ultimatum2t",
         app_sequence=["ultimatum2t"],
         condition="random",
+        real_world_currency_per_point=Decimal("0.01"),
     ),
     dict(
         name="ultimatum3",
         app_sequence=["ultimatum3_screener", "ultimatum3"],
         condition="random",
+        real_world_currency_per_point=Decimal("0.01"),
         num_demo_participants=6,
     ),
     dict(name="party3async", app_sequence=["party3async"], num_demo_participants=3),
@@ -90,7 +93,7 @@ SESSION_CONFIGS = [
 SESSION_CONFIG_DEFAULTS = dict(
     num_demo_participants=2,
     participation_fee=1.00,
-    real_world_currency_per_point=D("0.1"),
+    real_world_currency_per_point=Decimal("0.1"),
 )
 
 PARTICIPANT_FIELDS = ["assignment"]

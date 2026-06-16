@@ -5,13 +5,8 @@ from typing import Self
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models, widgets
 
 from _extras.screening import pre_assign_role
-from units import Coins
 
 from .conf import C, partnerole
-
-
-def PointsField(**kwargs):
-    return models.DecimalField(unit=Coins, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):

@@ -5,13 +5,11 @@ from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 from _extras.keyprop import dict_getter, key_getter
 from _extras.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
 from _extras.layout import derange, layoutdict
+from _extras.score import score_to_currency
+
 from units import Points
 
 from .conf import C
-
-
-def PointsField(**kwargs):
-    return models.DecimalField(unit=Points, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -26,12 +24,12 @@ class Player(BasePlayer):
     condition = models.StringField()
     disclosure = models.StringField()
     layout = models.StringField()
-    total_score = PointsField(initial=0)
+    total_score = models.DecimalField(unit=Points, initial=0)
 
 
 class Round(BaseRoundModel):
     player: Player = models.Link(Player)
-    total_score = PointsField(initial=0)
+    total_score = models.DecimalField(unit=Points, initial=0)
 
     def init(self):
         pass
@@ -55,7 +53,7 @@ class Trial(BaseTrialModel):
     param_z = models.FloatField()
     param_std = models.FloatField()
 
-    score = PointsField(initial=None)
+    score = models.DecimalField(unit=Points)
 
     @property
     def condition(self) -> str:
@@ -100,34 +98,34 @@ class Response(BaseResponseModel):
     button = models.IntegerField()
     choice = models.StringField()
 
-    outcome_a = PointsField()
-    outcome_b = PointsField()
-    outcome_c = PointsField()
+    outcome_a = models.DecimalField(unit=Points)
+    outcome_b = models.DecimalField(unit=Points)
+    outcome_c = models.DecimalField(unit=Points)
     get_outcomes = dict_getter("outcome_", ("A", "B", "C"))
     get_outcome = key_getter("outcome_")
 
-    result = PointsField()
+    result = models.DecimalField(unit=Points)
 
     def evaluate(self):
         assert self.choice is not None
         x = self.trial.param_x
-        y = self.trial.param_x
-        z = self.trial.param_x
+        y = self.trial.param_y
+        z = self.trial.param_z
         std = self.trial.param_std
 
-        c = Points(z + random.gauss(0, std))
-        a = c + Points(x)
-        b = c + Points(y)
+        c = z + random.gauss(0, std)
+        a = c + x
+        b = c + y
 
         disclosure = self.trial.disclosure
         if disclosure == "FULL":
-            self.outcome_a = a
-            self.outcome_b = b
-            self.outcome_c = c
+            self.outcome_a = Points(a)
+            self.outcome_b = Points(b)
+            self.outcome_c = Points(c)
         if disclosure == "CHOICE":
-            self.outcome_a = a if self.choice == "A" else None
-            self.outcome_b = b if self.choice == "B" else None
-            self.outcome_c = c if self.choice == "C" else None
+            self.outcome_a = Points(a) if self.choice == "A" else None
+            self.outcome_b = Points(b) if self.choice == "B" else None
+            self.outcome_c = Points(c) if self.choice == "C" else None
 
         self.result = self.get_outcome(self.choice)
 
@@ -135,7 +133,7 @@ class Response(BaseResponseModel):
 def set_payoff(player: Player, iteround: Round):
     if iteround.pagename == "Main":
         player.total_score = iteround.total_score
-        player.payoff = player.total_score.to_real_world_currency(player.session)  # type: ignore
+        player.payoff = score_to_currency(player.total_score, player.session)  # type: ignore currency incompatibility
 
 
 def custom_export_trials(_):

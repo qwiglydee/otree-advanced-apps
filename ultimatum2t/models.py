@@ -4,13 +4,11 @@ from otree.api import BaseGroup, BasePlayer, BaseSubsession, models, widgets
 
 from _extras.keyprop import dict_getter, key_getter
 from _extras.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
+from _extras.score import score_to_currency
+
 from units import Coins
 
 from .conf import C, config_condition
-
-
-def PointsField(**kwargs):
-    return models.DecimalField(unit=Coins, **kwargs)  # type: ignore internal incompatibility
 
 
 class Subsession(BaseSubsession):
@@ -25,7 +23,7 @@ class Player(BasePlayer):
     age = models.IntegerField()
     gender = models.StringField(choices=[("M", "Male"), ("F", "Female"), ("O", "Other")], widget=widgets.RadioSelect)
 
-    total_score = PointsField(initial=0)
+    total_score = models.DecimalField(unit=Coins, initial=0)
 
     progress_round = models.IntegerField()
     progress_trial = models.IntegerField()
@@ -38,8 +36,8 @@ class Player(BasePlayer):
 class Round(BaseRoundModel):
     group: Group = models.Link(Group)
 
-    total_score_p = PointsField(initial=0)
-    total_score_r = PointsField(initial=0)
+    total_score_p = models.DecimalField(unit=Coins, initial=0)
+    total_score_r = models.DecimalField(unit=Coins, initial=0)
     get_score = key_getter("total_score_")
 
     def init(self):
@@ -54,12 +52,12 @@ class Round(BaseRoundModel):
 class Trial(BaseTrialModel):
     iteround: Round = models.Link(Round)
 
-    endowment = PointsField()
-    proposal = PointsField()
+    endowment = models.DecimalField(unit=Coins)
+    proposal = models.DecimalField(unit=Coins)
     decision = models.StringField(choices=C.DECISIONS)
 
-    score_p = PointsField()
-    score_r = PointsField()
+    score_p = models.DecimalField(unit=Coins)
+    score_r = models.DecimalField(unit=Coins)
     get_scores = dict_getter("score_", ("P", "R"))
 
     @property
@@ -102,7 +100,7 @@ class Response(BaseResponseModel):
     player: Player = models.Link(Player)
 
     response_time = models.IntegerField()
-    p_proposal = PointsField()
+    p_proposal = models.DecimalField(unit=Coins)
     r_decision = models.StringField(choices=C.DECISIONS)
 
 
@@ -114,7 +112,7 @@ def set_payoff(group: Group, iteround: Round):
     for player in group.get_players():
         player.total_score = iteround.get_score(player.role)
         if player.participant.status != "dropout":
-            player.payoff = player.total_score.to_real_world_currency(player.session)  # type: ignore
+            player.payoff = score_to_currency(player.total_score, player.session)  # type: ignore currency incompatibility
 
 
 def custom_export_responses(_):
