@@ -19,8 +19,8 @@
     <section class="form">
         <p>Please fill information below</p>
 
-        {{ formfield 'age' }}
-        {{ formfield 'gender' }}
+        {% formfield 'age' %}
+        {% formfield 'gender' %}
     </section>
 
     <section class="form">
@@ -28,8 +28,8 @@
 
         <p>By clicking the "Next" button below, you provide your informed consent to proceed with the experiment.</p>
 
-        {{ formfield 'agreement' }}
+        {% formfield 'agreement' %}
     </section>
 
-    {{ next_button }}
+    {% next_button %}
 {% endblock content %}

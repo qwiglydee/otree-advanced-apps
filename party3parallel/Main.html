@@ -5,7 +5,7 @@
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
         <div class="alert alert-secondary m-2">Total score: <span ot-text="vars.progress.score"></span></div>
     </header>
-{% endblock %}
+{% endblock header %}
 
 {% block main %}
     <main ot-visible="vars.trial">
@@ -19,7 +19,7 @@
 
         <section class="info" ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></section>
     </main>
-{% endblock %}
+{% endblock main %}
 
 {% block form %}
     <hr class="ridge" />
@@ -28,7 +28,7 @@
         <button ot-click-input type="button" name="response" value="MEOW" class="btn btn-primary" ot-enable="vars.responding">Meow</button>
         <button ot-click-input type="button" name="response" value="WOOF" class="btn btn-primary" ot-enable="vars.responding">Woof</button>
     </section>
-{% endblock %}
+{% endblock form %}
 
 {% block footer %}
     <footer>
@@ -36,7 +36,7 @@
         <div ot-display="vars.pending">Waiting for your partners...</div>
         <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
-{% endblock %}
+{% endblock footer %}
 
 {% block scripts %}
     <script>

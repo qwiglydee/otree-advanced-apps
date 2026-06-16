@@ -1,4 +1,13 @@
-{# 
+{# Game page layout
+
+Makes fullscreen layout with centered content
+
+Usage in SomePage.html, insert at top: 
+    {% extends "_extras/ExtPage.html" %}
+    {% block header %} ... {% endblock %}
+    {% block main %} ... {% endblock %}
+    {% block form %} ... {% endblock %}
+    {% block footer %} ... {% endblock %}
 #}
 {% extends "_extras/ExtPage.html" %}
 
@@ -31,4 +40,4 @@
         {% block footer %}{% endblock %}
         </div>
     </div>
-{% endblock %}
+{% endblock body_main %}

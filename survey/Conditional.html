@@ -1,28 +1,30 @@
-{% extends "_extras/ExtPage.html" %} {% block title %} Questions {% endblock title %} {% block content %}
-<section class="form">
-    <div class="mb-3">
-        <label for="{{ form.field_qux.id }}" class="col-form-label">{{ form.field_qux.label.text }}</label>
-        <select id="{{ form.field_qux.id }}" name="field_qux" ot-input required class="form-select">
-            {% for choice in form.field_qux %}
-            <option value="{{ choice._value }}">{{ choice.label }}</option>
-            {% endfor %}
-        </select>
-    </div>
+{% extends "_extras/ExtPage.html" %}
 
-    <div class="mb-3" ot-display="vars.otherfoo">
-        <label for="{{ form.field_qux_other.id }}" class="col-form-label">{{ form.field_qux_other.label }}</label>
-        <input
-            id="{{ form.field_qux_other.id }}"
-            type="text"
-            class="form-control"
-            name="q_baz_other"
-            ot-required="vars.otherfoo" />
-    </div>
-</section>
-{% next_button %} {% endblock content %} {% block scripts %}
-<script>
-    ot.onInput("field_qux", function (value) {
-        vars.otherfoo = value == "OTHER";
-    });
-</script>
-{% endblock %}
+{% block title %}Questions{% endblock %}
+
+{% block content %}
+    <section class="form">
+        <div class="mb-3">
+            <label for="{{ form.field_qux.id }}" class="col-form-label">{{ form.field_qux.label.text }}</label>
+            <select id="{{ form.field_qux.id }}" name="field_qux" ot-input required class="form-select">
+                {% for choice in form.field_qux %}
+                    <option value="{{ choice._value }}">{{ choice.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3" ot-display="vars.otherfoo">
+            <label for="{{ form.field_qux_other.id }}" class="col-form-label">{{ form.field_qux_other.label }}</label>
+            <input id="{{ form.field_qux_other.id }}" type="text" class="form-control" name="q_baz_other" ot-required="vars.otherfoo" />
+        </div>
+    </section>
+    {% next_button %}
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+        ot.onInput("field_qux", function (value) {
+            vars.otherfoo = value == "OTHER";
+        });
+    </script>
+{% endblock scripts %}

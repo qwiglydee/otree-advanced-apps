@@ -18,16 +18,17 @@
     <section class="form">
         <p>Please fill information below</p>
 
-        {{ formfield 'age' }} {{ formfield 'gender' }}
+        {% formfield 'age' %}
+        {% formfield 'gender' %}
     </section>
 
     <section class="info">
         <h3>Consent</h3>
 
-        {{ formfield 'agreement' }}
+        {% formfield 'agreement' %}
     </section>
 
-    {{ next_button }}
+    {% next_button %}
 
     <input type="hidden" name="hidden_localtime" />
 {% endblock content %}

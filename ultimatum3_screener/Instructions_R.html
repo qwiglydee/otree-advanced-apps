@@ -1,4 +1,7 @@
-{% extends "_extras/ExtPage.html" %} {% block title %}Instructions [{{ condition }}/{{ player.role }}]{% endblock %}
+{% extends "_extras/ExtPage.html" %}
+
+{% block title %}Instructions [{{ condition }}/{{ player.role }}]{% endblock %}
+
 {% block content %}
     <section class="info">
         <p>You've been assigned the role of Receiver.</p>
@@ -10,5 +13,5 @@
         <p>...</p>
     </section>
 
-    {{ next_button }}
+    {% next_button %}
 {% endblock content %}
