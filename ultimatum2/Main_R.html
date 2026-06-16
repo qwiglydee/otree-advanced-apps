@@ -1,57 +1,74 @@
-{% extends "_extras/FullPage.html" %}
-{% block content %}
+{% extends "_extras/GamePage.html" %}
+
+{% block header %}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
-        <section class="paper m-3" ot-visible="vars.trial">
+    </header>
+{% endblock %}
+
+{% block main %}
+    <main ot-visible="vars.trial">
+        <section class="main">
             <div>Endowment: <b ot-text="vars.trial.endowment"></b></div>
             <div ot-visible="vars.trial.proposal">Your parnter shared: <b ot-text="vars.trial.proposal"></b></div>
             <div ot-visible="vars.trial.decision">You decided: <b ot-text="vars.decision_label"></b></div>
         </section>
-    </header>
 
-    <main ot-visible="vars.trial">
-        <section class="form w-50">
-            <h4>Your decision:</h4>
-            <div class="d-flex gap-3 justify-content-center">
-                <div class="form-check">
-                    <input id="choice1" ot-input type="radio" name="decision" value="ACCEPT" class="form-check-input" ot-enable="vars.responding" />
-                    <label for="choice1" class="form-check-label">Accept</label>
-                </div>
-
-                <div class="form-check">
-                    <input id="choice2" ot-input type="radio" name="decision" value="REJECT" class="form-check-input" ot-enable="vars.responding" />
-                    <label for="choice2" class="form-check-label">Reject</label>
-                </div>
-            </div>
-
-            <hr />
-
-            <button ot-click-input type="button" name="confirm" class="btn btn-primary" ot-enable="vars.confirming">Confirm</button>
-        </section>
-
-        <div ot-visible="vars.evaluation" class="alert alert-info">
-            <h5>If you accept:</h5>
-            <ul>
-                <li>You receive: <b ot-text="vars.evaluation.R"></b></li>
-                <li>Your partner keeps: <b ot-text="vars.evaluation.P"></b></li>
-            </ul>
-        </div>
-    </main>
-
-    <footer>
-        <section ot-display="vars.result" class="info">
+        <section class="info" ot-display="vars.result">
             <h4>Final result</h4>
-            <ul class="m-0">
+            <ul>
                 <li>Your payoff: <b ot-text="vars.result.R"></b></li>
                 <li>Your partner's payoff: <b ot-text="vars.result.P"></b></li>
             </ul>
         </section>
-        <div class="flex-fill"></div>
-        <div ot-display="vars.prompting">Select your decision and <kbd>Confirm</kbd></div>
+    </main>
+
+    <div class="alert alert-info" ot-display="vars.evaluation">
+        <h5>If you accept:</h5>
+        <ul>
+            <li>You receive: <b ot-text="vars.evaluation.R"></b></li>
+            <li>Your partner keeps: <b ot-text="vars.evaluation.P"></b></li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block form %}
+    <hr class="ridge" />
+
+    <section class="form" ot-display="vars.responding">
+        <h4>Your decision:</h4>
+        <div class="d-flex gap-3 justify-content-center">
+            <div class="form-check">
+                <input id="choice1" ot-input type="radio" name="decision" value="ACCEPT" class="form-check-input" ot-enable="vars.responding" />
+                <label for="choice1" class="form-check-label">Accept</label>
+            </div>
+
+            <div class="form-check">
+                <input id="choice2" ot-input type="radio" name="decision" value="REJECT" class="form-check-input" ot-enable="vars.responding" />
+                <label for="choice2" class="form-check-label">Reject</label>
+            </div>
+        </div>
+
+        <button ot-click-input type="button" name="confirm" class="btn btn-primary" ot-enable="vars.confirming">Confirm</button>
+    </section>
+{% endblock %}
+
+{% block footer %}
+    <footer>
+        <div ot-display="vars.prompting.decide">Select your decision and <kbd>Confirm</kbd></div>
         <div ot-display="vars.pending">Waiting for your partner</div>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+        <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
-{% endblock content %}
+{% endblock %}
+
+{% block styles %}
+    <style>
+        :root {
+            --game-content-size: 80vh;
+        }
+    </style>
+{% endblock %}
+
 {% block scripts %}
     <script>
         "use strict";
@@ -64,13 +81,11 @@
         function switchState(state) {
             let stage = vars.progress ? vars.progress.stage : null;
             if (state == "running") state += `/${stage}`;
-            // console.debug(`switching: ${state}/${turn}`, `/${MYTURN}/`);
 
             vars.waiting = false;
             vars.pending = false;
             vars.responding = false;
             vars.confirming = false;
-            vars.prompting = false;
 
             switch (state) {
                 case "pending":
@@ -81,9 +96,6 @@
                 case "processing":
                     vars.waiting = true;
                     break;
-                case "completing":
-                    vars.waiting = true;
-                    break;
                 case "running/PROPOSING":
                     vars.pending = true;
                     vars.waiting = true;
@@ -91,11 +103,18 @@
                 case "running/DECIDING":
                     vars.responding = true;
                     vars.confirming = vars.response != null;
-                    vars.prompting = true;
+                    break;
+                case "completing":
+                    vars.waiting = true;
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
             }
+
+            vars.prompting = {
+                decide: vars.responding,
+            };
+
             ot.updatePage();
         }
 

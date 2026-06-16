@@ -43,7 +43,7 @@ class C(BaseConstants):
         },
     }
 
-    ITER_DELAY = 1
+    ITER_DELAY = 3
 
 
 def config_condition(session):

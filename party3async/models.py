@@ -42,7 +42,7 @@ class Round(BaseRoundModel):
 class Trial(BaseTrialModel):
     iteround: Round = models.Link(Round)
 
-    agreed = models.IntegerField()
+    agreed = models.IntegerField(initial=0)
     score = PointsField(initial=None)
 
     def init(self):
@@ -68,6 +68,7 @@ class Response(BaseResponseModel):
     trial = models.Link(Trial)
     player = models.Link(Player)
 
+    response_time = models.IntegerField()
     utterance = models.StringField()
 
 

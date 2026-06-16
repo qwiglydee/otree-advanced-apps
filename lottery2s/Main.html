@@ -1,10 +1,13 @@
-{% extends "_extras/FullPage.html" %}
-{% block content %}
+{% extends "_extras/GamePage.html" %}
+
+{% block header %}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
         <div class="alert alert-secondary m-2">Total score: <span ot-text="vars.progress.score"></span></div>
     </header>
+{% endblock %}
 
+{% block main %}
     <main ot-visible="vars.trial">
         <div class="cards cards-3" ot-class="vars.stage">
             <button
@@ -14,8 +17,8 @@
                 value="1"
                 ot-text="vars.labels.1"
                 ot-enable="vars.responding"
-                class="crd fs-1"
                 ot-selected="vars.selected.1"
+                class="crd fs-1"
                 ot-class="vars.styles.1"
             ></button>
             <button
@@ -25,8 +28,8 @@
                 value="2"
                 ot-text="vars.labels.2"
                 ot-enable="vars.responding"
-                class="crd fs-1"
                 ot-selected="vars.selected.2"
+                class="crd fs-1"
                 ot-class="vars.styles.2"
             ></button>
             <button
@@ -36,28 +39,39 @@
                 value="3"
                 ot-text="vars.labels.3"
                 ot-enable="vars.responding"
-                class="crd fs-1"
                 ot-selected="vars.selected.3"
+                class="crd fs-1"
                 ot-class="vars.styles.3"
             ></button>
         </div>
 
-        <button ot-click-input type="button" name="finalize" ot-enable="vars.progress.finalizable" ot-visible="vars.prompting.sample" class="btn btn-primary">
-            Finalize
-        </button>
+        <section class="info" ot-display="vars.feedbacking">
+            <div ot-display="vars.result">Scored: <b ot-text="vars.result.score"></b></div>
+        </section>
     </main>
+{% endblock %}
 
+{% block form %}
+    <hr class="ridge" />
+    <button ot-display="vars.sampling" ot-enable="vars.progress.finalizable" ot-click-input type="button" name="finalize" class="btn btn-primary">
+        Finalize
+    </button>
+    <button ot-display="vars.completing" ot-enable="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary">Continue</button>
+{% endblock %}
+
+{% block footer %}
     <footer>
-        <div ot-display="vars.result">Scored: <i ot-text="vars.result.score"></i></div>
-        <div class="flex-fill"></div>
-        <div ot-display="vars.prompting.sample">Make your <b>sampling</b> choice or <kbd>Finalize</kbd> to proceed to final stage...</div>
+        <div ot-display="vars.prompting.sample">Make several <b>sampling</b> choices...</div>
+        <div ot-display="vars.prompting.finalize">Click <kbd>Finalize</kbd> to proceed to final stage...</div>
         <div ot-display="vars.prompting.final">Make your <b>final</b> choice...</div>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+        <div ot-display="vars.prompting.complete">Press <kbd>Continue</kbd> to proceed...</div>
+        <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
-{% endblock content %}
+{% endblock %}
+
 {% block styles %}
     <style>
-        .cards {
+        .cards.SAMPLING {
             --card-size: 200px;
         }
 
@@ -66,13 +80,14 @@
         }
     </style>
 {% endblock styles %}
+
 {% block scripts %}
     <script>
         "use strict";
 
         const BLINK_DELAY = 200;
+        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}"; // auto-iterating
         const SAMPLING_DELAY = 1000 * "{{C.SAMPLING_DELAY}}";
-        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
 
         function switchState(state) {
             let stage = vars.stage;
@@ -80,23 +95,37 @@
 
             vars.waiting = false;
             vars.responding = false;
-            vars.prompting = {};
+            vars.sampling = false;
+            vars.finalizing = false;
+            vars.completing = false;
 
             switch (state) {
                 case "starting":
                 case "processing":
                     vars.waiting = true;
                     break;
-                case "completing":
-                    vars.waiting = true;
-                    break;
                 case "running":
                     vars.responding = true;
-                    vars.prompting = { sample: stage == "SAMPLING", final: stage == "FINAL" };
+                    vars.sampling = stage == "SAMPLING";
+                    vars.finalizing = stage == "FINAL";
+                    break;
+                case "completing":
+                    vars.waiting = true; // auto
+                    //vars.completing = true; // button
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
             }
+
+            vars.feedbacking = vars.result != null; // || vars.feedback != null;
+
+            vars.prompting = {
+                sample: vars.sampling,
+                finalize: vars.sampling && vars.progress.finalizable,
+                final: vars.finalizing,
+                complete: vars.completing,
+            };
+
             ot.updatePage();
         }
 
@@ -153,16 +182,11 @@
         }
 
         async function restartTrial(stage) {
+            switchState("starting");
             vars.stage = stage;
-            if (stage == "SAMPLING") {
-                await ot.delay(SAMPLING_DELAY);
-                resetResponse();
-                switchState("running");
-            }
-            if (stage == "FINAL") {
-                resetResponse();
-                switchState("running");
-            }
+            if (stage == "SAMPLING") await ot.delay(SAMPLING_DELAY);
+            resetResponse();
+            switchState("running");
         }
 
         function inputResponse(choice) {
@@ -192,13 +216,16 @@
 
         async function completeTrial() {
             switchState("completing");
+            // auto advancing:
             await ot.delay(ITER_DELAY);
             iterateRound();
         }
 
         ot.onUpdate("vars.choice", function renderChoice(choice) {
-            vars.selected = { 1: false, 2: false, 3: false };
-            if (choice != null) vars.selected[choice] = true;
+            vars.selected = {};
+            if (choice != null) {
+                vars.selected[choice] = true;
+            }
             ot.updatePage();
         });
 

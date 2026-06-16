@@ -68,6 +68,19 @@ Most of the apps have many common fatures:
 - Multiplayer games implement 'pending' state of waiting other participants to catch up between each trial and each page/round.
 - Games use `points` for scoring, with customizable decimal formatting. In the end of the game they're converted to configured real currency.
 
+## The Style
+
+The look and feel is designed to resemble some table games with paper sheets, cards and tags.
+
+The styles utilize [classic boostrap palette](https://getbootstrap.com/docs/5.3/helpers/color-background/) with `primary` used for all main elements and form controls.
+
+Layout of pages is in a game paradigm:
+
+- page header: global status (progress, total score)
+- upper center, main area: description of task or game state + feedback/results
+- lower center, cockpit area: form controls, only visible when active
+- page footer: hints about what to do
+
 ## The Code
 
 The repository contains lots of stuff shared between the apps and it can be reused in other projects:

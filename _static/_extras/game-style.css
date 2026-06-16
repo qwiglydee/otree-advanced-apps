@@ -1,8 +1,8 @@
 /** 
- * Somewhat vibrant game-ish design for sections and form controls
+ * Somewhat vibrant game-ish design
  * by qwiglydee@gmail.com
  *
- * requires bootstrap-theme
+ * requires bootstrap-theme.css
  */
 
 :root {
@@ -31,12 +31,13 @@ body {
 section {
     padding: 1rem;
     margin-bottom: 1.5rem;
-    color: #212529;
     box-shadow: var(--bs-box-shadow-sm);
     border-radius: var(--gm-border-radius-sect);
     border-width: var(--gm-border-width-sect);
     border-style: solid;
-    border-color: rgba(255, 255, 255, 0.5);
+    border-color: var(--bs-white);
+    background-color: var(--bs-gray-200);
+    color: var(--bs-dark);
 }
 
 section.active {
@@ -49,20 +50,24 @@ section p:last-child {
 
 section.info {
     background-color: var(--bs-info-bg-subtle);
+    color: var(--bs-dark);
 }
 
-section.warn {
+section.warning {
     background-color: var(--bs-warning-bg-subtle);
+    color: var(--bs-dark);
 }
 
 section.form {
     background-color: var(--bs-primary-bg-subtle);
+    color: var(--bs-dark);
 }
 
-section.paper {
-    background-color: var(--bs-light-bg-subtle);
-    border-color: rgba(0, 0, 0, 0.75);
+section.main {
     box-shadow: var(--bs-box-shadow);
+    background-color: var(--bs-light-bg-subtle);
+    border-color: var(--bs-dark);
+    color: var(--bs-dark);
 }
 
 p:has(.otree-btn-next) {
@@ -75,6 +80,30 @@ p:has(.otree-btn-next) {
     border-radius: var(--gm-border-radius-sect);
     border-width: var(--gm-border-width-sect);
     box-shadow: var(--bs-box-shadow-sm);
+}
+
+.alert-primary {
+    background-color: var(--bs-primary);
+}
+
+.alert-info {
+    background-color: var(--bs-info);
+    color: var(--bs-black);
+}
+
+.alert-warning {
+    background-color: var(--bs-warning);
+    color: var(--bs-black);
+}
+
+.alert-danger {
+    background-color: var(--bs-danger);
+    color: var(--bs-white);
+}
+
+.alert-success {
+    background-color: var(--bs-success);
+    color: var(--bs-white);
 }
 
 /**** form elements ****/
@@ -91,6 +120,13 @@ button.btn,
         background-color 150ms ease-in-out,
         box-shadow 150ms ease-in-out,
         border 150ms ease-in-out;
+}
+
+.input-group-text {
+    border-width: var(--gm-border-width-form);
+    border-right-width: 0px;
+    border-radius: var(--gm-border-radius-form);
+    border-color: rgba(var(--bs-dark-rgb), 0.75);
 }
 
 button.btn:enabled:hover:not(:focus),
@@ -145,4 +181,22 @@ section.intro.form .form-select {
 label.form-label,
 label.col-form-label {
     font-weight: bold;
+}
+
+button[name="confirm"] {
+    float: right;
+}
+
+hr.ridge {
+    min-height: 4px;
+    border-radius: 2px;
+    border: 2px solid var(--bs-dark);
+    border-top-color: var(--bs-light);
+}
+
+hr.crack {
+    min-height: 4px;
+    border-radius: 2px;
+    border: 2px solid var(--bs-dark);
+    border-bottom-color: var(--bs-light);
 }

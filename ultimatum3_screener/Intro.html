@@ -1,31 +1,26 @@
-{% extends "_extras/ExtPage.html" %} {% block title %}Introduction [{{ subsession.condition }}]{% endblock %} {% block
-content %}
-<section class="info">
-    <p>This is a simple decision game.</p>
+{% extends "_extras/ExtPage.html" %}
 
-    <p>
-        In the game you are paired with a partner. You are assigned roles of Proposer and Receiver. Proposer is endowed
-        with {{ endowment }} and decides how much he is willing to share with their partner. Receiver decides whether to
-        accept or reject the proposal.
-    </p>
+{% block title %}Introduction{% endblock %}
 
-    <p>...</p>
-    <p>...</p>
-    <p>...</p>
-</section>
+{% block content %}
+    <section>
+        <p>...</p>
+        <p>...</p>
+        <p>...</p>
+    </section>
 
-<section class="form">
-    <p>Please fill information below</p>
+    <section class="form">
+        <p>Please fill information below</p>
+        {% formfield 'age' %}
+        {% formfield 'gender' %}
+    </section>
 
-    {{ formfield 'age' }} {{ formfield 'gender' }}
-</section>
+    <section class="form">
+        <h3>Consent</h3>
+        <p>By clicking the "Next" button below, you provide your informed consent to proceed with the experiment.</p>
 
-<section class="form">
-    <h3>Consent</h3>
+        {% formfield 'agreement' %}
+    </section>
 
-    <p>By clicking the "Next" button below, you provide your informed consent to proceed with the experiment.</p>
-
-    {{ formfield 'agreement' }}
-</section>
-
-{{ next_button }} {% endblock content %}
+    {% next_button %}
+{% endblock content %}

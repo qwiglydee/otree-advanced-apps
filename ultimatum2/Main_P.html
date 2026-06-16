@@ -1,56 +1,74 @@
-{% extends "_extras/FullPage.html" %}
-{% block content %}
+{% extends "_extras/GamePage.html" %}
+
+{% block header %}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
-        <section class="paper m-3" ot-visible="vars.trial">
+    </header>
+{% endblock %}
+
+{% block main %}
+    <main ot-visible="vars.trial">
+        <section class="main">
             <div>Endowment: <b ot-text="vars.trial.endowment"></b></div>
             <div ot-visible="vars.trial.proposal">You shared: <b ot-text="vars.trial.proposal"></b></div>
             <div ot-visible="vars.trial.decision">Your partner decded: <b ot-text="vars.decision_label"></b></div>
         </section>
-    </header>
 
-    <main ot-visible="vars.trial">
-        <section class="form w-50">
-            <h4>Your proposal:</h4>
-            <input
-                ot-input
-                type="range"
-                min="0"
-                ot-max="vars.maxshare"
-                step="1"
-                name="proposal"
-                class="form-range"
-                ot-key-input="Enter"
-                ot-enable="vars.responding"
-                autofocus
-            />
-            <hr />
-            <button ot-click-input type="button" name="confirm" class="btn btn-primary" ot-enable="vars.confirming">Confirm</button>
-        </section>
-
-        <div ot-visible="vars.evaluation" class="alert alert-info">
-            <h5>If your partner accepts:</h5>
-            <ul>
-                <li>You keep: <b ot-text="vars.evaluation.P"></b></li>
-                <li>Your partner receives: <b ot-text="vars.evaluation.R"></b></li>
-            </ul>
-        </div>
-    </main>
-
-    <footer>
-        <section ot-display="vars.result" class="info">
+        <section class="info" ot-display="vars.result">
             <h4>Final Result:</h4>
-            <ul class="m-0">
+            <ul>
                 <li>Your payoff: <b ot-text="vars.result.P"></b></li>
                 <li>Your partner's payoff: <b ot-text="vars.result.R"></b></li>
             </ul>
         </section>
-        <div class="flex-fill"></div>
-        <div ot-display="vars.prompting">Adjust your proposal and <kbd>Confirm</kbd></div>
+    </main>
+
+    <div class="alert alert-info" ot-display="vars.evaluation">
+        <h5>If your partner accepts:</h5>
+        <ul>
+            <li>You keep: <b ot-text="vars.evaluation.P"></b></li>
+            <li>Your partner receives: <b ot-text="vars.evaluation.R"></b></li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block form %}
+    <hr class="ridge" />
+
+    <section class="form" ot-display="vars.responding">
+        <h4>Your proposal:</h4>
+        <input
+            ot-input
+            type="range"
+            min="0"
+            ot-max="vars.maxshare"
+            step="1"
+            name="proposal"
+            class="form-range"
+            ot-key-input="Enter"
+            ot-enable="vars.responding"
+            autofocus
+        />
+        <button ot-click-input type="button" name="confirm" class="btn btn-primary" ot-enable="vars.confirming">Confirm</button>
+    </section>
+{% endblock %}
+
+{% block footer %}
+    <footer>
+        <div ot-display="vars.prompting.propose">Adjust your proposal and <kbd>Confirm</kbd></div>
         <div ot-display="vars.pending">Waiting for your partner</div>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+        <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
-{% endblock content %}
+{% endblock %}
+
+{% block styles %}
+    <style>
+        :root {
+            --game-content-size: 80vh;
+        }
+    </style>
+{% endblock %}
+
 {% block scripts %}
     <script>
         "use strict";
@@ -63,14 +81,11 @@
         function switchState(state) {
             let stage = vars.progress ? vars.progress.stage : null;
             if (state == "running") state += `/${stage}`;
-            // let turn = vars.progress ? vars.progress.turn : null;
-            // console.debug(`switching: ${state}/${turn}`, `/${MYTURN}/`);
 
             vars.waiting = false;
             vars.pending = false;
             vars.responding = false;
             vars.confirming = false;
-            vars.prompting = false;
 
             switch (state) {
                 case "pending":
@@ -81,21 +96,25 @@
                 case "processing":
                     vars.waiting = true;
                     break;
-                case "completing":
-                    vars.waiting = true;
-                    break;
                 case "running/PROPOSING":
                     vars.responding = true;
                     vars.confirming = vars.response != null;
-                    vars.prompting = true;
                     break;
                 case "running/DECIDING":
                     vars.pending = true;
                     vars.waiting = true;
                     break;
+                case "completing":
+                    vars.waiting = true;
+                    break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
             }
+
+            vars.prompting = {
+                propose: vars.responding,
+            };
+
             ot.updatePage();
         }
 

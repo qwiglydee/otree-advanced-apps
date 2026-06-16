@@ -9,7 +9,7 @@ from .progress import Progress
 
 
 class Main(LivePage):
-    page_styles = ["_extras/ot-progress.css", "_extras/ot-pulse.css"]
+    page_styles = ["_extras/ot-progress.css", "_extras/ot-pulse.css", "_extras/grid.css"]
     page_scripts = ["_extras/ot-progress.js", "_extras/ot-pulse.js"]
 
     @staticmethod
@@ -42,13 +42,13 @@ class Main(LivePage):
             yield group, "trial", page.output_trial(advanced.trial)
 
     @classmethod
-    def live_response(page, player: Player, trialid: int, utterance: str) -> LiveResponding:
+    def live_response(page, player: Player, trialid: int, time: int, utterance: str) -> LiveResponding:
         current = progress.current(page, player)
         group = current.group
         assert current.iteround is not None and current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
 
-        response = progress.respond(current, utterance)
+        response = progress.respond(current, utterance, response_time=time)
 
         yield group, "progress", page.output_progress(current)
         yield player, "feedback", page.output_feedback(current.trial, response)
@@ -86,11 +86,15 @@ class Main(LivePage):
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         assert response
-        return {}
+        return {
+            "response": response.utterance,
+        }
 
     @classmethod
     def output_result(page, trial: Trial) -> LivePayload:
-        return {"score": f"{trial.score:+}" if trial.score is not None else None}
+        return {
+            "score": f"{trial.score:+}" if trial.score is not None else None,
+        }
 
 
 class Intro(Page):

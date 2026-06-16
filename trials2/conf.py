@@ -22,8 +22,8 @@ class C(BaseConstants):
     }
 
     SCORING = {
-        0: Points(0),
-        1: Points(10),
+        False: Points(0),
+        True: Points(10),
     }
 
     RETRY_DELAY = 1

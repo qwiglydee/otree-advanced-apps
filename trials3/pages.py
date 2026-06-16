@@ -82,7 +82,7 @@ class TrialsPage(LivePage):
             "passed": iteround.progress_trials,
             "score": f"{iteround.total_score:n}",
             "current": trial.iteration if trial else None,
-            "retries": current.retries_left if current.is_running else None,
+            "retries": current.retries_left if trial and current.is_running else None,
             "stage": current.stage if current.is_running else None,
         }
 
@@ -107,6 +107,7 @@ class Practice(TrialsPage):
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
             "final": trial.is_completed,
+            "answer": response.answer,
             "correct": response.correct,
         }
 
@@ -114,7 +115,7 @@ class Practice(TrialsPage):
     def output_result(page, trial: Trial) -> LivePayload:
         return {
             "score": f"{trial.score:+}" if trial.score is not None else None,
-            "truth": trial.truth,
+            "truth": trial.truth if not trial.success else None,
         }
 
 
@@ -123,6 +124,7 @@ class Main(TrialsPage):
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
             "final": trial.is_completed,
+            "answer": response.answer,
         }
 
     @classmethod

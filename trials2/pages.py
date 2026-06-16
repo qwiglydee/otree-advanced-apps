@@ -50,7 +50,7 @@ class TrialsPage(LivePage):
         pagename, player, iteround, trial = current
         assert iteround is not None
         return {
-            "total": C.NUM_TRIALS[iteround.pagename],
+            "total": C.NUM_TRIALS[pagename],
             "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
             "score": f"{iteround.total_score:n}",
@@ -78,6 +78,7 @@ class Practice(TrialsPage):
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
             "final": trial.is_completed,
+            "answer": response.answer,
             "correct": response.correct,
         }
 
@@ -85,7 +86,7 @@ class Practice(TrialsPage):
     def output_result(page, trial: Trial) -> LivePayload:
         return {
             "score": f"{trial.score:+}" if trial.score is not None else None,
-            "truth": trial.truth,
+            "truth": trial.truth if not trial.success else None,
         }
 
 
@@ -94,6 +95,7 @@ class Main(TrialsPage):
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
             "final": trial.is_completed,
+            "answer": response.answer,
         }
 
     @classmethod

@@ -1,52 +1,64 @@
-{% extends "_extras/FullPage.html" %}
-{% block content %}
+{% extends "_extras/GamePage.html" %}
+
+{% block header %}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
         <h3>Practice Round</h3>
     </header>
+{% endblock %}
 
+{% block main %}
     <main ot-visible="vars.trial">
-        <section class="paper fs-4 text-center"><b ot-text="vars.trial.task"></b> =</section>
+        <section class="main fs-4 text-center"><b ot-text="vars.trial.task"></b> =</section>
 
-        <section class="form">
-            <input
-                ot-input
-                type="number"
-                name="answer"
-                class="form-control"
-                ot-key-input="Enter"
-                autofocus
-                ot-class="vars.styles.0"
-                ot-enable="vars.responding"
-            />
+        <section class="info" ot-display="vars.feedbacking">
+            <div ot-display="vars.feedback">
+                Your answer: <i ot-text="vars.feedback.answer" ot-class="vars.styles.txt"></i>
+                <span ot-display="vars.feedback.correct">is correct</span>
+                <span ot-display="vars.feedback.incorrect">is incorrect</span>
+                .
+            </div>
+            <div ot-display="vars.result.truth">Correct answer: <b ot-text="vars.result.truth"></b></div>
+            <div ot-display="vars.result">Scored: <b ot-text="vars.result.score"></b></div>
         </section>
     </main>
+{% endblock %}
 
+{% block form %}
+    <hr class="ridge" />
+
+    <section class="form" ot-display="vars.responding">
+        <div class="input-group">
+            <span class="input-group-text">=</span>
+            <input ot-input type="number" name="answer" class="form-control" ot-key-input="Enter" autofocus ot-enable="vars.responding" />
+        </div>
+    </section>
+
+    <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary">Continue</button>
+{% endblock %}
+
+{% block footer %}
     <footer>
-        <div ot-display="vars.result.truth">Correct solution: <b ot-text="vars.result.truth"></b></div>
-        <div ot-display="vars.feedback.incorrect">Your answer is incorrect.</div>
-        <div ot-display="vars.feedback.iscorrect">Your answer is correct.</div>
-        <div ot-display="vars.result">Score would be: <i ot-text="vars.result.score"></i></div>
-        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
-        <div class="flex-fill"></div>
-        <div ot-display="vars.prompting">Enter your answer and press <kbd>Enter</kbd>...</div>
+        <div ot-display="vars.prompting.input">Enter your answer and press <kbd>Enter</kbd>...</div>
+        <div ot-display="vars.prompting.complete">Press <kbd>Continue</kbd> to proceed...</div>
         <div ot-display="vars.responding">Retries left: <span ot-text="vars.progress.retries"></span></div>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+        <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
-{% endblock content %}
+{% endblock %}
+
 {% block scripts %}
     <script>
         "use strict";
 
         const BLINK_DELAY = 200;
+        const ITER_DELAY = 0; // 1000 * "{{C.ITER_DELAY}}";
         const RETRY_DELAY = 1000 * "{{C.RETRY_DELAY}}";
 
         function switchState(state) {
-            // console.debug("switching", state, vars.progress ? vars.progress.retries : null);
+            // console.debug("switching", state);
 
             vars.waiting = false;
             vars.responding = false;
-            vars.prompting = false;
             vars.completing = false;
 
             switch (state) {
@@ -54,16 +66,22 @@
                 case "processing":
                     vars.waiting = true;
                     break;
-                case "completing":
-                    vars.completing = true;
-                    break;
                 case "running":
                     vars.responding = true;
-                    vars.prompting = true;
+                    break;
+                case "completing":
+                    // vars.waiting = true; // auto
+                    vars.completing = true; // button
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
             }
+
+            vars.feedbacking = vars.feedback != null || vars.result != null;
+            vars.prompting = {
+                input: vars.responding,
+                complete: vars.completing,
+            };
             ot.updatePage();
         }
 
@@ -99,16 +117,15 @@
             vars.styles = {};
             ot.resetInputs();
         }
+        function startTrial(trial) {
+            vars.trial = trial;
+            ot.beginTimeMeasurement(); // NB: restarts on page reload
+            switchState("running");
+        }
 
         function updateTrial(update) {
             Object.assign(vars.trial, update);
             switchState("running");
-        }
-
-        function startTrial(trial) {
-            vars.trial = trial;
-            switchState("running");
-            ot.beginTimeMeasurement(); // NB: restarts on page reload
         }
 
         function resetResponse() {
@@ -120,6 +137,7 @@
         }
 
         async function restartTrial() {
+            switchState("starting");
             await ot.delay(RETRY_DELAY);
             resetResponse();
             switchState("running");
@@ -128,7 +146,11 @@
         function inputResponse(answer) {
             vars.answer = String(answer);
             switchState("processing");
-            ot.sendLive("response", { trialid: vars.trial.id, time: ot.getTimeMeasurement(), answer: vars.answer });
+            ot.sendLive("response", {
+                trialid: vars.trial.id,
+                time: ot.getTimeMeasurement(),
+                answer: vars.answer,
+            });
         }
 
         function liveFeedback(feedback) {
@@ -143,14 +165,15 @@
 
         async function completeTrial() {
             switchState("completing");
+            // auto advancing:
+            // await ot.delay(ITER_DELAY);
+            // iterateRound();
         }
 
         ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {
+            vars.styles = {};
             if (correct != null) {
-                if (vars.answer != null) {
-                    vars.styles[0] = correct ? "is-valid" : "is-invalid";
-                }
-                vars.feedback.iscorrect = correct;
+                vars.styles.txt = correct ? "text-success" : "text-danger";
                 vars.feedback.incorrect = !correct;
             }
             ot.updatePage();

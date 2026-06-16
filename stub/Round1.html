@@ -9,9 +9,14 @@
 
 {% block main %}
     <main ot-visible="vars.trial">
-        <section class="main fs-4 text-center"><b ot-text="vars.trial.task"></b> =</section>
+        <section class="main fs-4 text-center">
+            <h4>The task:</h4>
+            <p ot-text="vars.trial.task"></p>
+        </section>
 
         <section class="info" ot-display="vars.feedbacking">
+            <div ot-display="vars.feedback">Your answer: <b ot-text="vars.feedback.value"></b></div>
+            <div ot-display="vars.result">Result: <b ot-text="vars.result.outcome"></b></div>
             <div ot-display="vars.result">Scored: <b ot-text="vars.result.score"></b></div>
         </section>
     </main>
@@ -21,10 +26,19 @@
     <hr class="ridge" />
 
     <section class="form" ot-display="vars.responding">
-        <div class="input-group">
-            <span class="input-group-text">=</span>
-            <input ot-input type="number" name="answer" class="form-control" ot-key-input="Enter" autofocus ot-enable="vars.responding" />
+        <h4>Something:</h4>
+
+        <div class="form-check">
+            <input id="choice1" ot-input type="radio" name="choice" value="FOO" ot-enable="vars.responding" class="form-check-input" />
+            <label for="choice1" class="form-check-label w-100">Foo</label>
         </div>
+
+        <div class="form-check">
+            <input id="choice2" ot-input type="radio" name="choice" value="BAR" ot-enable="vars.responding" class="form-check-input" />
+            <label for="choice2" class="form-check-label w-100">Bar</label>
+        </div>
+
+        <button ot-click-input type="button" name="confirm" ot-enable="vars.confirming" class="btn btn-primary m-1">Confirm</button>
     </section>
 
     <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary">Continue</button>
@@ -32,7 +46,7 @@
 
 {% block footer %}
     <footer>
-        <div ot-display="vars.prompting.input">Enter your answer and press <kbd>Enter</kbd>...</div>
+        <div ot-display="vars.prompting.select">Select and <kbd>Confirm</kbd> your answer...</div>
         <div ot-display="vars.prompting.complete">Press <kbd>Continue</kbd> to proceed...</div>
         <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
@@ -50,6 +64,7 @@
 
             vars.waiting = false;
             vars.responding = false;
+            vars.confirming = false;
             vars.completing = false;
 
             switch (state) {
@@ -59,10 +74,11 @@
                     break;
                 case "running":
                     vars.responding = true;
+                    vars.confirming = vars.choice != null;
                     break;
                 case "completing":
-                    vars.waiting = true; // auto
-                    // vars.completing = true; // button
+                    // vars.waiting = true; // auto
+                    vars.completing = true; // button
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
@@ -70,7 +86,7 @@
 
             vars.feedbacking = vars.feedback != null || vars.result != null;
             vars.prompting = {
-                input: vars.responding,
+                select: vars.responding,
                 complete: vars.completing,
             };
 
@@ -80,7 +96,8 @@
         ot.onLoad(initPage);
         ot.onLive("progress", liveProgress);
         ot.onLive("trial", startTrial);
-        ot.onInput("answer", inputResponse);
+        ot.onInput("choice", inputChoice);
+        ot.onInput("confirm", confirmChoice);
         ot.onLive("feedback", liveFeedback);
         ot.onLive("result", liveResult);
         ot.onInput("continue", iterateRound);
@@ -103,51 +120,34 @@
 
         function resetTrial() {
             vars.trial = null;
-            vars.answer = null;
+            vars.choice = null;
             vars.feedback = null;
             vars.result = null;
-            vars.styles = {};
             ot.resetInputs();
         }
+
         function startTrial(trial) {
             vars.trial = trial;
             ot.beginTimeMeasurement(); // NB: restarts on page reload
             switchState("running");
         }
 
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
+        function inputChoice(choice) {
+            vars.choice = choice;
             switchState("running");
         }
 
-        function resetResponse() {
-            vars.answer = null;
-            vars.feedback = null;
-            vars.result = null;
-            vars.styles = {};
-            ot.resetInputs();
-        }
-
-        async function restartTrial() {
-            switchState("starting");
-            await ot.delay(RETRY_DELAY);
-            resetResponse();
-            switchState("running");
-        }
-
-        function inputResponse(answer) {
-            vars.answer = String(answer);
+        function confirmChoice() {
             switchState("processing");
             ot.sendLive("response", {
                 trialid: vars.trial.id,
                 time: ot.getTimeMeasurement(),
-                answer: vars.answer,
+                value: vars.choice,
             });
         }
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (!feedback.final) restartTrial();
         }
 
         function liveResult(result) {
@@ -158,8 +158,8 @@
         async function completeTrial() {
             switchState("completing");
             // auto advancing:
-            await ot.delay(ITER_DELAY);
-            iterateRound();
+            // await ot.delay(ITER_DELAY);
+            // iterateRound();
         }
     </script>
 {% endblock scripts %}

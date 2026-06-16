@@ -1,35 +1,43 @@
-{% extends "_extras/FullPage.html" %}
-{% block content %}
+{% extends "_extras/GamePage.html" %}
+
+{% block header %}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
         <div class="alert alert-secondary m-2">Total score: <span ot-text="vars.progress.score"></span></div>
     </header>
+{% endblock %}
 
+{% block main %}
     <main ot-visible="vars.trial">
-        <section class="paper w-50">
-            <h5>Your party responses:</h5>
+        <section class="main">
+            <h4>Your party responses:</h4>
             {% for i in chat_seq %}
                 <div ot-html="vars.chat.{{ i }}"></div>
             {% endfor %}
+            <div>...</div>
         </section>
-        <div class="flex-fill"></div>
-        <section class="form">
-            <h5>Your response:</h5>
-            <div class="d-flex m-3 gap-3 justify-content-center">
-                <button ot-click-input type="button" name="response" value="MEOW" class="btn btn-primary" ot-enable="vars.responding">Meow</button>
-                <button ot-click-input type="button" name="response" value="WOOF" class="btn btn-primary" ot-enable="vars.responding">Woof</button>
-            </div>
-        </section>
-    </main>
 
+        <section class="info" ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></section>
+    </main>
+{% endblock %}
+
+{% block form %}
+    <hr class="ridge" />
+
+    <section class="form grid grid-2" ot-display="vars.responding">
+        <button ot-click-input type="button" name="response" value="MEOW" class="btn btn-primary" ot-enable="vars.responding">Meow</button>
+        <button ot-click-input type="button" name="response" value="WOOF" class="btn btn-primary" ot-enable="vars.responding">Woof</button>
+    </section>
+{% endblock %}
+
+{% block footer %}
     <footer>
-        <div ot-display="vars.result">Score gain: <i ot-text="vars.result.score"></i></div>
-        <div class="flex-fill"></div>
-        <div ot-display="vars.prompting">Choose your response.</div>
+        <div ot-display="vars.prompting.choose">Choose your response.</div>
         <div ot-display="vars.pending">Waiting for your partners...</div>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+        <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
-{% endblock content %}
+{% endblock %}
+
 {% block scripts %}
     <script>
         "use strict";
@@ -45,7 +53,6 @@
             vars.waiting = false;
             vars.pending = false;
             vars.responding = false;
-            vars.prompting = false;
 
             switch (state) {
                 case "pending":
@@ -56,18 +63,22 @@
                 case "processing":
                     vars.waiting = true;
                     break;
-                case "completing":
-                    vars.waiting = true;
-                    break;
                 case "running":
                     vars.responding = !committed;
-                    vars.prompting = vars.responding;
                     vars.pending = !vars.responding;
                     vars.waiting = vars.pending;
+                    break;
+                case "completing":
+                    vars.waiting = true;
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
             }
+
+            vars.prompting = {
+                choose: vars.responding,
+            };
+
             ot.updatePage();
         }
 
@@ -110,26 +121,30 @@
             ot.resetInputs();
         }
 
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
+        function startTrial(trial) {
+            vars.trial = trial;
+            ot.beginTimeMeasurement();
             switchState("running");
         }
 
-        function startTrial(trial) {
-            vars.trial = trial;
+        function updateTrial(update) {
+            Object.assign(vars.trial, update);
             switchState("running");
         }
 
         function inputResponse(response) {
             vars.response = response;
             switchState("processing");
-            ot.sendLive("response", { trialid: vars.trial.id, utterance: response });
+            ot.sendLive("response", {
+                trialid: vars.trial.id,
+                time: ot.getTimeMeasurement(),
+                utterance: response,
+            });
         }
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            vars.response = feedback.response;
-            switchState("running");
+            if (!feedback.final) switchState("running");
         }
 
         function liveResult(result) {

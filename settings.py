@@ -59,6 +59,11 @@ SESSION_CONFIGS = [
     dict(name="party3async", app_sequence=["party3async"], num_demo_participants=3),
     dict(name="party3parallel", app_sequence=["party3parallel"], num_demo_participants=3),
     dict(name="party3serial", app_sequence=["party3serial"], num_demo_participants=3),
+    dict(
+        name="stub",
+        app_sequence=["stub"],
+        condition="C1",
+    ),
 ]
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs

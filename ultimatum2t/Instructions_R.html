@@ -1,12 +1,17 @@
-{% extends "_extras/ExtPage.html" %} {% block title %}Instructions [{{ player.role }}]{% endblock %} {% block content %}
-<section class="info">
-    <p>You've been assigned the role of Receiver.</p>
+{% extends "_extras/ExtPage.html" %}
 
-    <p>Your partner is endowed with {{ endowment }}.</p>
+{% block title %}Instructions [{{ player.role }}]{% endblock %}
 
-    <p>...</p>
-    <p>...</p>
-    <p>...</p>
-</section>
+{% block content %}
+    <section class="info">
+        <p>You've been assigned the role of Receiver.</p>
 
-{{ next_button }} {% endblock content %}
+        <p>Your partner is endowed with {{ endowment }}.</p>
+
+        <p>...</p>
+        <p>...</p>
+        <p>...</p>
+    </section>
+
+    {{ next_button }}
+{% endblock content %}

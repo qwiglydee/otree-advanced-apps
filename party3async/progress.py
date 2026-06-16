@@ -89,6 +89,7 @@ def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Tr
 def respond(current: Progress, utterance: str, **kwargs) -> Response:
     pagename, player, iteround, trial = current
     assert iteround is not None and trial is not None, "Invalid responding to missing trial"
+    assert Response.count(trial, player=player) == 0
 
     response = Response.create_next(trial, player, utterance=utterance, **kwargs)
 

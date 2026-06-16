@@ -1,13 +1,17 @@
-{% extends "_extras/ExtPage.html" %} {% block title %}Comprehension check [{{ condition }}/{{ player.role }}]{% endblock
-%} {% block content %}
-<section class="info">
-    <p>You've been assigned the role of Proposer.</p>
+{% extends "_extras/ExtPage.html" %}
 
-    <p>...</p>
-    <p>...</p>
-    <p>...</p>
-</section>
+{% block title %}Comprehension check [{{ condition }}/{{ player.role }}]{% endblock %}
 
-<section class="form">{{ formfields }}</section>
+{% block content %}
+    <section class="info">
+        <p>You've been assigned the role of Proposer.</p>
 
-{{ next_button }} {% endblock content %}
+        <p>...</p>
+        <p>...</p>
+        <p>...</p>
+    </section>
+
+    <section class="form">{% formfields %}</section>
+
+    {{ next_button }}
+{% endblock content %}

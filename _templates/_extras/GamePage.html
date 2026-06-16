@@ -1,0 +1,34 @@
+{# 
+#}
+{% extends "_extras/ExtPage.html" %}
+
+{% block global_styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ static '_extras/game-screen.css' }}" />
+{% endblock %}
+
+{% block global_scripts %}
+    {{ super() }}
+    <script src="{{ static '_extras/fullscreen.js' }}"></script>
+    {% if has_live_method %}
+        <script src="{{ static '_extras/otree-front-live.js' }}"></script>
+    {% endif %}
+{% endblock %}
+
+{% block body_main %}
+    {% if is_defined('js_vars') and js_vars %}<script>var js_vars = {{ js_vars }};</script>{% endif %}
+    <div class="fullscreen-body container">
+        <div class="fullscreen-upper">
+        {% block header %}{% endblock %}
+        </div>
+        <div class="fullscreen-central">
+            {% block main %}<main></main>{% endblock %}
+            <div class="flex-fill"></div>
+            <form class="otree-form" role="form" id="form" autocomplete="off" method="POST">{% block form %}{% endblock %}</form>
+        </div>
+        <script src="{% static 'otree/js/formInputs.js' %}"></script>
+        <div class="fullscreen-lower">
+        {% block footer %}{% endblock %}
+        </div>
+    </div>
+{% endblock %}

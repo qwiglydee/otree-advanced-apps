@@ -1,10 +1,13 @@
-{% extends "_extras/FullPage.html" %}
-{% block content %}
+{% extends "_extras/GamePage.html" %}
+
+{% block header %}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
         <h3>Practice Round</h3>
     </header>
+{% endblock %}
 
+{% block main %}
     <main ot-visible="vars.trial">
         <div class="cards cards-3">
             <button
@@ -14,8 +17,8 @@
                 value="1"
                 ot-text="vars.labels.1"
                 ot-enable="vars.responding"
-                class="crd fs-1"
                 ot-selected="vars.selected.1"
+                class="crd fs-1"
                 ot-class="vars.styles.1"
             ></button>
             <button
@@ -25,8 +28,8 @@
                 value="2"
                 ot-text="vars.labels.2"
                 ot-enable="vars.responding"
-                class="crd fs-1"
                 ot-selected="vars.selected.2"
+                class="crd fs-1"
                 ot-class="vars.styles.2"
             ></button>
             <button
@@ -36,26 +39,39 @@
                 value="3"
                 ot-text="vars.labels.3"
                 ot-enable="vars.responding"
-                class="crd fs-1"
                 ot-selected="vars.selected.3"
+                class="crd fs-1"
                 ot-class="vars.styles.3"
             ></button>
         </div>
-    </main>
 
+        <section class="info" ot-display="vars.feedbacking">
+            <div ot-display="vars.result">Scored: <b ot-text="vars.result.score"></b></div>
+        </section>
+    </main>
+{% endblock %}
+
+{% block form %}
+    <div ot-display="vars.completing">
+        <hr class="ridge" />
+        <button ot-enable="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary">Continue</button>
+    </div>
+{% endblock %}
+
+{% block footer %}
     <footer>
-        <div ot-display="vars.result">Scored: <i ot-text="vars.result.score"></i></div>
-        <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary m-2">Continue</button>
-        <div class="flex-fill"></div>
-        <div ot-display="vars.prompting">Make your choice...</div>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+        <div ot-display="vars.prompting.select">Make your choice...</div>
+        <div ot-display="vars.prompting.complete">Press <kbd>Continue</kbd> to proceed...</div>
+        <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
-{% endblock content %}
+{% endblock %}
+
 {% block scripts %}
     <script>
         "use strict";
 
         const BLINK_DELAY = 200;
+        const ITER_DELAY = 0; // 1000 * "{{C.ITER_DELAY}}"; // auto-iterating
 
         function switchState(state) {
             // console.debug("switching", state);
@@ -63,30 +79,36 @@
             vars.waiting = false;
             vars.responding = false;
             vars.completing = false;
-            vars.prompting = false;
 
             switch (state) {
                 case "starting":
                 case "processing":
                     vars.waiting = true;
                     break;
-                case "completing":
-                    vars.completing = true;
-                    break;
                 case "running":
                     vars.responding = true;
-                    vars.prompting = true;
+                    break;
+                case "completing":
+                    // vars.waiting = true; // auto
+                    vars.completing = true; // button
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
             }
+
+            vars.feedbacking = vars.feedback != null || vars.result != null;
+            vars.prompting = {
+                select: vars.responding,
+                complete: vars.completing,
+            };
+
             ot.updatePage();
         }
 
         ot.onLoad(initPage);
         ot.onLive("progress", liveProgress);
         ot.onLive("trial", startTrial);
-        ot.onInput("choice", inputResponse);
+        ot.onInput("choice", inputChoice);
         ot.onLive("feedback", liveFeedback);
         ot.onLive("result", liveResult);
         ot.onInput("continue", iterateRound);
@@ -124,10 +146,14 @@
             ot.beginTimeMeasurement();
         }
 
-        function inputResponse(choice) {
+        function inputChoice(choice) {
             vars.choice = Number(choice);
             switchState("processing");
-            ot.sendLive("response", { trialid: vars.trial.id, time: ot.getTimeMeasurement(), button: vars.choice });
+            ot.sendLive("response", {
+                trialid: vars.trial.id,
+                time: ot.getTimeMeasurement(),
+                button: vars.choice,
+            });
         }
 
         function liveFeedback(feedback) {
@@ -141,11 +167,16 @@
 
         async function completeTrial() {
             switchState("completing");
+            // auto advancing:
+            // await ot.delay(ITER_DELAY);
+            // iterateRound();
         }
 
         ot.onUpdate("vars.choice", function renderChoice(choice) {
-            vars.selected = { 1: false, 2: false, 3: false };
-            if (choice != null) vars.selected[choice] = true;
+            vars.selected = {};
+            if (choice != null) {
+                vars.selected[choice] = true;
+            }
             ot.updatePage();
         });
 

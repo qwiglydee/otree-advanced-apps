@@ -58,10 +58,10 @@ class Trial(BaseTrialModel):
 
     def init(self):
         # TODO: initialize trial
-        self.task = "".join(random.sample("abcdef", 3))
+        self.task = "".join(random.choices("aeiou bcdghhxz", k=16))
 
     def update(self):
-        # TODO: check if the trial is fulfiled and calculate result
+        # TODO: calculate intermediate outcomes
         response = Response.last(self)
         if response:
             self.outcome = response.outcome
@@ -78,7 +78,6 @@ class Trial(BaseTrialModel):
 class Response(BaseResponseModel):
     trial: Trial = models.Link(Trial)
     player: Player = models.Link(Player)
-
     response_time = models.IntegerField()
 
     # TODO: define some fields
@@ -92,9 +91,9 @@ class Response(BaseResponseModel):
 
 
 def set_payoff(player: Player, iteround: Round):
-    if iteround.pagename == "Main":
-        player.total_score = iteround.total_score
-        player.payoff = player.total_score.to_real_world_currency(player.session)  # type: ignore
+    # use `if` to skip paractice round
+    player.total_score += iteround.total_score
+    player.payoff = player.total_score.to_real_world_currency(player.session)  # type: ignore
 
 
 def custom_export(_):

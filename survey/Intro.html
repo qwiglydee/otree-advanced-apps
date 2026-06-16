@@ -1,36 +1,42 @@
-{% extends "_extras/ExtPage.html" %} {% block title %}Introduction{% endblock %} {% block content %}
-<section class="info">
-    <p>...</p>
+{% extends "_extras/ExtPage.html" %}
 
-    <p>...</p>
+{% block title %}Introduction{% endblock %}
 
-    <p>...</p>
-</section>
+{% block content %}
+    <section>
+        <p>...</p>
 
-<section class="warn">
-    <p>Some warning.</p>
-</section>
+        <p>...</p>
 
-<section class="form">
-    <p>Please fill information below</p>
+        <p>...</p>
+    </section>
 
-    {{ formfield 'age' }} {{ formfield 'gender' }}
-</section>
+    <section class="warning">
+        <p>Some warning...</p>
+    </section>
 
-<section class="info">
-    <h3>Consent</h3>
+    <section class="form">
+        <p>Please fill information below</p>
 
-    {{ formfield 'agreement' }}
-</section>
+        {{ formfield 'age' }} {{ formfield 'gender' }}
+    </section>
 
-{{ next_button }}
+    <section class="info">
+        <h3>Consent</h3>
 
-<input type="hidden" name="hidden_localtime" />
-{% endblock content %} {% block scripts %}
-<script>
-    ot.onSubmit(function () {
-        // auto fill the field when the page is submitted
-        forminputs.hidden_localtime.value = new Date().toString();
-    });
-</script>
+        {{ formfield 'agreement' }}
+    </section>
+
+    {{ next_button }}
+
+    <input type="hidden" name="hidden_localtime" />
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+        ot.onSubmit(function () {
+            // auto fill the field when the page is submitted
+            forminputs.hidden_localtime.value = new Date().toString();
+        });
+    </script>
 {% endblock scripts %}

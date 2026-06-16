@@ -1,13 +1,17 @@
-{% extends "_extras/ExtPage.html" %} {% block title %}Instructions [{{ condition }}/{{ player.role }}]{% endblock %} {%
-block content %}
-<section class="info">
-    <p>You've been assigned the role of Proposer.</p>
+{% extends "_extras/ExtPage.html" %}
 
-    <p>You are endowed with {{ endowment }} .</p>
+{% block title %}Instructions [{{ condition }}/{{ player.role }}]{% endblock %}
 
-    <p>...</p>
-    <p>...</p>
-    <p>...</p>
-</section>
+{% block content %}
+    <section class="info">
+        <p>You've been assigned the role of Proposer.</p>
 
-{{ next_button }} {% endblock content %}
+        <p>You are endowed with {{ endowment }} .</p>
+
+        <p>...</p>
+        <p>...</p>
+        <p>...</p>
+    </section>
+
+    {{ next_button }}
+{% endblock content %}

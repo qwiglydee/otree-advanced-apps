@@ -12,15 +12,15 @@
 :root {
     --card-size: 200px;
     --card-pull: 75px;
-    --card-transition-open: 200ms ease-in;
-    --card-transition-close: 200ms ease-out;
-    --card-transition-select: 200ms ease-in-out;
+    --card-transition-turning: 200ms;
+    --card-transition-selecting: 200ms;
 }
 
 .cards {
     display: grid;
     gap: 0 2rem;
     padding-bottom: var(--card-pull);
+    margin: 1rem 0;
 }
 
 .cards-2 {
@@ -86,20 +86,27 @@
 
 /**** transitions ****/
 
+.cards .crd {
+    transition:
+        top var(--card-transition-selecting) ease-in-out,
+        width var(--card-transition-selecting) ease-in-out,
+        height var(--card-transition-selecting) ease-in-out;
+}
+
 .cards .crd.opened {
     transition:
-        top var(--card-transition-select),
-        width var(--card-transition-select),
-        height var(--card-transition-select),
-        box-shadow var(--card-transition-open),
-        background-color var(--card-transition-open);
+        top var(--card-transition-selecting) ease-in-out,
+        width var(--card-transition-selecting) ease-in-out,
+        height var(--card-transition-selecting) ease-in-out,
+        box-shadow var(--card-transition-turning) ease-in,
+        background-color var(--card-transition-turning) ease-in;
 }
 
 .cards .crd.closed {
     transition:
-        top var(--card-transition-select),
-        width var(--card-transition-select),
-        height var(--card-transition-select),
-        box-shadow var(--card-transition-close),
-        background-color var(--card-transition-close);
+        top var(--card-transition-selecting) ease-in-out,
+        width var(--card-transition-selecting) ease-in-out,
+        height var(--card-transition-selecting) ease-in-out,
+        box-shadow var(--card-transition-turning) ease-out,
+        background-color var(--card-transition-turning) ease-out;
 }
