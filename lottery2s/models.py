@@ -123,11 +123,11 @@ class Response(BaseResponseModel):
         b = c + Points(y)
 
         disclosure = self.trial.disclosure
-        if disclosure == "FULL" or (disclosure == "FINAL" and self.stage == "FINAL"):
+        if disclosure == "FULL":
             self.outcome_a = a
             self.outcome_b = b
             self.outcome_c = c
-        if disclosure == "CHOICE" or (disclosure == "FINAL" and self.stage == "SAMPLING"):
+        if disclosure == "CHOICE":
             self.outcome_a = a if self.choice == "A" else None
             self.outcome_b = b if self.choice == "B" else None
             self.outcome_c = c if self.choice == "C" else None

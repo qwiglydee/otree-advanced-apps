@@ -17,7 +17,7 @@ class C(BaseConstants):
     }
 
     CONDITIONS = ["C0", "C1", "C2"]
-    DISCLOSURES = ["FULL", "CHOICE", "FINAL"]
+    DISCLOSURES = ["FULL", "CHOICE"]
 
     CHOICES = ["A", "B", "C"]
     LABELS = {1: "foo", 2: "bar", 3: "baz"}  # by screen position
