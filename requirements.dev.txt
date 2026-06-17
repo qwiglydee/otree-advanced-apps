@@ -1,3 +1,0 @@
-# oTree-may-not-overwrite-this-file
-otree~=6.0
-# Pillow~=9.0
