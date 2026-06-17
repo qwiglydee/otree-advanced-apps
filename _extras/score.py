@@ -1,11 +1,13 @@
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
-from otree.decimal import DecimalUnit
+from otree.api import DecimalUnit
 from otree.currency import RealWorldCurrency
+from otree.i18n import convert_decimal_separator
 
 
-class ScoreUnit(DecimalUnit):
+class ScoreUnit(DecimalUnit, Decimal):
     """Unit class with extended formatting (with/without units, with/without sign)
+    given that cls.output() returns `{formatted} units`:
 
     - f"{value}" => "xx.xx units"
     - f"{value:+}" => "+xx.xx units"
@@ -15,26 +17,34 @@ class ScoreUnit(DecimalUnit):
 
     output_max_places: int
 
-    def __format__(self, spec):
-        if spec == "":
-            return self._format_for_display()
-        if spec == "+":
-            sgn = "+" if not self.is_signed() and not self.is_zero() > 0 else ""
-            return sgn + self._format_for_display()
-        if spec in ("n", "+n"):
-            if self == 0:
-                return float.__format__(0.0, f".{self.output_max_places}f")
-            _sign, digits, exp = self.as_tuple()
-            assert exp not in ("n", "N", "F")
-            prc = max(0, len(digits) + exp) + self.output_max_places
-            return Decimal.__format__(self, f"{spec[:-1]}.{prc}n")
-        return Decimal.__format__(self, spec)
+    @staticmethod
+    def output(formatted: str, raw: Decimal):
+        return formatted
+
+    def __requantize(self, postdigits: int):
+        assert postdigits >= 0
+        qstr = "1." + ("0" * postdigits) if postdigits > 0 else "1"
+        return self.quantize(Decimal(qstr), rounding=ROUND_HALF_UP)
+
+    def __format__(self, fmt: str):
+        q = self.__requantize(self.output_max_places)
+        sgn = "+" if fmt.startswith("+") and self > 0 else ""
+        formatted = sgn + convert_decimal_separator(str(q))
+        if fmt == "" or fmt == "+":
+            return self.output(formatted, self)
+        elif fmt == "n" or fmt == "+n":
+            return formatted
+        else:
+            return super().__format__(fmt)
+
+    def _format_for_display(self):
+        return self.__format__("")
 
 
 def score_to_currency(score: Decimal, session):
     """Converting points to real world currency
-    using sesion parameter `real_world_currency_per_point`
-    using configured CURRENCY_UNIT
+    using session parameter `real_world_currency_per_point`
+    casting to configured CURRENCY_UNIT
     """
     rate = Decimal(session.config["real_world_currency_per_point"])
     return RealWorldCurrency(score * rate)

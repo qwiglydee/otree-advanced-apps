@@ -3,7 +3,7 @@ from otree.api import DecimalUnit
 from _extras.score import ScoreUnit
 
 
-class Points(ScoreUnit, DecimalUnit):
+class Points(ScoreUnit):
     storage_places = 4
     output_max_places = 2
     output_min_places = 2
@@ -14,7 +14,7 @@ class Points(ScoreUnit, DecimalUnit):
         return f"{formatted} points"
 
 
-class Coins(ScoreUnit, DecimalUnit):
+class Coins(ScoreUnit):
     storage_places = 0
     output_max_places = 0
     output_min_places = 0
@@ -31,7 +31,7 @@ class Coins(ScoreUnit, DecimalUnit):
 
 
 class EUR(DecimalUnit):
-    storage_places = 3
+    storage_places = 2
     output_max_places = 2
     output_min_places = 2
     input_places = 2
