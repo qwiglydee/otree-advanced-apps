@@ -61,7 +61,7 @@ def advance_round(current: Progress, iteround: Round | None) -> Round:
 
     if iteround.is_running and not track_round_progress(iteround):
         iteround.complete()
-        set_payoff(current.player, iteround)
+        set_payoff(iteround)
 
     return iteround
 

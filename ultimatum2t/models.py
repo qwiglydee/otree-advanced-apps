@@ -108,7 +108,8 @@ def setup_group(group: Group):
     group.condition = config_condition(group.session)
 
 
-def set_payoff(group: Group, iteround: Round):
+def set_payoff(iteround: Round):
+    group = iteround.group
     for player in group.get_players():
         player.total_score = iteround.get_score(player.role)
         if player.participant.status != "dropout":

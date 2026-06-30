@@ -10,9 +10,6 @@ from .progress import Progress
 
 
 class TrialsPage(LivePage):
-    page_styles = ["_extras/ot-progress.css", "_extras/ot-pulse.css", "_extras/cards.css"]
-    page_scripts = ["_extras/ot-progress.js", "_extras/ot-pulse.js"]
-
     @classmethod
     def live_iterate(page, player: Player) -> LiveResponding:
         current = progress.current(page, player)
@@ -89,11 +86,13 @@ class TrialsPage(LivePage):
 
 
 class Practice(TrialsPage):
-    pass
+    page_styles = ["_extras/ot-progress.css", "_extras/ot-pulse.css", "_extras/cards.css"]
+    page_scripts = ["_extras/ot-progress.js", "_extras/ot-pulse.js"]
 
 
 class Main(TrialsPage):
-    pass
+    page_styles = ["_extras/ot-progress.css", "_extras/ot-pulse.css", "_extras/cards.css"]
+    page_scripts = ["_extras/ot-progress.js", "_extras/ot-pulse.js"]
 
 
 class Intro(Page):

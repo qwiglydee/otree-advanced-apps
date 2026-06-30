@@ -90,7 +90,6 @@
             switch (state) {
                 case "pending":
                     vars.pending = true;
-                    vars.waiting = true;
                     break;
                 case "starting":
                 case "processing":
@@ -98,7 +97,6 @@
                     break;
                 case "running/PROPOSING":
                     vars.pending = true;
-                    vars.waiting = true;
                     break;
                 case "running/DECIDING":
                     vars.responding = true;
@@ -111,6 +109,7 @@
                     throw Error(`Bogus state switch: ${state}`);
             }
 
+            vars.waiting |= vars.pending;
             vars.prompting = {
                 decide: vars.responding,
             };

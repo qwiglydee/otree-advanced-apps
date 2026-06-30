@@ -17,7 +17,9 @@
             <div>...</div>
         </section>
 
-        <section class="info" ot-display="vars.result">Score: <b ot-text="vars.result.score"></b></section>
+        <section class="info" ot-display="vars.result">
+            <p>Score: <b ot-text="vars.result.score"></b></p>
+        </section>
     </main>
 {% endblock main %}
 
@@ -57,7 +59,6 @@
             switch (state) {
                 case "pending":
                     vars.pending = true;
-                    vars.waiting = true;
                     break;
                 case "starting":
                 case "processing":
@@ -66,7 +67,6 @@
                 case "running":
                     vars.responding = !responded;
                     vars.pending = responded;
-                    vars.waiting = vars.pending;
                     break;
                 case "completing":
                     vars.waiting = true;
@@ -75,6 +75,7 @@
                     throw Error(`Bogus state switch: ${state}`);
             }
 
+            vars.waiting |= vars.pending;
             vars.prompting = {
                 choose: vars.responding,
             };

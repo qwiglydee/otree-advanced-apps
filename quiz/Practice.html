@@ -15,21 +15,21 @@
             <b ot-text="vars.trial.question"></b>
         </section>
 
-        <section class="info" ot-display="vars.feedbacking">
-            <div ot-display="vars.feedback">
-                Your answer: <i ot-text="vars.feedback.answer" ot-class="vars.styles.txt"></i>
-                <span ot-display="vars.feedback.correct">is correct</span>
-                <span ot-display="vars.feedback.incorrect">is incorrect</span>
-                .
-            </div>
-            <div ot-display="vars.result.truth">Correct answer: <b ot-text="vars.result.truth"></b></div>
-            <div ot-display="vars.result">Scored: <b ot-text="vars.result.score"></b></div>
+        <section class="info" ot-display="vars.result">
+            <p ot-display="vars.result.truth">Correct answer: <b ot-text="vars.result.truth"></b></p>
+            <p>Scored: <b ot-text="vars.result.score"></b></p>
         </section>
     </main>
 {% endblock main %}
 
 {% block form %}
     <hr class="ridge" />
+
+    <div class="alert alert-info" ot-display="vars.feedback">
+        Your answer: <b ot-text="vars.feedback.answer"></b>
+        <span ot-display="vars.feedback.correct">is correct.</span>
+        <span ot-display="vars.feedback.incorrect">is incorrect.</span>
+    </div>
 
     <section class="form" ot-display="vars.responding">
         <div class="form-check">
@@ -94,7 +94,6 @@
                     throw Error(`Bogus state switch: ${state}`);
             }
 
-            vars.feedbacking = vars.feedback != null || vars.result != null;
             vars.prompting = {
                 select: vars.responding,
                 complete: vars.completing,
@@ -178,6 +177,7 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
+            vars.feedback.incorrect = !vars.feedback.correct;
             if (!feedback.final) restartTrial();
         }
 
@@ -192,14 +192,5 @@
             // await ot.delay(ITER_DELAY);
             // iterateRound();
         }
-
-        ot.onUpdate("vars.feedback.correct", function renderValidity(correct) {
-            vars.styles = {};
-            if (correct != null) {
-                vars.styles.txt = correct ? "text-success" : "text-danger";
-                vars.feedback.incorrect = !correct;
-            }
-            ot.updatePage();
-        });
     </script>
 {% endblock scripts %}

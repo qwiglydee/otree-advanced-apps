@@ -15,10 +15,6 @@ class Progress(NamedTuple):
     trial: Trial | None
 
     @property
-    def group(self) -> Group:
-        return self.player.group  # type: ignore
-
-    @property
     def is_running(self) -> bool:
         return self.trial is not None and self.trial.is_running
 
@@ -65,7 +61,7 @@ def advance(current: Progress) -> Progress:
 
 def advance_round(current: Progress, iteround: Round | None) -> Round:
     if iteround is None:
-        iteround = Round.pick(current.pagename, group=current.group)
+        iteround = Round.pick(current.pagename, group=current.player.group)
 
     if iteround.is_pristine and all_players_around(current.player, iteround):
         iteround.start()
@@ -74,7 +70,7 @@ def advance_round(current: Progress, iteround: Round | None) -> Round:
 
     if iteround.is_running and not track_round_progress(iteround):
         iteround.complete()
-        set_payoff(current.group, iteround)
+        set_payoff(iteround)
 
     return iteround
 
@@ -128,4 +124,4 @@ def timeout(current: Progress):
 
     trial.close("TIMEOUT")
     iteround.close("TIMEOUT")
-    set_payoff(iteround.group, iteround)
+    set_payoff(iteround)

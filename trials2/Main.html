@@ -11,8 +11,8 @@
     <main ot-visible="vars.trial">
         <section class="main fs-4 text-center"><b ot-text="vars.trial.task"></b> =</section>
 
-        <section class="info" ot-display="vars.feedbacking">
-            <div ot-display="vars.result">Scored: <b ot-text="vars.result.score"></b></div>
+        <section class="info" ot-display="vars.result">
+            <p>Scored: <b ot-text="vars.result.score"></b></p>
         </section>
     </main>
 {% endblock main %}
@@ -82,7 +82,6 @@
                     throw Error(`Bogus state switch: ${state}`);
             }
 
-            vars.feedbacking = vars.feedback != null || vars.result != null;
             vars.prompting = {
                 select: vars.responding,
                 complete: vars.completing,

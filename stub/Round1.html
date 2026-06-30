@@ -1,6 +1,7 @@
 {% extends "_extras/GamePage.html" %}
 
 {% block header %}
+    {# block for overall game status #}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
         <div class="alert alert-secondary m-2">Total score: <span ot-text="vars.progress.score"></span></div>
@@ -8,16 +9,17 @@
 {% endblock header %}
 
 {% block main %}
+    {# block for current trial #}
     <main ot-visible="vars.trial">
-        <section class="main fs-4 text-center">
-            <h4>The task:</h4>
-            <p ot-text="vars.trial.task"></p>
+        <section class="main fs-4">
+            {# task description, or current state of a trial #}
+            <p ot-text="vars.trial.something"></p>
         </section>
 
-        <section class="info" ot-display="vars.feedbacking">
-            <div ot-display="vars.feedback">Your answer: <b ot-text="vars.feedback.value"></b></div>
-            <div ot-display="vars.result">Result: <b ot-text="vars.result.outcome"></b></div>
-            <div ot-display="vars.result">Scored: <b ot-text="vars.result.score"></b></div>
+        <section class="info" ot-display="vars.result">
+            {# final outcome of a trial #}
+            <div>Result: <b ot-text="vars.result.outcome"></b></div>
+            <div>Scored: <b ot-text="vars.result.score"></b></div>
         </section>
     </main>
 {% endblock main %}
@@ -25,7 +27,13 @@
 {% block form %}
     <hr class="ridge" />
 
+    <div class="alert alert-info" ot-display="vars.feedback">
+        {# feedback for particular answer, or at least the answer/decision given #}
+        <div>You answered: <span ot-text="vars.feedback.value"></span></div>
+    </div>
+
     <section class="form" ot-display="vars.responding">
+        {# inputs and stuff #}
         <h4>Something:</h4>
 
         <div class="form-check">
@@ -45,12 +53,13 @@
 {% endblock form %}
 
 {% block footer %}
+    {# various hints #}
     <footer>
         <div ot-display="vars.prompting.select">Select and <kbd>Confirm</kbd> your answer...</div>
         <div ot-display="vars.prompting.complete">Press <kbd>Continue</kbd> to proceed...</div>
         <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
-{% endblock foo %}
+{% endblock footer %}
 
 {% block scripts %}
     <script>
@@ -69,6 +78,8 @@
 
             switch (state) {
                 case "starting":
+                    vars.waiting = true;
+                    break;
                 case "processing":
                     vars.waiting = true;
                     break;
@@ -77,14 +88,13 @@
                     vars.confirming = vars.choice != null;
                     break;
                 case "completing":
-                    // vars.waiting = true; // auto
+                    // vars.waiting = true; // auto advancing
                     vars.completing = true; // button
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
             }
 
-            vars.feedbacking = vars.feedback != null || vars.result != null;
             vars.prompting = {
                 select: vars.responding,
                 complete: vars.completing,
@@ -128,7 +138,7 @@
 
         function startTrial(trial) {
             vars.trial = trial;
-            ot.beginTimeMeasurement(); // NB: restarts on page reload
+            ot.beginTimeMeasurement();
             switchState("running");
         }
 
@@ -148,6 +158,7 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
+            if (feedback.continue) switchState("running");
         }
 
         function liveResult(result) {

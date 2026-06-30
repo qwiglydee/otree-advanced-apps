@@ -130,7 +130,8 @@ class Response(BaseResponseModel):
         self.result = self.get_outcome(self.choice)
 
 
-def set_payoff(player: Player, iteround: Round):
+def set_payoff(iteround: Round):
+    player = iteround.player
     if iteround.pagename == "Main":
         player.total_score = iteround.total_score
         player.payoff = score_to_currency(player.total_score, player.session)  # type: ignore currency incompatibility

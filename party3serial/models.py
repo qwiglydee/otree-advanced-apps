@@ -70,7 +70,8 @@ class Response(BaseResponseModel):
     utterance = models.StringField()
 
 
-def set_payoff(group: Group, iteround: Round):
+def set_payoff(iteround: Round):
+    group = iteround.group
     for player in group.get_players():
         player.total_score = iteround.total_score
         player.payoff = score_to_currency(player.total_score, player.session)  # type: ignore currency incompatibility

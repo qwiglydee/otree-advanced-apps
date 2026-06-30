@@ -28,6 +28,7 @@ class Main(LivePage):
 
     @classmethod
     def live_iterate(page, player: Player) -> LiveResponding:
+        group = player.group
         current = progress.current(page, player)
 
         if current.trial is not None:
@@ -39,7 +40,6 @@ class Main(LivePage):
             return
 
         advanced = progress.advance(current)
-        group = advanced.group
 
         if advanced.trial is None:
             # no more trials
@@ -53,8 +53,8 @@ class Main(LivePage):
 
     @classmethod
     def live_proposal(page, player: Player, trialid: int, proposal: str, time: int) -> LiveResponding:
+        group = player.group
         current = progress.current(page, player)
-        group = current.group
         assert current.iteround is not None and current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
 
@@ -65,8 +65,8 @@ class Main(LivePage):
 
     @classmethod
     def live_decision(page, player: Player, trialid: int, decision: str, time: int) -> LiveResponding:
+        group = player.group
         current = progress.current(page, player)
-        group = current.group
         assert current.iteround is not None and current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
 
