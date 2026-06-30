@@ -21,7 +21,7 @@ class TrialsPage(LivePage):
 
         advanced = Progress.advance(current)
 
-        if advanced.trial and advanced.trial.has_started:
+        if advanced.trial is not None:
             yield "progress", page.output_progress(advanced)
             yield "trial", page.output_trial(advanced.trial)
         else:

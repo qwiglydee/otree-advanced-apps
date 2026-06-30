@@ -94,7 +94,7 @@ class Progress(NamedTuple):
 
         player, iteround, trial = current
         assert trial is not None and trial.is_running, "Invalid responding"
-        assert current.stage == stage, "Invalid responding stage"
+        assert current.stage == stage, "Invalid responding stage/turn"
 
         response = Response.create_next(trial, player=player, stage=stage, **kwargs)
         response.evaluate()

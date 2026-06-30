@@ -11,7 +11,7 @@ class C(BaseConstants):
     NUM_ROUNDS = 1
     PLAYERS_PER_GROUP = None
 
-    ROLES = mainapp.C.ROLES
+    ROLES = list(mainapp.C.ROLES.values())
     CONDITIONS = mainapp.C.CONDITIONS
     ENDOWMENT = mainapp.C.ENDOWMENT
 

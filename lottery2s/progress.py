@@ -95,7 +95,7 @@ class Progress(NamedTuple):
         player, iteround, trial = current
         assert trial is not None and trial.is_running, "Invalid responding"
         if stage == "FINALIZING":
-            assert current.is_finalizable
+            assert current.is_finalizable, "Invalid responding phase"
 
         response = Response.create_next(trial, player=player, stage=stage, **kwargs)
         response.evaluate()

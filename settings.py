@@ -55,13 +55,13 @@ SESSION_CONFIGS = [
         condition="random",
         real_world_currency_per_point=Decimal("0.01"),
     ),
-    # dict(
-    #     name="ultimatum3",
-    #     app_sequence=["ultimatum3_screener", "ultimatum3"],
-    #     condition="random",
-    #     real_world_currency_per_point=Decimal("0.01"),
-    #     num_demo_participants=6,
-    # ),
+    dict(
+        name="ultimatum3",
+        app_sequence=["ultimatum3_screener", "ultimatum3"],
+        condition="random",
+        real_world_currency_per_point=Decimal("0.01"),
+        num_demo_participants=4,
+    ),
     dict(
         name="party3async",
         app_sequence=["party3async"],

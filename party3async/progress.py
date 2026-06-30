@@ -97,7 +97,6 @@ class Progress(NamedTuple):
 
         player, iteround, trial = current
         assert trial is not None and trial.is_running, "Invalid responding"
-        assert Response.count(trial, player=player) == 0, "Invalid extra response"
 
         response = Response.create_next(trial, player=player, **kwargs)
         response.evaluate()

@@ -46,7 +46,13 @@ class Subsession(BaseSubsession):
 
 
 class Group(BaseGroup):
-    pass
+    @property
+    def condition(self):
+        return self.subsession.condition  # type: ignore
+
+    @property
+    def endowment(self):
+        return C.ENDOWMENT[self.condition]
 
 
 class Player(BasePlayer):

@@ -162,9 +162,7 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (feedback.continue) {
-                switchState("running");
-            }
+            if (feedback.continue) switchState("running");
         }
 
         function liveResult(result) {

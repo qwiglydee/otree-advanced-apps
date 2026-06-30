@@ -9,8 +9,7 @@ from _extras.screening import waiting_queues
 
 def creating_session(subsession: Subsession):
     session = subsession.session
-    for group in subsession.get_groups():
-        group.condition = config_condition(session)
+    subsession.condition = config_condition(session)
 
 
 def group_by_arrival_time_method(subsession: Subsession, waiting_players: list[BasePlayer]):

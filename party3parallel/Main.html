@@ -151,9 +151,7 @@
             if (vars.chat == 0 || vars.chat.length == 0) {
                 vars.chat = [formatChat({ id: MYID, response: feedback.response })];
             }
-            if (feedback.continue) {
-                switchState("running");
-            }
+            if (feedback.continue) switchState("running");
         }
 
         function liveResult(result) {

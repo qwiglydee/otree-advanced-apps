@@ -20,7 +20,7 @@ class TrialsPage(LivePage):
 
         advanced = Progress.advance(current)
 
-        if advanced.trial and advanced.trial.has_started:
+        if advanced.trial is not None:
             yield "progress", page.output_progress(advanced)
             yield "trial", page.output_trial(advanced.trial)
         else:
@@ -76,7 +76,7 @@ class TrialsPage(LivePage):
             "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
             "score": f"{iteround.total_score:n}",
-            "current": trial.iteration if trial and trial.is_running else None,
+            "current": trial.iteration if trial else None,
             "stage": progress.stage,
         }
 

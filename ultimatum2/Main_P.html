@@ -193,9 +193,7 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (feedback.continue) {
-                switchState("running");
-            }
+            if (feedback.continue) switchState("running");
         }
 
         ot.onUpdate("vars.proposal", function (proposed) {

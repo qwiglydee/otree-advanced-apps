@@ -20,7 +20,7 @@ class TrialsPage(LivePage):
 
         advanced = Progress.advance(current)
 
-        if advanced.trial and advanced.trial.has_started:
+        if advanced.trial is not None:
             yield "progress", page.output_progress(advanced)
             yield "trial", page.output_trial(advanced.trial)
         else:
@@ -73,7 +73,7 @@ class Practice(TrialsPage):
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
-            "continue": not trial.is_completed,
+            "continue": not trial.is_closed,
             "answer": response.answer,
             "correct": response.correct,
         }
@@ -93,7 +93,7 @@ class Main(TrialsPage):
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
-            "continue": not trial.is_completed,
+            "continue": not trial.is_closed,
             "answer": response.answer,
         }
 

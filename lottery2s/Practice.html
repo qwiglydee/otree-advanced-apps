@@ -218,9 +218,7 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (feedback.continue) {
-                restartTrial("SAMPLING");
-            }
+            if (feedback.continue) restartTrial("SAMPLING");
         }
 
         function finalizeTrial() {

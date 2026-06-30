@@ -215,9 +215,7 @@
             vars.feedback = feedback;
             vars.feedback.incorrect = !vars.feedback.correct;
             vars.feedback.foranswer = vars.feedback.answer != null; // it could be for decision
-            if (feedback.continue) {
-                switchState("running");
-            }
+            if (feedback.continue) switchState("running");
         }
 
         function liveResult(result) {

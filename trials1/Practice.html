@@ -154,9 +154,7 @@
         function liveFeedback(feedback) {
             vars.feedback = feedback;
             vars.feedback.incorrect = !vars.feedback.correct;
-            if (feedback.continue) {
-                restartTrial();
-            }
+            if (feedback.continue) restartTrial();
         }
 
         function liveResult(result) {
