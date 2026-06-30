@@ -1,6 +1,6 @@
 from otree.api import BaseGroup, BasePlayer, BaseSubsession, models
 
-from _extras.keyprop import dict_getter
+from _extras.keyprop import dict_getter, key_getter
 from _extras.itermodels import BaseResponseModel, BaseRoundModel, BaseTrialModel
 from _extras.score import score_to_currency
 
@@ -24,7 +24,7 @@ class Player(BasePlayer):
 
 class Round(BaseRoundModel):
     player: Player = models.Link(Player)
-    ispractice = models.BooleanField()
+
     total_score = models.DecimalField(unit=Points, initial=0)
 
     def init(self):
@@ -33,7 +33,7 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
-    progress_trials = models.IntegerField()
+    progress_trials = models.IntegerField(initial=0)
 
 
 class Trial(BaseTrialModel):
@@ -47,13 +47,10 @@ class Trial(BaseTrialModel):
     option_2 = models.StringField()
     option_3 = models.StringField()
     get_options = dict_getter("option_", (1, 2, 3))
+    get_option = key_getter("option_")
 
     success = models.BooleanField()
     score = models.DecimalField(unit=Points)
-
-    @property
-    def condition(self) -> str:
-        return self.iteround.player.condition
 
     def init(self, **kwargs):
         if not kwargs:
@@ -70,15 +67,17 @@ class Trial(BaseTrialModel):
         self.option_3 = params["option_3"]
 
     def update(self):
-        response = Response.last(self)
-        if response:
-            self.success = response.correct
+        responded = Response.last(self)
+        if responded:
+            self.success = responded.correct
 
     def complete(self):
         assert self.success is not None
         self.close("COMPLETED")
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
+
+    progress_responses = models.IntegerField(initial=0)
 
 
 def create_trials(iteround: Round, data: list[dict]):

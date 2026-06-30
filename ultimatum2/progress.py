@@ -1,113 +1,121 @@
-from typing import NamedTuple
+from typing import NamedTuple, Self, Type
 
-from _extras.tracking import all_players_around, all_players_atrial
-from units import Coins
+from otree.api import Page
 
 from .conf import C
-from .models import Group, Player, Response, Round, Trial, set_payoff
+from .models import Player, Group, Round, Trial, Response
+from .models import set_payoff
 
 
 class Progress(NamedTuple):
-    pagename: str
-    player: Player
-    iteround: Round | None
+    """Holds all variables of progress and implements all progress methods"""
+
+    player: Player  # it's a player-centric view of progress
+    iteround: Round
     trial: Trial | None
 
     @property
-    def is_running(self) -> bool:
-        return self.trial is not None and self.trial.is_running
+    def stage(self) -> str | None:
+        if not self.trial or not self.trial.is_running:
+            return None
+        return C.STAGES[self.trial.progress_responses]
 
     @property
-    def stage(self) -> str | None:
-        return self.trial.progress_stage if self.trial is not None else None
+    def turn(self) -> str | None:
+        """Get role of a player currently in turn"""
+        stage = self.stage
+        if stage is None:
+            return None
+        return C.ROLES[stage]
 
+    @classmethod
+    def current(cls, page: Type[Page], player: Player) -> Self:
+        """Get current round/trial for the page and player"""
+        iteround = Round.pick_curr(page.__name__, group=player.group)  # might be not started
+        assert iteround is not None, "Failed to pick next iteround"
+        trial = Trial.current(iteround)  # might be None
+        return cls(player, iteround, trial)
 
-def current(page, player: Player) -> Progress:
-    pagename = page.__name__
-    iteround = Round.current(pagename, group=player.group)
-    trial = Trial.current(iteround) if iteround else None
-    return Progress(pagename, player, iteround, trial)
+    @classmethod
+    def track_round_completion(cls, iteround: Round) -> bool:
+        """Check if the round should complete"""
+        iteround.progress_trials = Trial.count(iteround, status="CLOSED")
+        return iteround.progress_trials >= C.NUM_TRIALS
 
+    @classmethod
+    def track_trial_completion(cls, trial: Trial) -> bool:
+        """Check if the trial should complete"""
+        trial.progress_responses = Response.count(trial)
+        return trial.progress_responses >= len(C.STAGES)
 
-def track_round_progress(iteround: Round) -> bool:
-    iteround.progress_trials = Trial.count(iteround, status="CLOSED")
-    return iteround.progress_trials < C.NUM_TRIALS
+    @classmethod
+    def track_player_trial(cls, player: Player, trial: Trial):
+        player.progress_trial = trial.id
 
+    @classmethod
+    def track_group_atrial(cls, group: Group, trial: Trial) -> bool:
+        allgroup = [p for p in group.get_players() if p.participant.status != "dropout"]
+        return all(p.field_maybe_none("progress_trial") == trial.id for p in allgroup)
 
-def track_trial_progress(trial: Trial) -> bool:
-    proposed = Response.count(trial, stage="PROPOSING")
-    decided = Response.count(trial, stage="DECIDING")
-    if not proposed:
-        trial.progress_stage = "PROPOSING"
-    elif not decided:
-        trial.progress_stage = "DECIDING"
-    else:
-        trial.progress_stage = ""
-    return trial.progress_stage != ""
+    @classmethod
+    def advance(cls, current: Self) -> Self:
+        """Advance current progress"""
 
+        player, iteround, trial = current
 
-def advance(current: Progress) -> Progress:
-    pagename, player, iteround, trial = current
-    assert trial is None or trial.is_closed, "Invalid advancing over incomplete trial"
+        cls.advance_round(player, iteround)
+        trial = cls.iterate_trials(player, iteround, trial)
+        return cls(player, iteround, trial)
 
-    iteround = advance_round(current, iteround)
+    @classmethod
+    def advance_round(cls, player: Player, iteround: Round):
+        """start/stop current round"""
 
-    if not iteround.is_closed:
-        trial = advance_trial(current, iteround, trial)
+        if iteround.is_pristine:
+            iteround.start()
 
-    return Progress(pagename, player, iteround, trial)
+        iteround.update()
+        if iteround.is_running and cls.track_round_completion(iteround):
+            iteround.complete()
+            set_payoff(iteround)
 
+    @classmethod
+    def iterate_trials(cls, player: Player, iteround: Round, trial: Trial | None) -> Trial | None:
+        """create/start current/next trial"""
 
-def advance_round(current: Progress, iteround: Round | None) -> Round:
-    if iteround is None:
-        iteround = Round.pick(current.pagename, group=current.player.group)
+        if iteround.is_closed:
+            return None
 
-    if iteround.is_pristine and all_players_around(current.player, iteround):
-        iteround.start()
+        if trial is None:
+            trial = Trial.pick_next(iteround)
+        assert trial is not None, "Failed to pick next trial"
 
-    iteround.update()
+        cls.track_player_trial(player, trial)
+        if trial.is_pristine and cls.track_group_atrial(iteround.group, trial):
+            trial.start()
 
-    if iteround.is_running and not track_round_progress(iteround):
-        iteround.complete()
-        set_payoff(iteround)
+        return trial
 
-    return iteround
+    @classmethod
+    def advance_trial(cls, player: Player, iteround: Round, trial: Trial, response: Response):
+        """update/complete current trial"""
 
+        trial.update()
+        if cls.track_trial_completion(trial):
+            trial.complete()
+            cls.track_round_completion(iteround)
 
-def advance_trial(current: Progress, iteround: Round, trial: Trial | None) -> Trial:
-    if trial is None:
-        trial = Trial.pick_next(iteround)
+    @classmethod
+    def respond(cls, current: Self, stage: str, **kwargs) -> Response:
+        """Respond to current trial"""
 
-    if trial.is_pristine and all_players_atrial(current.player, trial):
-        trial.start()
+        player, iteround, trial = current
+        assert trial is not None and trial.is_running, "Invalid responding"
+        assert stage == current.stage and player.role == current.turn, "Invalid responding"
 
-    trial.update()
+        response = Response.create_next(trial, stage=stage, player=player, **kwargs)
+        # response.evaluate()
 
-    if trial.is_running and not track_trial_progress(trial):
-        trial.complete()
+        cls.advance_trial(player, iteround, trial, response)
 
-    track_round_progress(iteround)
-
-    return trial
-
-
-def respond_proposal(current: Progress, proposal: Coins, **kwargs) -> Response:
-    pagename, player, iteround, trial = current
-    assert iteround is not None and trial is not None, "Invalid responding to missing trial"
-    assert current.stage == "PROPOSING" and player.role == "P"
-
-    response = Response.create_next(trial, player, stage=trial.progress_stage, p_proposal=proposal, **kwargs)
-
-    advance_trial(current, iteround, trial)
-    return response
-
-
-def respond_decision(current: Progress, decision: str, **kwargs) -> Response:
-    pagename, player, iteround, trial = current
-    assert iteround is not None and trial is not None, "Invalid responding to missing trial"
-    assert current.stage == "DECIDING" and player.role == "R"
-
-    response = Response.create_next(trial, player, stage=trial.progress_stage, r_decision=decision, **kwargs)
-
-    advance_trial(current, iteround, trial)
-    return response
+        return response

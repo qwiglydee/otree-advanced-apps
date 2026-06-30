@@ -2,40 +2,38 @@ from otree.api import Page
 
 from _extras.livepage import LivePage, LivePayload, LiveResponding
 
-from . import progress
 from .conf import C
-from .models import Player, Response, Trial
+from .models import Player, Round, Response, Trial
 from .progress import Progress
 
 
 class TrialsPage(LivePage):
     @classmethod
     def live_iterate(page, player: Player) -> LiveResponding:
-        current = progress.current(page, player)
+        current = Progress.current(page, player)
 
+        # restore state on occasional page reload
         if current.trial is not None:
-            # page reloaded while running trial
             yield "progress", page.output_progress(current)
             yield "trial", page.output_trial(current.trial)
             return
 
-        advanced = progress.advance(current)
+        advanced = Progress.advance(current)
 
-        if advanced.trial is None:
-            # no more trials
-            yield "progress", page.output_progress(advanced)
-        else:
+        if advanced.trial and advanced.trial.has_started:
             yield "progress", page.output_progress(advanced)
             yield "trial", page.output_trial(advanced.trial)
+        else:
+            # just indicate status of gameover or something
+            yield "progress", page.output_progress(advanced)
 
     @classmethod
     def live_response(page, player: Player, trialid: int, time: int, button: int) -> LiveResponding:
-        current = progress.current(page, player)
-        assert current.iteround is not None and current.trial is not None
+        current = Progress.current(page, player)
+        assert current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
 
-        answer = current.trial.get_options()[button]
-        response = progress.respond(current, answer, response_time=time, button=button)
+        response = Progress.respond(current, answer=current.trial.get_option(button), response_time=time, button=button)
 
         yield "progress", page.output_progress(current)
         yield "feedback", page.output_feedback(current.trial, response)
@@ -44,10 +42,9 @@ class TrialsPage(LivePage):
 
     @classmethod
     def output_progress(page, current: Progress) -> LivePayload:
-        pagename, player, iteround, trial = current
-        assert iteround is not None
+        player, iteround, trial = current
         return {
-            "total": C.NUM_TRIALS[pagename],
+            "total": C.NUM_TRIALS[iteround.pagename],
             "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
             "score": f"{iteround.total_score:n}",
@@ -76,7 +73,7 @@ class Practice(TrialsPage):
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
-            "final": trial.is_completed,
+            "continue": not trial.is_completed,
             "answer": response.answer,
             "correct": response.correct,
         }
@@ -96,7 +93,8 @@ class Main(TrialsPage):
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
         return {
-            "final": trial.is_completed,
+            "continue": not trial.is_completed,
+            "answer": response.answer,
         }
 
     @classmethod

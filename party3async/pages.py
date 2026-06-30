@@ -2,7 +2,6 @@ from otree.api import Page
 
 from _extras.livepage import LivePage, LivePayload, LiveResponding
 
-from . import progress
 from .conf import C
 from .models import Group, Player, Response, Trial  # noqa
 from .progress import Progress
@@ -12,43 +11,38 @@ class Main(LivePage):
     page_styles = ["_extras/ot-progress.css", "_extras/ot-pulse.css", "_extras/grid.css"]
     page_scripts = ["_extras/ot-progress.js", "_extras/ot-pulse.js"]
 
-    @staticmethod
-    def vars_for_template(player: Player):
-        return {"chat_seq": list(range(C.CHAT_LEN))}
-
     @classmethod
     def live_iterate(page, player: Player) -> LiveResponding:
         group = player.group
-        current = progress.current(page, player)
+        current = Progress.current(page, player)
 
+        # restore state on occasional page reload
         if current.trial is not None:
-            # page reloaded while running trial
-            yield "progress", page.output_progress(current)
-            if current.trial.is_running:
-                # the trial is still pending
-                yield "trial", page.output_trial(current.trial)
+            yield player, "progress", page.output_progress(current)
+            if current.trial.has_started:
+                yield player, "trial", page.output_trial(current.trial)
+            responded = Response.last(current.trial, player=player)
+            if responded:
+                yield player, "feedback", page.output_feedback(current.trial, responded)
             return
 
-        advanced = progress.advance(current)
+        advanced = Progress.advance(current)
 
-        if advanced.trial is None:
-            # no more trials
-            yield group, "progress", page.output_progress(advanced)
-        elif not advanced.trial.is_running:
-            # pending state
-            yield player, "progress", page.output_progress(advanced)
-        else:
+        if advanced.trial and advanced.trial.has_started:
             yield group, "progress", page.output_progress(advanced)
             yield group, "trial", page.output_trial(advanced.trial)
+        else:
+            # just indicate status of gameover or something
+            yield player, "progress", page.output_progress(advanced)
 
     @classmethod
     def live_response(page, player: Player, trialid: int, time: int, utterance: str) -> LiveResponding:
         group = player.group
-        current = progress.current(page, player)
-        assert current.iteround is not None and current.trial is not None
+        current = Progress.current(page, player)
+        assert current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
 
-        response = progress.respond(current, utterance, response_time=time)
+        response = Progress.respond(current, utterance=utterance, response_time=time)
 
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
@@ -57,16 +51,14 @@ class Main(LivePage):
             yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    def output_progress(page, current: Progress) -> LivePayload:
-        pagename, player, iteround, trial = current
-        assert iteround
+    def output_progress(page, progress: Progress) -> LivePayload:
+        player, iteround, trial = progress
         return {
-            "terminated": iteround.is_closed,
             "total": C.NUM_TRIALS,
+            "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
-            "current": trial.iteration if trial and trial.is_running else None,
-            "pending": not current.is_running,
             "score": f"{iteround.total_score:n}",
+            "current": trial.iteration if trial and trial.has_started else None,
         }
 
     @classmethod
@@ -78,12 +70,12 @@ class Main(LivePage):
 
     @classmethod
     def output_chat(page, responses: list[Response]):
-        return [{"id": r.player.id, "response": r.utterance} for r in responses]
+        return [{"id": r.player.id_in_group, "response": r.utterance} for r in responses]
 
     @classmethod
     def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
-        assert response
         return {
+            "continue": not trial.is_closed,
             "response": response.utterance,
         }
 

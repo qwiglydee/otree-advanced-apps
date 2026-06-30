@@ -29,6 +29,7 @@ class Player(BasePlayer):
 
 class Round(BaseRoundModel):
     player: Player = models.Link(Player)
+
     total_score = models.DecimalField(unit=Points, initial=0)
 
     def init(self):
@@ -37,7 +38,7 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
-    progress_trials = models.IntegerField()
+    progress_trials = models.IntegerField(initial=0)
 
 
 class Trial(BaseTrialModel):
@@ -47,6 +48,7 @@ class Trial(BaseTrialModel):
     label_b = models.StringField()
     label_c = models.StringField()
     get_labels = dict_getter("label_", ("A", "B", "C"))
+    get_label = key_getter("label_")
 
     param_x = models.FloatField()
     param_y = models.FloatField()
@@ -56,19 +58,11 @@ class Trial(BaseTrialModel):
     score = models.DecimalField(unit=Points)
 
     @property
-    def condition(self) -> str:
-        return self.iteround.player.condition
-
-    @property
-    def disclosure(self) -> str:
-        return self.iteround.player.disclosure
-
-    @property
     def layout(self) -> dict[int, str]:
         return layoutdict(self.iteround.player.layout)
 
     def init(self):
-        config = C.PARAMS[self.condition]
+        config = C.PARAMS[self.iteround.player.condition]
         self.param_x = config["x"].sample()
         self.param_y = config["y"].sample()
         self.param_z = config["z"]
@@ -80,16 +74,18 @@ class Trial(BaseTrialModel):
         self.label_c = labels["C"]
 
     def update(self):
-        response = Response.last(self, stage="FINAL")
-        if response:
-            self.score = response.result
+        responded = Response.last(self, stage="FINALIZING")
+        if responded:
+            assert responded.result is not None
+            self.score = responded.result
 
     def complete(self):
         assert self.score is not None
         self.close("COMPLETED")
         self.iteround.total_score += self.score
 
-    progress_samples = models.IntegerField()
+    progress_responses = models.IntegerField(initial=0)
+    progress_samples = models.IntegerField(initial=0)
 
 
 class Response(BaseResponseModel):
@@ -120,7 +116,7 @@ class Response(BaseResponseModel):
         a = c + x
         b = c + y
 
-        disclosure = self.trial.disclosure
+        disclosure = self.player.disclosure
         if disclosure == "FULL":
             self.outcome_a = Points(a)
             self.outcome_b = Points(b)

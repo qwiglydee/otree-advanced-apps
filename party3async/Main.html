@@ -1,6 +1,7 @@
 {% extends "_extras/GamePage.html" %}
 
 {% block header %}
+    {# block for overall game status #}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
         <div class="alert alert-secondary m-2">Total score: <span ot-text="vars.progress.score"></span></div>
@@ -8,17 +9,17 @@
 {% endblock header %}
 
 {% block main %}
+    {# block for current trial #}
     <main ot-visible="vars.trial">
         <section class="main">
             <h4>Your party responses:</h4>
-            {% for i in chat_seq %}
-                <div ot-html="vars.chat.{{ i }}"></div>
-            {% endfor %}
-            <div ot-display="vars.progress.current">...</div>
+            <div ot-html="vars.chat.0"></div>
+            <div ot-html="vars.chat.1"></div>
+            <div ot-html="vars.chat.2"></div>
         </section>
 
         <section class="info" ot-display="vars.result">
-            <p>Score: <b ot-text="vars.result.score"></b></p>
+            <p>Scored: <b ot-text="vars.result.score"></b></p>
         </section>
     </main>
 {% endblock main %}
@@ -30,11 +31,15 @@
         <button ot-click-input type="button" name="response" value="MEOW" class="btn btn-primary" ot-enable="vars.responding">Meow</button>
         <button ot-click-input type="button" name="response" value="WOOF" class="btn btn-primary" ot-enable="vars.responding">Woof</button>
     </section>
+
+    <button ot-display="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary">Continue</button>
 {% endblock form %}
 
 {% block footer %}
+    {# various hints #}
     <footer>
         <div ot-display="vars.prompting.choose">Choose your response.</div>
+        <div ot-display="vars.prompting.complete">Press <kbd>Continue</kbd> to proceed...</div>
         <div ot-display="vars.pending">Waiting for your partners...</div>
         <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
@@ -44,32 +49,36 @@
     <script>
         "use strict";
 
-        const MYID = "{{player.id}}";
+        const MYID = Number("{{player.id_in_group}}");
         const BLINK_DELAY = 200;
-        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
+        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}"; // auto-advancing
 
         function switchState(state) {
-            let responded = vars.feedback != null;
-            // console.debug(`switching: ${state}/${responded}`);
+            // console.debug("switching", state);
 
             vars.waiting = false;
             vars.pending = false;
             vars.responding = false;
+            vars.completing = false;
 
             switch (state) {
                 case "pending":
                     vars.pending = true;
                     break;
                 case "starting":
+                    vars.waiting = true;
+                    break;
                 case "processing":
                     vars.waiting = true;
                     break;
                 case "running":
+                    let responded = vars.feedback !== null;
                     vars.responding = !responded;
-                    vars.pending = responded;
+                    vars.pending = !vars.responding;
                     break;
                 case "completing":
-                    vars.waiting = true;
+                    // vars.waiting = true; // auto advancing
+                    vars.completing = true; // button
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
@@ -78,20 +87,23 @@
             vars.waiting |= vars.pending;
             vars.prompting = {
                 choose: vars.responding,
+                complete: vars.completing,
             };
 
             ot.updatePage();
         }
 
         ot.onLoad(initPage);
-        ot.onLive("progress", liveProgress);
+        ot.onLive("progress", (upd) => Object.assign(vars.progress, upd));
+        ot.onLive("update", (upd) => Object.assign(vars.trial, upd));
         ot.onLive("trial", startTrial);
-        ot.onLive("update", updateTrial);
         ot.onInput("response", inputResponse);
         ot.onLive("feedback", liveFeedback);
         ot.onLive("result", liveResult);
+        ot.onInput("continue", iterateRound);
 
         function initPage() {
+            vars.progress = {};
             iterateRound();
         }
 
@@ -102,11 +114,13 @@
             ot.sendLive("iterate");
         }
 
-        function liveProgress(progress) {
-            vars.progress = progress;
-            if (progress.terminated) ot.completePage();
-            if (progress.pending) switchState("pending");
-        }
+        ot.onUpdate("vars.progress.terminated", function (terminated) {
+            if (terminated) ot.completePage();
+        });
+
+        ot.onUpdate("vars.progress.current", function (current) {
+            if (current == null) switchState("pending");
+        });
 
         function resetTrial() {
             vars.trial = null;
@@ -116,36 +130,27 @@
             ot.resetInputs();
         }
 
-        function resetResponse() {
-            vars.response = null;
-            vars.feedback = null;
-            ot.resetInputs();
-        }
-
         function startTrial(trial) {
             vars.trial = trial;
             ot.beginTimeMeasurement();
             switchState("running");
         }
 
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
-            switchState("running");
-        }
-
-        function inputResponse(response) {
-            vars.response = response;
+        function inputResponse(value) {
+            vars.response = String(value);
             switchState("processing");
             ot.sendLive("response", {
                 trialid: vars.trial.id,
                 time: ot.getTimeMeasurement(),
-                utterance: response,
+                utterance: vars.response,
             });
         }
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (!feedback.final) switchState("running");
+            if (feedback.continue) {
+                switchState("running");
+            }
         }
 
         function liveResult(result) {
@@ -155,8 +160,9 @@
 
         async function completeTrial() {
             switchState("completing");
-            await ot.delay(ITER_DELAY);
-            iterateRound();
+            // auto advancing:
+            // await ot.delay(ITER_DELAY);
+            // iterateRound();
         }
 
         ot.onUpdate("vars.trial.chat", function displayChat(chat) {

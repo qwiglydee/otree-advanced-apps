@@ -9,13 +9,13 @@ class C(BaseConstants):
     NUM_ROUNDS = 1  # should be =1
     PLAYERS_PER_GROUP = None
 
-    NUM_TRIALS = 3
-    # NUM_TRIALS = {
-    #     "Practice": 3,
-    #     "Main": 5,
-    # }
-
     CONDITIONS = ["C0", "C1", "C2"]
+
+    NUM_TRIALS = {
+        "Round1": 3,
+        "Round2": 5,
+    }
+
     DECISIONS = ["FOO", "BAR"]
     OUTCOMES = ["A", "B", "C"]
 
@@ -26,7 +26,7 @@ class C(BaseConstants):
         "C": Points(10),
     }
 
-    ITER_DELAY = 1
+    ITER_DELAY = 2
 
 
 def config_condition(session):

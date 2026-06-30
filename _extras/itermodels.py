@@ -41,6 +41,10 @@ class IterStatusMixin:
         return self.status == "NEW"
 
     @property
+    def has_started(self) -> bool:
+        return self.status != "NEW"
+
+    @property
     def is_running(self) -> bool:
         return self.status == "STARTED"
 
@@ -122,7 +126,7 @@ class BaseRoundModel(IterStatusMixin, ExtraModel):
         return instance
 
     @classmethod
-    def pick(cls, pagename: str, **kwargs) -> Self:
+    def pick_curr(cls, pagename: str, **kwargs) -> Self:
         """Create or get already created round for the given page and kwargs
         Works both for pre-generated rounds or created on the fly
         """
@@ -201,7 +205,7 @@ class BaseTrialModel(IterStatusMixin, ExtraModel):
         return instances
 
     @classmethod
-    def pick_next(cls, iteround: BaseRoundModel):
+    def pick_next(cls, iteround: BaseRoundModel) -> Self:
         """Get or create next new trial
         Works both for pre-generated trials or created on the fly
         """
@@ -224,11 +228,11 @@ class BaseTrialModel(IterStatusMixin, ExtraModel):
         return cls.objects_filter().order_by("iteround_id", "iteration").all()
 
     @classmethod
-    def first(cls, iteround: BaseRoundModel, **kwargs) -> Self:
+    def first(cls, iteround: BaseRoundModel, **kwargs) -> Self | None:
         return cls.objects_filter(iteround=iteround, **kwargs).order_by("iteration").first()
 
     @classmethod
-    def last(cls, iteround: BaseRoundModel, **kwargs) -> Self:
+    def last(cls, iteround: BaseRoundModel, **kwargs) -> Self | None:
         return cls.objects_filter(iteround=iteround, **kwargs).order_by(desc("iteration")).first()
 
 
@@ -276,11 +280,11 @@ class BaseResponseModel(ExtraModel):
         return cls.objects_filter().order_by("trial_id", "iteration").all()
 
     @classmethod
-    def last(cls, trial: BaseTrialModel, **kwargs) -> Self:
+    def last(cls, trial: BaseTrialModel, **kwargs) -> Self | None:
         return cls.objects_filter(trial=trial, **kwargs).order_by(desc("iteration")).first()
 
     @classmethod
-    def allast(cls, trial: BaseTrialModel, **kwargs):
+    def allast(cls, trial: BaseTrialModel, **kwargs) -> list[Self]:
         """All responses with only last response from each player"""
         # this works for parallel, sequential, asyncronous single- and multi-responding
         all = cls.objects_filter(trial=trial, **kwargs).order_by("iteration").all()

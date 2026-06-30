@@ -1,12 +1,12 @@
 {% extends "_extras/ExtPage.html" %}
 
-{% block title %}Instructions [{{ condition }}/{{ player.role }}]{% endblock %}
+{% block title %}Instructions [{{ player.role }}]{% endblock %}
 
 {% block content %}
-    <section class="info">
+    <section>
         <p>You've been assigned the role of Receiver.</p>
 
-        <p>Your partner is endowed with {{ endowment }} .</p>
+        <p>Your partner is endowed with {{ group.endowment }}.</p>
 
         <p>...</p>
         <p>...</p>

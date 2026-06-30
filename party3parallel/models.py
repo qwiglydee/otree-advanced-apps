@@ -15,17 +15,18 @@ class Subsession(BaseSubsession):
 
 
 class Group(BaseGroup):
-    pass
+    condition = models.StringField()
 
 
 class Player(BasePlayer):
     total_score = models.DecimalField(unit=Points, initial=0)
-    progress_round = models.IntegerField()
+
     progress_trial = models.IntegerField()
 
 
 class Round(BaseRoundModel):
     group: Group = models.Link(Group)
+
     total_score = models.DecimalField(unit=Points, initial=0)
 
     def init(self):
@@ -34,7 +35,7 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
-    progress_trials = models.IntegerField()
+    progress_trials = models.IntegerField(initial=0)
 
 
 class Trial(BaseTrialModel):
@@ -59,15 +60,18 @@ class Trial(BaseTrialModel):
         self.score = C.SCORING[self.agreed]
         self.iteround.total_score += self.score
 
-    progress_turn = models.IntegerField()
+    progress_responses = models.IntegerField(initial=0)
 
 
 class Response(BaseResponseModel):
-    trial = models.Link(Trial)
-    player = models.Link(Player)
-
+    trial: Trial = models.Link(Trial)
+    player: Player = models.Link(Player)
     response_time = models.IntegerField()
     utterance = models.StringField()
+
+    def evaluate(self):
+        # TODO: evaluate response
+        pass
 
 
 def set_payoff(iteround: Round):
@@ -95,7 +99,7 @@ def custom_export_responses(_):
         "trial.status",
         "trial.completion",
         "trial.processing_time",
-        "trial.success",
+        "trial.agreed",
         "trial.score",
         #
         "response.iteration",
@@ -124,7 +128,7 @@ def custom_export_responses(_):
             trial.status,
             trial.completion,
             f"{trial.processing_time:.01f}" if trial.processing_time else None,
-            trial.success,
+            trial.agreed,
             trial.score,
             #
             response.iteration,

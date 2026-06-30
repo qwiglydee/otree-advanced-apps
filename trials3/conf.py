@@ -10,11 +10,13 @@ class C(BaseConstants):
     NUM_ROUNDS = 1  # should be =1
     PLAYERS_PER_GROUP = None
 
-    NUM_TRIALS = {"Practice": 3, "Main": 5}
-
-    MAX_RETRIES = {"Practice": 2, "Main": 1}
-
     CONDITIONS = ["C0", "C1", "C2"]
+
+    NUM_TRIALS = {
+        "Practice": 3,
+        "Main": 5,
+    }
+
     NUMBERS = {
         "C0": rand.Uniform(12, 19),
         "C1": rand.Choices(13, 15, 17, 19),

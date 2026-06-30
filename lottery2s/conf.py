@@ -11,13 +11,13 @@ class C(BaseConstants):
     NUM_ROUNDS = 1  # should be =1
     PLAYERS_PER_GROUP = None
 
+    CONDITIONS = ["C0", "C1", "C2"]
+    DISCLOSURES = ["FULL", "CHOICE"]
+
     NUM_TRIALS = {
         "Practice": 3,
         "Main": 5,
     }
-
-    CONDITIONS = ["C0", "C1", "C2"]
-    DISCLOSURES = ["FULL", "CHOICE"]
 
     CHOICES = ["A", "B", "C"]
     LABELS = {1: "foo", 2: "bar", 3: "baz"}  # by screen position
@@ -27,7 +27,7 @@ class C(BaseConstants):
             "x": rand.Const(+1.0),
             "y": rand.Const(-1.0),
             "z": 10.0,
-            "std": 0.5,
+            "std": 1.0,
         },
         "C1": {
             "x": rand.Normal(+1.0, 1.0),
@@ -39,11 +39,11 @@ class C(BaseConstants):
             "x": rand.Uniform(0.0, +2.0),
             "y": rand.Uniform(-2.0, 0.0),
             "z": 10.0,
-            "std": 2.0,
+            "std": 1.0,
         },
     }
 
-    STAGES = ["SAMPLING", "FINAL"]
+    STAGES = ["SAMPLING", "FINALIZING"]
     MIN_SAMPLES = 3
 
     SAMPLING_DELAY = 1

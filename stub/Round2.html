@@ -46,6 +46,10 @@
 
 {% block form %}
     <hr class="ridge" />
+    <div class="alert alert-info" ot-display="vars.feedback">
+        {# feedback for particular answer #}
+        <div>You selected: <span ot-text="vars.feedback.value"></span></div>
+    </div>
 
     <button ot-display="vars.completing" ot-enable="vars.completing" ot-click-input type="button" name="continue" class="btn btn-secondary">Continue</button>
 {% endblock form %}
@@ -108,7 +112,8 @@
         }
 
         ot.onLoad(initPage);
-        ot.onLive("progress", liveProgress);
+        ot.onLive("progress", (upd) => Object.assign(vars.progress, upd));
+        ot.onLive("update", (upd) => Object.assign(vars.trial, upd));
         ot.onLive("trial", startTrial);
         ot.onInput("choice", inputChoice);
         ot.onLive("feedback", liveFeedback);
@@ -116,6 +121,7 @@
         ot.onInput("continue", iterateRound);
 
         function initPage() {
+            vars.progress = {};
             iterateRound();
         }
 
@@ -126,10 +132,9 @@
             ot.sendLive("iterate");
         }
 
-        function liveProgress(progress) {
-            vars.progress = progress;
-            if (progress.terminated) ot.completePage();
-        }
+        ot.onUpdate("vars.progress.terminated", function (terminated) {
+            if (terminated) ot.completePage();
+        });
 
         function resetTrial() {
             vars.trial = null;
@@ -146,7 +151,7 @@
         }
 
         function inputChoice(value) {
-            vars.response = String(value);
+            vars.choice = value;
             switchState("processing");
             ot.sendLive("response", {
                 trialid: vars.trial.id,
@@ -157,7 +162,9 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (feedback.continue) switchState("running");
+            if (feedback.continue) {
+                switchState("running");
+            }
         }
 
         function liveResult(result) {

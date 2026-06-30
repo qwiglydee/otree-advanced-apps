@@ -7,18 +7,18 @@ from units import Coins
 class C(BaseConstants):
     NAME_IN_URL = __package__
     NUM_ROUNDS = 1  # should be =1
+
+    CONDITIONS = ["C0", "C1", "C2"]
+
     NUM_TRIALS = 5
 
     PLAYERS_PER_GROUP = 2
     # NB: no _ROLE constants to avoid automatic assignment
 
-    ROLES = ["P", "R"]
-
-    STAGES = ["PROPOSING", "DECIDING"]
+    STAGES = ["PROPOSING", "RESPONDING"]
+    ROLES = {"PROPOSING": "P", "RESPONDING": "R"}
 
     DECISIONS = ["ACCEPT", "REJECT"]
-
-    CONDITIONS = ["C0", "C1", "C2"]
 
     ENDOWMENT = {
         "C0": Coins(100),
@@ -29,7 +29,7 @@ class C(BaseConstants):
     ITER_DELAY = 3
     WAITING_TIMEOUT = 10
 
-    COPYFIELDS = ["age", "gender"]
+    SCREENERFIELDS = ["age", "gender"]
 
 
 def config_condition(session):

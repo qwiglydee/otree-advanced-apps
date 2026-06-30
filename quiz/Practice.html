@@ -79,6 +79,8 @@
 
             switch (state) {
                 case "starting":
+                    vars.waiting = true;
+                    break;
                 case "processing":
                     vars.waiting = true;
                     break;
@@ -87,7 +89,7 @@
                     vars.confirming = vars.choice != null;
                     break;
                 case "completing":
-                    // vars.waiting = true; // auto
+                    // vars.waiting = true; // auto advancing
                     vars.completing = true; // button
                     break;
                 default:
@@ -103,7 +105,8 @@
         }
 
         ot.onLoad(initPage);
-        ot.onLive("progress", liveProgress);
+        ot.onLive("progress", (upd) => Object.assign(vars.progress, upd));
+        ot.onLive("update", (upd) => Object.assign(vars.trial, upd));
         ot.onLive("trial", startTrial);
         ot.onInput("choice", inputChoice);
         ot.onInput("confirm", confirmChoice);
@@ -112,6 +115,7 @@
         ot.onInput("continue", iterateRound);
 
         function initPage() {
+            vars.progress = {};
             iterateRound();
         }
 
@@ -122,10 +126,9 @@
             ot.sendLive("iterate");
         }
 
-        function liveProgress(progress) {
-            vars.progress = progress;
-            if (progress.terminated) ot.completePage();
-        }
+        ot.onUpdate("vars.progress.terminated", function (terminated) {
+            if (terminated) ot.completePage();
+        });
 
         function resetTrial() {
             vars.trial = null;
@@ -138,11 +141,6 @@
         function startTrial(trial) {
             vars.trial = trial;
             ot.beginTimeMeasurement(); // NB: restarts on page reload
-            switchState("running");
-        }
-
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
             switchState("running");
         }
 
@@ -178,7 +176,9 @@
         function liveFeedback(feedback) {
             vars.feedback = feedback;
             vars.feedback.incorrect = !vars.feedback.correct;
-            if (!feedback.final) restartTrial();
+            if (feedback.continue) {
+                restartTrial();
+            }
         }
 
         function liveResult(result) {

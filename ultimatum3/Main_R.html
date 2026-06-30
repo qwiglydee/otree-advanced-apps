@@ -15,21 +15,12 @@
         </section>
 
         <section class="info" ot-display="vars.result">
-            <h4>Final result</h4>
             <ul>
                 <li>Your payoff: <b ot-text="vars.result.R"></b></li>
                 <li>Your partner's payoff: <b ot-text="vars.result.P"></b></li>
             </ul>
         </section>
     </main>
-
-    <div class="alert alert-info" ot-display="vars.evaluation">
-        <h5>If you accept:</h5>
-        <ul>
-            <li>You receive: <b ot-text="vars.evaluation.R"></b></li>
-            <li>Your partner keeps: <b ot-text="vars.evaluation.P"></b></li>
-        </ul>
-    </div>
 {% endblock main %}
 
 {% block form %}
@@ -48,22 +39,29 @@
                 <label for="choice2" class="form-check-label">Reject</label>
             </div>
         </div>
-
         <button ot-click-input type="button" name="confirm" class="btn btn-primary" ot-enable="vars.confirming">Confirm</button>
     </section>
+
+    <div class="alert alert-info" ot-display="vars.evaluating" ot-visible="vars.evaluation">
+        <h5>If you accept:</h5>
+        <ul>
+            <li>You receive: <b ot-text="vars.evaluation.R"></b></li>
+            <li>Your partner keeps: <b ot-text="vars.evaluation.P"></b></li>
+        </ul>
+    </div>
 {% endblock form %}
 
 {% block footer %}
     <footer>
-        <div ot-display="vars.prompting.decide">Select your decision and <kbd>Confirm</kbd></div>
+        <div ot-display="vars.prompting.choose">Choose your decision and <kbd>Confirm</kbd></div>
         <div ot-display="vars.pending">Waiting for your partner</div>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+        <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
 {% endblock footer %}
 
 {% block styles %}
     <style>
-        :root {
+        body {
             --game-content-size: 80vh;
         }
     </style>
@@ -75,14 +73,12 @@
 
         const MYTURN = "{{player.role}}";
         const BLINK_DELAY = 200;
-        const RESULT_DELAY = 300;
-        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
+        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}"; // auto-advancing
         const WAITING_TIMEOUT = 1000 * "{{C.WAITING_TIMEOUT}}";
 
         function switchState(state) {
-            let stage = vars.progress ? vars.progress.stage : null;
-            if (state == "running") state += `/${stage}`;
-            // console.debug(`switching: ${state}/${turn}`, `/${MYTURN}/`);
+            let turn = vars.progress ? vars.progress.turn : null;
+            console.debug(MYTURN, `switching: ${state}/${turn}`);
 
             vars.waiting = false;
             vars.pending = false;
@@ -94,26 +90,28 @@
                     vars.pending = true;
                     break;
                 case "starting":
+                    vars.waiting = true;
+                    break;
                 case "processing":
                     vars.waiting = true;
                     break;
-                case "running/PROPOSING":
-                    vars.pending = true;
-                    break;
-                case "running/DECIDING":
-                    vars.responding = true;
-                    vars.confirming = vars.response != null;
+                case "running":
+                    let responded = vars.feedback !== null;
+                    vars.responding = !responded && turn == MYTURN;
+                    vars.confirming = vars.responding && vars.decision != null;
+                    vars.pending = !vars.responding;
                     break;
                 case "completing":
-                    vars.waiting = true;
+                    vars.waiting = true; // auto advancing
                     break;
                 default:
                     throw Error(`Bogus state switch: ${state}`);
             }
 
+            vars.evaluating = vars.responding;
             vars.waiting |= vars.pending;
             vars.prompting = {
-                decide: vars.responding,
+                choose: vars.responding,
             };
 
             ot.updatePage();
@@ -133,16 +131,18 @@
         });
 
         ot.onLoad(initPage);
-        ot.onLive("progress", liveProgress);
+        ot.onLive("progress", (upd) => Object.assign(vars.progress, upd));
+        ot.onLive("update", (upd) => Object.assign(vars.trial, upd));
         ot.onLive("trial", startTrial);
-        ot.onLive("update", updateTrial);
-        ot.onInput("decision", inputResponse);
-        ot.onInput("confirm", confirmResponse);
+        ot.onInput("decision", inputDecision);
+        ot.onInput("confirm", confirmDecision);
         ot.onLive("evaluation", liveEvaluation);
+        ot.onLive("feedback", liveFeedback);
         ot.onLive("result", liveResult);
         ot.onInput("continue", iterateRound);
 
         function initPage() {
+            vars.progress = {};
             iterateRound();
         }
 
@@ -153,15 +153,24 @@
             ot.sendLive("iterate");
         }
 
-        function liveProgress(progress) {
-            vars.progress = progress;
-            if (progress.terminated) ot.completePage();
-            if (progress.pending) switchState("pending");
-        }
+        ot.onUpdate("vars.progress.terminated", function (terminated) {
+            if (terminated) ot.completePage();
+        });
+
+        ot.onUpdate("vars.progress.current", function (current) {
+            if (current == null) switchState("pending");
+        });
+
+        ot.onUpdate("vars.progress.turn", function (turn) {
+            if (turn == MYTURN) {
+                resetResponse();
+                switchState("running");
+            }
+        });
 
         function resetTrial() {
             vars.trial = null;
-            vars.response = null;
+            vars.decision = null;
             vars.feedback = null;
             vars.evaluation = null;
             vars.result = null;
@@ -169,7 +178,7 @@
         }
 
         function resetResponse() {
-            vars.response = null;
+            vars.decision = null;
             vars.feedback = null;
             ot.resetInputs();
         }
@@ -180,19 +189,25 @@
             switchState("running");
         }
 
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
+        function inputDecision(value) {
+            vars.decision = String(value);
             switchState("running");
         }
 
-        function inputResponse(response) {
-            vars.response = response;
-            switchState("running");
-        }
-
-        function confirmResponse() {
+        function confirmDecision() {
             switchState("processing");
-            ot.sendLive("decision", { trialid: vars.trial.id, time: ot.getTimeMeasurement(), decision: vars.response });
+            ot.sendLive("decision", {
+                trialid: vars.trial.id,
+                time: ot.getTimeMeasurement(),
+                decision: vars.decision,
+            });
+        }
+
+        function liveFeedback(feedback) {
+            vars.feedback = feedback;
+            if (feedback.continue) {
+                switchState("running");
+            }
         }
 
         ot.onUpdate("vars.trial.proposal", function (proposed) {
@@ -203,15 +218,15 @@
             vars.evaluation = shares;
         }
 
-        async function liveResult(result) {
+        function liveResult(result) {
             vars.evaluation = null;
-            await ot.delay(RESULT_DELAY);
             vars.result = result;
             completeTrial();
         }
 
         async function completeTrial() {
             switchState("completing");
+            // auto advancing:
             await ot.delay(ITER_DELAY);
             iterateRound();
         }

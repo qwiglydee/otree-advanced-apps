@@ -11,13 +11,13 @@ class C(BaseConstants):
     NUM_ROUNDS = 1  # should be =1
     PLAYERS_PER_GROUP = None
 
+    CONDITIONS = ["C0", "C1", "C2"]
+    DISCLOSURES = ["FULL", "CHOICE"]
+
     NUM_TRIALS = {
         "Practice": 3,
         "Main": 5,
     }
-
-    CONDITIONS = ["C0", "C1", "C2"]
-    DISCLOSURES = ["FULL", "CHOICE"]
 
     CHOICES = ["A", "B", "C"]
     LABELS = {1: "foo", 2: "bar", 3: "baz"}  # by screen position
@@ -43,7 +43,7 @@ class C(BaseConstants):
         },
     }
 
-    ITER_DELAY = 2
+    ITER_DELAY = 1
 
 
 def config_condition(session):

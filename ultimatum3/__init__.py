@@ -1,5 +1,4 @@
 from otree.api import BasePlayer
-
 from .conf import C, config_condition  # noqa
 from .models import Subsession, Group, Player, Round, Trial, Response  # noqa
 from .models import custom_export_responses, custom_export_trials  # noqa
@@ -9,7 +8,9 @@ from _extras.screening import waiting_queues
 
 
 def creating_session(subsession: Subsession):
-    subsession.condition = config_condition(subsession.session)
+    session = subsession.session
+    for group in subsession.get_groups():
+        group.condition = config_condition(session)
 
 
 def group_by_arrival_time_method(subsession: Subsession, waiting_players: list[BasePlayer]):
@@ -17,7 +18,8 @@ def group_by_arrival_time_method(subsession: Subsession, waiting_players: list[B
 
     scrsubsession = ScrSubsession.get_matching(subsession)
 
-    queues = waiting_queues(waiting_players, C.ROLES)
+    roles = list(C.ROLES.values())
+    queues = waiting_queues(waiting_players, roles)
 
     if all(len(q) > 0 for q in queues.values()):
         players = [q.pop(0) for q in queues.values()]

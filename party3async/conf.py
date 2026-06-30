@@ -1,5 +1,6 @@
 from otree.api import BaseConstants
 
+from _extras.config import get_session_param
 from units import Points
 
 
@@ -8,7 +9,9 @@ class C(BaseConstants):
     NUM_ROUNDS = 1  # should be =1
     PLAYERS_PER_GROUP = 3
 
-    NUM_TRIALS = 5
+    CONDITIONS = ["C0", "C1", "C2"]
+
+    NUM_TRIALS = 3
 
     RESPONSES = ["MEOW", "WOOF"]
 
@@ -20,4 +23,6 @@ class C(BaseConstants):
 
     ITER_DELAY = 2
 
-    CHAT_LEN = PLAYERS_PER_GROUP
+
+def config_condition(session):
+    return get_session_param(session, "condition", choices=C.CONDITIONS)

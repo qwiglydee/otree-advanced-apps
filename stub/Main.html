@@ -11,7 +11,7 @@
 {% block main %}
     {# block for current trial #}
     <main ot-visible="vars.trial">
-        <section class="main fs-4">
+        <section class="main">
             {# task description, or current state of a trial #}
             <p ot-text="vars.trial.something"></p>
         </section>
@@ -28,8 +28,8 @@
     <hr class="ridge" />
 
     <div class="alert alert-info" ot-display="vars.feedback">
-        {# feedback for particular answer, or at least the answer/decision given #}
-        <div>You answered: <span ot-text="vars.feedback.value"></span></div>
+        {# feedback for particular answer #}
+        <div>You answered: <b ot-text="vars.feedback.value"></b></div>
     </div>
 
     <section class="form" ot-display="vars.responding">
@@ -90,7 +90,8 @@
         }
 
         ot.onLoad(initPage);
-        ot.onLive("progress", liveProgress);
+        ot.onLive("progress", (upd) => Object.assign(vars.progress, upd));
+        ot.onLive("update", (upd) => Object.assign(vars.trial, upd));
         ot.onLive("trial", startTrial);
         ot.onInput("response", inputResponse);
         ot.onLive("feedback", liveFeedback);
@@ -98,6 +99,7 @@
         ot.onInput("continue", iterateRound);
 
         function initPage() {
+            vars.progress = {};
             iterateRound();
         }
 
@@ -108,10 +110,9 @@
             ot.sendLive("iterate");
         }
 
-        function liveProgress(progress) {
-            vars.progress = progress;
-            if (progress.terminated) ot.completePage();
-        }
+        ot.onUpdate("vars.progress.terminated", function (terminated) {
+            if (terminated) ot.completePage();
+        });
 
         function resetTrial() {
             vars.trial = null;
@@ -139,7 +140,9 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (feedback.continue) switchState("running");
+            if (feedback.continue) {
+                switchState("running");
+            }
         }
 
         function liveResult(result) {

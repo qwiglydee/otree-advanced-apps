@@ -26,7 +26,7 @@ class Player(BasePlayer):
 
 class Round(BaseRoundModel):
     player: Player = models.Link(Player)
-    ispractice = models.BooleanField()
+
     total_score = models.DecimalField(unit=Points, initial=0)
 
     def init(self):
@@ -35,7 +35,7 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
-    progress_trials = models.IntegerField()
+    progress_trials = models.IntegerField(initial=0)
 
 
 class Trial(BaseTrialModel):
@@ -54,12 +54,8 @@ class Trial(BaseTrialModel):
     success = models.BooleanField()
     score = models.DecimalField(unit=Points)
 
-    @property
-    def condition(self) -> str:
-        return self.iteround.player.condition
-
     def init(self):
-        config = C.NUMBERS[self.condition]
+        config = C.NUMBERS[self.iteround.player.condition]
         num1, num2 = config.samples(2)
         result = num1 + num2
 
@@ -74,10 +70,12 @@ class Trial(BaseTrialModel):
         self.option_3 = str(options[2])
 
     def update(self):
-        response = Response.last(self, stage="DECIDING")
-        self.strategy = response.decision if response else None
-        response = Response.last(self, stage="ANSWERING")
-        self.success = response.correct if response else None
+        decided = Response.last(self, stage="DECIDING")
+        if decided:
+            self.strategy = decided.decision
+        answered = Response.last(self, stage="ANSWERING")
+        if answered:
+            self.success = answered.correct
 
     def complete(self):
         assert self.success is not None
@@ -85,8 +83,7 @@ class Trial(BaseTrialModel):
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
 
-    progress_retries = models.IntegerField()
-    progress_stage = models.StringField()
+    progress_responses = models.IntegerField(initial=0)
 
 
 class Response(BaseResponseModel):
@@ -142,7 +139,6 @@ def custom_export_trials(_):
         "trial.strategy",
         "trial.success",
         "trial.score",
-        "trial.retries",
     ]
 
     for trial in Trial.totall():
@@ -175,7 +171,6 @@ def custom_export_trials(_):
             trial.strategy,
             trial.success,
             trial.score,
-            trial.progress_retries,
         ]
 
 
@@ -206,7 +201,6 @@ def custom_export_responses(_):
         "trial.strategy",
         "trial.success",
         "trial.score",
-        "trial.retries",
         #
         "response.iteration",
         "response.stage",
@@ -248,7 +242,6 @@ def custom_export_responses(_):
             trial.strategy,
             trial.success,
             trial.score,
-            trial.progress_retries,
             #
             response.iteration,
             response.stage,

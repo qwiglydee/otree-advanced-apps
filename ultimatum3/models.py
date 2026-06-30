@@ -21,18 +21,18 @@ class Subsession(BaseSubsession):
 
 class Group(BaseGroup):
     @property
-    def condition(self) -> str:
-        s: Subsession = self.subsession  # type: ignore
-        return s.condition
+    def condition(self):
+        return self.subsession.condition  # type: ignore
+
+    @property
+    def endowment(self):
+        return C.ENDOWMENT[self.condition]
 
 
 def setup_group(group: Group):
     for player in group.get_players():
         post_assign_role(player)
         setup_player(player)
-
-
-SCREENERFIELDS = ["age", "gender"]
 
 
 class Player(BasePlayer):
@@ -53,7 +53,7 @@ def setup_player(player: Player):
     from ultimatum3_screener import Player as ScrPlayer
 
     scrplayer = ScrPlayer.get_matching(player)
-    copy_fields(scrplayer, player, SCREENERFIELDS)
+    copy_fields(scrplayer, player, C.SCREENERFIELDS)
 
 
 class Round(BaseRoundModel):
@@ -69,7 +69,7 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
-    progress_trials = models.IntegerField()
+    progress_trials = models.IntegerField(initial=0)
 
 
 class Trial(BaseTrialModel):
@@ -77,35 +77,33 @@ class Trial(BaseTrialModel):
 
     endowment = models.DecimalField(unit=Coins)
     proposal = models.DecimalField(unit=Coins)
-    decision = models.StringField(choices=C.DECISIONS)
+    response = models.StringField()
 
     score_p = models.DecimalField(unit=Coins)
     score_r = models.DecimalField(unit=Coins)
     get_scores = dict_getter("score_", ("P", "R"))
 
-    @property
-    def condition(self) -> str:
-        return self.iteround.group.condition
-
     def init(self):
-        self.endowment = C.ENDOWMENT[self.condition]
+        self.endowment = C.ENDOWMENT[self.iteround.group.condition]
 
     def update(self):
         proposed = Response.last(self, stage="PROPOSING")
-        self.proposal = proposed.p_proposal if proposed else None
-        decided = Response.last(self, stage="DECIDING")
-        self.decision = decided.r_decision if decided else None
+        if proposed:
+            self.proposal = proposed.proposal
+        responded = Response.last(self, stage="RESPONDING")
+        if responded:
+            self.response = responded.decision
 
     def complete(self):
-        assert self.proposal is not None and self.decision is not None
+        assert self.proposal is not None and self.response is not None
         self.close("COMPLETED")
-        scores = evaluate(self.endowment, self.proposal, self.decision == "ACCEPT")
+        scores = evaluate(self.endowment, self.proposal, self.response == "ACCEPT")
         self.score_p = scores["P"]
         self.score_r = scores["R"]
         self.iteround.total_score_p += self.score_p
         self.iteround.total_score_r += self.score_r
 
-    progress_stage = models.StringField()
+    progress_responses = models.IntegerField(initial=0)
 
 
 def evaluate(endowment: Decimal, proposed: Decimal, accepted: bool) -> dict[str, Decimal]:
@@ -119,12 +117,12 @@ def evaluate(endowment: Decimal, proposed: Decimal, accepted: bool) -> dict[str,
 
 class Response(BaseResponseModel):
     trial: Trial = models.Link(Trial)
-    stage = models.StringField()
     player: Player = models.Link(Player)
-
     response_time = models.IntegerField()
-    p_proposal = models.DecimalField(unit=Coins)
-    r_decision = models.StringField(choices=C.DECISIONS)
+
+    stage = models.StringField()
+    proposal = models.DecimalField(unit=Coins)
+    decision = models.StringField()
 
 
 def set_payoff(iteround: Round):
@@ -157,7 +155,7 @@ def custom_export_responses(_):
         "trial.processing_time",
         "trial.endowment",
         "trial.proposal",
-        "trial.decision",
+        "trial.response",
         "trial.score.P",
         "trial.score.R",
         #
@@ -166,7 +164,7 @@ def custom_export_responses(_):
         "player.role",
         "response.response_time",
         "response.proposal",
-        "response.decision",
+        "response.response",
     ]
 
     for response in Response.totall():
@@ -196,7 +194,7 @@ def custom_export_responses(_):
             f"{trial.processing_time:.01f}" if trial.processing_time else None,
             trial.endowment,
             trial.proposal,
-            trial.decision,
+            trial.response,
             trial.score_p,
             trial.score_r,
             #
@@ -204,8 +202,8 @@ def custom_export_responses(_):
             response.stage,
             player.role,
             response.response_time,
-            response.p_proposal,
-            response.r_decision,
+            response.proposal,
+            response.decision,
         ]
 
 
@@ -231,7 +229,7 @@ def custom_export_trials(_):
         "trial.processing_time",
         "trial.endowment",
         "trial.proposal",
-        "trial.decision",
+        "trial.response",
         "trial.score.P",
         "trial.score.R",
     ]
@@ -261,7 +259,7 @@ def custom_export_trials(_):
             f"{trial.processing_time:.01f}" if trial.processing_time else None,
             trial.endowment,
             trial.proposal,
-            trial.decision,
+            trial.response,
             trial.score_p,
             trial.score_r,
         ]

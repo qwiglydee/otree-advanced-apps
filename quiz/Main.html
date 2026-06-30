@@ -1,6 +1,7 @@
 {% extends "_extras/GamePage.html" %}
 
 {% block header %}
+    {# block for overall game status #}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
         <div class="alert alert-secondary m-2">Total score: <span ot-text="vars.progress.score"></span></div>
@@ -8,6 +9,7 @@
 {% endblock header %}
 
 {% block main %}
+    {# block for current trial #}
     <main ot-visible="vars.trial">
         <section class="main fs-4 text-center">
             What is the capital of:
@@ -16,6 +18,7 @@
         </section>
 
         <section class="info" ot-display="vars.result">
+            {# final outcome of a trial #}
             <p>Scored: <b ot-text="vars.result.score"></b></p>
         </section>
     </main>
@@ -24,10 +27,16 @@
 {% block form %}
     <hr class="ridge" />
 
+    <div class="alert alert-info" ot-display="vars.feedback">
+        {# feedback for particular answer #}
+        <div>You answered: <span ot-text="vars.feedback.answer"></span></div>
+    </div>
+
     <section class="form" ot-display="vars.responding">
+        {# inputs and stuff #}
         <div class="form-check">
             <input id="choice1" ot-input type="radio" name="choice" value="1" class="form-check-input" ot-enable="vars.responding" />
-            <label for="choice1" ot-text="vars.trial.options.1" class="form-check-label"></label>
+            <label for="choice1" ot-text="vars.trial.options.1" class="form-check-label w-100"></label>
         </div>
 
         <div class="form-check">
@@ -47,6 +56,7 @@
 {% endblock form %}
 
 {% block footer %}
+    {# various hints #}
     <footer>
         <div ot-display="vars.prompting.select">Select and <kbd>Confirm</kbd> your answer...</div>
         <div ot-display="vars.prompting.complete">Press <kbd>Continue</kbd> to proceed...</div>
@@ -59,7 +69,7 @@
         "use strict";
 
         const BLINK_DELAY = 200;
-        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
+        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}"; // auto-advancing
 
         function switchState(state) {
             // console.debug("switching", state);
@@ -71,6 +81,8 @@
 
             switch (state) {
                 case "starting":
+                    vars.waiting = true;
+                    break;
                 case "processing":
                     vars.waiting = true;
                     break;
@@ -79,7 +91,7 @@
                     vars.confirming = vars.choice != null;
                     break;
                 case "completing":
-                    vars.waiting = true; // auto
+                    vars.waiting = true; // auto advancing
                     // vars.completing = true; // button
                     break;
                 default:
@@ -95,7 +107,8 @@
         }
 
         ot.onLoad(initPage);
-        ot.onLive("progress", liveProgress);
+        ot.onLive("progress", (upd) => Object.assign(vars.progress, upd));
+        ot.onLive("update", (upd) => Object.assign(vars.trial, upd));
         ot.onLive("trial", startTrial);
         ot.onInput("choice", inputChoice);
         ot.onInput("confirm", confirmChoice);
@@ -104,6 +117,7 @@
         ot.onInput("continue", iterateRound);
 
         function initPage() {
+            vars.progress = {};
             iterateRound();
         }
 
@@ -114,10 +128,9 @@
             ot.sendLive("iterate");
         }
 
-        function liveProgress(progress) {
-            vars.progress = progress;
-            if (progress.terminated) ot.completePage();
-        }
+        ot.onUpdate("vars.progress.terminated", function (terminated) {
+            if (terminated) ot.completePage();
+        });
 
         function resetTrial() {
             vars.trial = null;
@@ -130,11 +143,6 @@
         function startTrial(trial) {
             vars.trial = trial;
             ot.beginTimeMeasurement(); // NB: restarts on page reload
-            switchState("running");
-        }
-
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
             switchState("running");
         }
 
@@ -154,6 +162,9 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
+            if (feedback.continue) {
+                switchState("running");
+            }
         }
 
         function liveResult(result) {

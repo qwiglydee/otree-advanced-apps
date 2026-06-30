@@ -9,12 +9,12 @@ class C(BaseConstants):
     NUM_ROUNDS = 1  # should be =1
     PLAYERS_PER_GROUP = None
 
+    CONDITIONS = ["C0", "C1", "C2"]
+
     NUM_TRIALS = {
         "Practice": 3,
         "Main": 5,
     }
-
-    CONDITIONS = ["C0", "C1", "C2"]
 
     SCORING = {
         0: Points(0),

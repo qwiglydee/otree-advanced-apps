@@ -1,6 +1,7 @@
 {% extends "_extras/GamePage.html" %}
 
 {% block header %}
+    {# block for overall game status #}
     <header>
         <ot-progress ticks="1" max="vars.progress.total" value="vars.progress.passed" value2="vars.progress.current"></ot-progress>
         <div class="alert alert-secondary m-2">Total score: <span ot-text="vars.progress.score"></span></div>
@@ -8,6 +9,7 @@
 {% endblock header %}
 
 {% block main %}
+    {# block for current trial #}
     <main ot-visible="vars.trial">
         <section class="main fs-4 text-center"><b ot-text="vars.trial.task"></b> =</section>
 
@@ -19,6 +21,11 @@
 
 {% block form %}
     <hr class="ridge" />
+
+    <div class="alert alert-info" ot-display="vars.feedback.foranswer">
+        You answered: <b ot-text="vars.feedback.answer"></b>
+        <span></span>
+    </div>
 
     <section class="form" ot-display="vars.deciding">
         <div class="btn-group">
@@ -64,7 +71,8 @@
         <div ot-display="vars.prompting.decide">Decide your strategy to solve the task...</div>
         <div ot-display="vars.prompting.select">Select and <kbd>Confirm</kbd> your answer...</div>
         <div ot-display="vars.prompting.input">Enter your answer and press <kbd>Enter</kbd>...</div>
-        <ot-pulse ot-display="vars.waiting" class="m-2"></ot-pulse>
+        <div ot-display="vars.prompting.complete">Press <kbd>Continue</kbd> to proceed...</div>
+        <ot-pulse ot-display="vars.waiting"></ot-pulse>
     </footer>
 {% endblock footer %}
 
@@ -73,7 +81,7 @@
         "use strict";
 
         const BLINK_DELAY = 200;
-        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}";
+        const ITER_DELAY = 1000 * "{{C.ITER_DELAY}}"; // auto-advancing
 
         function switchState(state) {
             let stage = vars.progress ? vars.progress.stage : null;
@@ -91,6 +99,8 @@
 
             switch (state) {
                 case "starting":
+                    vars.waiting = true;
+                    break;
                 case "processing":
                     vars.waiting = true;
                     break;
@@ -115,15 +125,16 @@
                 decide: vars.deciding,
                 input: vars.inputing,
                 select: vars.choosing,
+                complete: vars.completing,
             };
 
             ot.updatePage();
         }
 
         ot.onLoad(initPage);
-        ot.onLive("progress", liveProgress);
+        ot.onLive("progress", (upd) => Object.assign(vars.progress, upd));
+        ot.onLive("update", (upd) => Object.assign(vars.trial, upd));
         ot.onLive("trial", startTrial);
-        ot.onLive("update", updateTrial);
         ot.onInput("decision", inputDecision);
         ot.onInput("answer", inputResponse);
         ot.onInput("choice", inputChoice);
@@ -133,6 +144,7 @@
         ot.onInput("continue", iterateRound);
 
         function initPage() {
+            vars.progress = {};
             iterateRound();
         }
 
@@ -143,10 +155,9 @@
             ot.sendLive("iterate");
         }
 
-        function liveProgress(progress) {
-            vars.progress = progress;
-            if (progress.terminated) ot.completePage();
-        }
+        ot.onUpdate("vars.progress.terminated", function (terminated) {
+            if (terminated) ot.completePage();
+        });
 
         function resetTrial() {
             vars.trial = null;
@@ -164,31 +175,14 @@
             switchState("running");
         }
 
-        function updateTrial(update) {
-            Object.assign(vars.trial, update);
-            switchState("running");
-        }
-
-        function resetResponse() {
-            vars.choice = null;
-            vars.answer = null;
-            vars.feedback = null;
-            vars.result = null;
-            vars.styles = {};
-            ot.resetInputs();
-        }
-
-        async function restartTrial() {
-            switchState("starting");
-            await ot.delay(RETRY_DELAY);
-            resetResponse();
-            switchState("running");
-        }
-
         function inputDecision(decision) {
             vars.decision = decision;
             switchState("processing");
-            ot.sendLive("decision", { trialid: vars.trial.id, time: ot.getTimeMeasurement(), decision });
+            ot.sendLive("decision", {
+                trialid: vars.trial.id,
+                time: ot.getTimeMeasurement(),
+                decision,
+            });
         }
 
         function inputResponse(answer) {
@@ -217,7 +211,11 @@
 
         function liveFeedback(feedback) {
             vars.feedback = feedback;
-            if (!feedback.final) restartTrial();
+            vars.feedback.incorrect = !vars.feedback.correct;
+            vars.feedback.foranswer = vars.feedback.answer != null; // it could be for decision
+            if (feedback.continue) {
+                switchState("running");
+            }
         }
 
         function liveResult(result) {

@@ -28,10 +28,6 @@ class Round(BaseRoundModel):
 
     total_score = models.DecimalField(unit=Points, initial=0)
 
-    @property
-    def condition(self) -> str:
-        return self.player.condition
-
     def init(self):
         pass
 
@@ -50,21 +46,20 @@ class Trial(BaseTrialModel):
     outcome = models.StringField()
     score = models.DecimalField(unit=Points)
 
-    @property
-    def condition(self) -> str:
-        return self.iteround.condition
-
     def init(self):
-        # TODO: initialize trial
+        """Initialize trial with initial state"""
+        # TODO
         self.task = "".join(random.choices("aeiou bcdghhxz", k=16))
 
     def update(self):
-        # TODO: calculate intermediate outcomes
-        response = Response.last(self)
-        if response:
-            self.outcome = response.outcome
+        """Calculate some intermediate state/outcome (before completing)"""
+        # TODO
+        responded = Response.last(self)
+        if responded:
+            self.outcome = responded.outcome
 
     def complete(self):
+        """Calculate final result/outcome (after completing)"""
         assert self.outcome is not None
         self.close("COMPLETED")
         self.score = C.SCORING[self.outcome]
@@ -138,7 +133,7 @@ def custom_export(_):
             player.session.label,
             player.participant.code,
             player.participant.label,
-            iteround.condition,
+            player.condition,
             #
             iteround.pagename,
             iteround.status,

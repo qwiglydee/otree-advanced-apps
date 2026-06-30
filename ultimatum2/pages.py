@@ -4,9 +4,8 @@ from otree.api import Page, WaitPage
 from _extras.livepage import LivePage, LivePayload, LiveResponding
 from units import Coins
 
-from . import progress
 from .conf import C
-from .models import Player, Trial, evaluate
+from .models import Player, Trial, Response, evaluate
 from .progress import Progress
 
 
@@ -29,65 +28,64 @@ class Main(LivePage):
     @classmethod
     def live_iterate(page, player: Player) -> LiveResponding:
         group = player.group
-        current = progress.current(page, player)
+        current = Progress.current(page, player)
 
+        # restore state on occasional page reload
         if current.trial is not None:
-            # page reloaded while running trial
-            yield "progress", page.output_progress(current)
-            if current.trial.is_running:
-                # the trial is still pending
-                yield "trial", page.output_trial(current.trial)
+            yield player, "progress", page.output_progress(current)
+            if current.trial.has_started:
+                yield player, "trial", page.output_trial(current.trial)
+            responded = Response.last(current.trial, player=player)
+            if responded:
+                yield player, "feedback", page.output_feedback(current.trial, responded)
             return
 
-        advanced = progress.advance(current)
+        advanced = Progress.advance(current)
 
-        if advanced.trial is None:
-            # no more trials
-            yield group, "progress", page.output_progress(advanced)
-        elif not advanced.trial.is_running:
-            # pending state
-            yield player, "progress", page.output_progress(advanced)
-        else:
+        if advanced.trial and advanced.trial.has_started:
             yield group, "progress", page.output_progress(advanced)
             yield group, "trial", page.output_trial(advanced.trial)
+        else:
+            # just indicate status of gameover or something
+            yield player, "progress", page.output_progress(advanced)
 
     @classmethod
     def live_proposal(page, player: Player, trialid: int, proposal: str, time: int) -> LiveResponding:
         group = player.group
-        current = progress.current(page, player)
-        assert current.iteround is not None and current.trial is not None
+        current = Progress.current(page, player)
+        assert current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
 
-        progress.respond_proposal(current, Coins(proposal), response_time=time)
+        response = Progress.respond(current, "PROPOSING", proposal=Coins(proposal), response_time=time)
 
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
+        yield player, "feedback", page.output_feedback(current.trial, response)
 
     @classmethod
     def live_decision(page, player: Player, trialid: int, decision: str, time: int) -> LiveResponding:
         group = player.group
-        current = progress.current(page, player)
+        current = Progress.current(page, player)
         assert current.iteround is not None and current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
-
         assert decision in C.DECISIONS
-        progress.respond_decision(current, decision, response_time=time)
+
+        response = Progress.respond(current, "RESPONDING", decision=decision, response_time=time)
 
         yield group, "progress", page.output_progress(current)
         yield group, "update", page.output_trial(current.trial)
+        yield player, "feedback", page.output_feedback(current.trial, response)
         yield group, "result", page.output_result(current.trial)
 
     @classmethod
-    def output_progress(page, current: Progress) -> LivePayload:
-        pagename, player, iteround, trial = current
-        assert iteround is not None
+    def output_progress(page, progress: Progress) -> LivePayload:
+        player, iteround, trial = progress
         return {
             "total": C.NUM_TRIALS,
             "terminated": iteround.is_closed,
             "passed": iteround.progress_trials,
-            "pending": not current.is_running,
-            "current": trial.iteration if trial else None,
-            "stage": current.stage,
+            "current": trial.iteration if trial and trial.has_started else None,
+            "turn": progress.turn,
         }
 
     @classmethod
@@ -95,8 +93,14 @@ class Main(LivePage):
         return {
             "id": trial.id,
             "endowment": str(trial.endowment),
-            "proposal": str(trial.proposal) if trial.proposal is not None else None,
-            "decision": trial.decision,
+            "proposal": f"{trial.proposal}" if trial.proposal is not None else None,
+            "response": trial.response,
+        }
+
+    @classmethod
+    def output_feedback(page, trial: Trial, response: Response) -> LivePayload:
+        return {
+            "continue": not trial.is_closed,
         }
 
     @classmethod
@@ -106,7 +110,7 @@ class Main(LivePage):
     @classmethod
     def live_evaluate(page, player: Player, proposal: int, decision: bool) -> LiveResponding:
         """Online payoff calculator (with proper score fomatting)"""
-        current = progress.current(page, player)
+        current = Progress.current(page, player)
         assert current.trial is not None
         shares = evaluate(current.trial.endowment, Decimal(proposal), decision)
         yield player, "evaluation", page.output_shares(shares)
@@ -118,17 +122,11 @@ class Main(LivePage):
 
 
 class Intro(Page):
-    @staticmethod
-    def vars_for_template(player: Player):
-        return {"endowment": C.ENDOWMENT[player.condition]}
+    pass
 
 
 class Instructions(Page):
     get_template_name = get_template_rolename
-
-    @staticmethod
-    def vars_for_template(player: Player):
-        return {"endowment": C.ENDOWMENT[player.condition]}
 
 
 class Results(Page):

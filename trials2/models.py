@@ -26,7 +26,7 @@ class Player(BasePlayer):
 
 class Round(BaseRoundModel):
     player: Player = models.Link(Player)
-    ispractice = models.BooleanField()
+
     total_score = models.DecimalField(unit=Points, initial=0)
 
     def init(self):
@@ -35,7 +35,7 @@ class Round(BaseRoundModel):
     def update(self):
         pass
 
-    progress_trials = models.IntegerField()
+    progress_trials = models.IntegerField(initial=0)
 
 
 class Trial(BaseTrialModel):
@@ -53,12 +53,8 @@ class Trial(BaseTrialModel):
     success = models.BooleanField()
     score = models.DecimalField(unit=Points)
 
-    @property
-    def condition(self) -> str:
-        return self.iteround.player.condition
-
     def init(self):
-        config = C.NUMBERS[self.condition]
+        config = C.NUMBERS[self.iteround.player.condition]
         num1, num2 = config.samples(2)
         result = num1 + num2
 
@@ -83,7 +79,7 @@ class Trial(BaseTrialModel):
         self.score = C.SCORING[self.success]
         self.iteround.total_score += self.score
 
-    progress_retries = models.IntegerField()
+    progress_responses = models.IntegerField(initial=0)
 
 
 class Response(BaseResponseModel):
@@ -165,7 +161,7 @@ def custom_export_trials(_):
             trial.option_3,
             trial.success,
             trial.score,
-            trial.progress_retries,
+            trial.progress_responses,
         ]
 
 
@@ -234,7 +230,7 @@ def custom_export_responses(_):
             trial.option_3,
             trial.success,
             trial.score,
-            trial.progress_retries,
+            trial.progress_responses,
             #
             response.iteration,
             response.response_time,
