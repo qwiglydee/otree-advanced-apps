@@ -33,7 +33,7 @@ otLiveData = dict[int, LivePayload]
 
 
 class LivePage(Page):
-    """Page with live methods
+    """Page with multiple live methods
 
     The page routes all received messages to corresponding page methods according to their type.
     Received data from payload is converted to arguments of the methods.
@@ -94,44 +94,33 @@ class LivePage(Page):
 
         type = payload.pop("type")
         method = f"live_{type}"
+        handler = getattr(page, method)
 
-        # handler = inspect.getattr_static(page, method, None) # doesn't work with classmethods/staticmethods
-        handler = getattr(page, method, None)
+        assert inspect.isgeneratorfunction(handler) or inspect.isasyncgenfunction(handler), f"Invalid {pagename}.{method}: expected a generator with `yield`"
 
-        if handler is None:
-            raise TypeError(f"Missing {pagename}.{method}()")
-        elif inspect.isgeneratorfunction(handler):
-            try:
-                validate_payload(handler.__annotations__, payload)
-                handling = handler(player, **payload)
-            except (TypeError, AssertionError) as e:
-                raise ValueError(f"Invalid payload for {pagename}.{method}(): fields/parameters mismatch") from e
-            try:
-                for response in handling:
-                    yield parse_response(player, response)
-            except Exception as e:
-                raise RuntimeError(f"Failure at {pagename}.{method}") from e
-        elif inspect.isasyncgenfunction(handler):
-            try:
-                validate_payload(handler.__annotations__, payload)
-                handling = handler(player, **payload)
-            except (TypeError, AssertionError) as e:
-                raise ValueError(f"Invalid payload for {pagename}.{method}(): fields/parameters mismatch") from e
-            try:
-                async for response in handling:
-                    yield parse_response(player, response)
-            except Exception as e:
-                raise RuntimeError(f"Failure at {pagename}.{method}") from e
-        else:
-            raise TypeError(f"Invalid {pagename}.{method}: expected a generator with `yield`")
+        try:
+            responding = handle_payload(handler, player, payload)
+            if inspect.isgenerator(responding):
+                for response in responding:
+                    yield serialize_response(player, response)
+            if inspect.isasyncgen(responding):
+                async for response in responding:
+                    yield serialize_response(player, response)
+        except Exception as e:
+            raise RuntimeError(f"Failure at {pagename}.{method}") from e
 
 
-def validate_payload(annotations: dict[str, type], payload: dict):
+def handle_payload(handler, player: BasePlayer, payload: dict) -> Iterator[LiveResponse] | AsyncIterator[LiveResponse]:
+    annotations = handler.__annotations__
     for k, v in payload.items():
-        assert k not in annotations or isinstance(v, annotations[k]), f"Improper value of `{k}`"
+        if k not in annotations:
+            raise ValueError(f"Invalid parameter `{k}`")
+        if not isinstance(v, annotations[k]):
+            raise ValueError(f"Invalid value of `{k}`")
+    return handler(player, **payload)
 
 
-def parse_response(player: BasePlayer, response: Any) -> otLiveData:
+def serialize_response(player: BasePlayer, response: LiveResponse) -> otLiveData:
     match response:
         case (BaseGroup(), str() as t):
             return {0: {"type": t}}
@@ -146,4 +135,4 @@ def parse_response(player: BasePlayer, response: Any) -> otLiveData:
         case (str() as t, dict() as d):
             return {player.id_in_group: {"type": t, **d}}
         case _:
-            raise ValueError("Invalid yield structure")
+            raise ValueError("Invalid yield format")

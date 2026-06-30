@@ -41,6 +41,7 @@ class Main(LivePage):
         current = Progress.current(page, player)
         assert current.trial is not None
         assert trialid == current.trial.id, "mismatched response"
+        assert utterance in C.RESPONSES, "invalid response"
 
         response = Progress.respond(current, utterance=utterance, response_time=time)
 
