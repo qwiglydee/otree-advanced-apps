@@ -11,7 +11,7 @@
         <section class="main">
             <div>Endowment: <b ot-text="vars.trial.endowment"></b></div>
             <div ot-visible="vars.trial.proposal">You shared: <b ot-text="vars.trial.proposal"></b></div>
-            <div ot-visible="vars.trial.decision">Your partner decided: <b ot-text="vars.decision_label"></b></div>
+            <div ot-visible="vars.trial.response">Your partner decided: <b ot-text="vars.decision_label"></b></div>
         </section>
 
         <section class="info" ot-display="vars.result">
@@ -232,9 +232,10 @@
 
         const DECISION_LABELS = { ACCEPT: "Accept", REJECT: "Reject" };
 
-        ot.onUpdate("vars.trial.decision", function (decided) {
-            if (decided == null) vars.decision_label = null;
-            vars.decision_label = DECISION_LABELS[decided];
+        ot.onUpdate("vars.trial.response", function (decision) {
+            if (decision == null) vars.decision_label = null;
+            else vars.decision_label = DECISION_LABELS[decision];
+            ot.updatePage();
         });
     </script>
 {% endblock scripts %}
