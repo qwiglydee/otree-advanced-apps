@@ -1,7 +1,3 @@
-> :warning: The repository is currently work in progress. The apps are not yet field-tested.
->
-> Use with caution
-
 # otree-advanced-apps
 
 The repository contains utilities and example apps for [oTtree](https://www.otree.org/) (v6)
@@ -11,8 +7,8 @@ with some advanced features and techniques beyond standard capabilities of the o
 
 Major features:
 
-- Micro-framework to simplify creating dynamic live page content:
-    - dynamically (by scripts) changing page content, controls, switching visibility of sections
+- Micro-framework to simplify creating dynamic live page content (controlled by JavaScript):
+    - dynamically changing page content, controls, switching visibility of sections
     - reacting on user inputs, clicks, keystrokes
     - reacting on live messages from server (from another players)
     - reacting on timers
@@ -42,10 +38,6 @@ Their content is intentionally dull with arbitrary parameters.
 - [Ultimatum 2](ultimatum2): classic 2-player game of ultimatum, with pre-recruiting of participants
     - assuming the participants are all well-known and won't drop out (a case like a controlled lab environment)
     - participants are grouped on session initialization
-- [Ultimatum 2t](ultimatum2t): a 2-player game, with online recruiting of participants
-    - assuming the participants may drop out of the game
-    - participants are grouped on arrival with roles assigned dynamically
-    - when a participant drops out, the game round is terminated (and the session continues with remaining participant)
 - [Ultimatum 3](ultimatum3): a 2-player game, with chaotic recruiting of participants
     - additional `screener` app to possibly filter out participants without affecting remaining ones
     - the screener pre-assigns roles to minimize waiting time of already involved participants
@@ -56,7 +48,6 @@ Their content is intentionally dull with arbitrary parameters.
 - [Serial Party](party3serial): the party game with serial responding
     - players respond in turns defined by a sequence and they observe partners' responses as they're given
 - [Stub](stub): just a minimal app with round/trial/response/feedback/result scheme
-- TODO: Sliders: the classic real effort task
 
 Most of the apps have many common fatures:
 
@@ -102,9 +93,3 @@ Common structure:
     - pages `Main` or `TrialsPage` contain all the live communication logic, which is _almost_ the same for all the apps
     - templates `Main.html` and `Practice.html` contain browser-side scripts to support the communication logic, and adjust the page view
 - all the parts are more or less replaceble on their own
-
-All the code intensively use type-hining and inline docs to allow assistance from any smart IDE (like vscode, pycharm).
-Also, there're lots of `assert` statement all around to detect any possible bugs at runtime.
-
-Anyway, the code is far from being trivial and it's not that easy to use as of typical oTree apps. Also, it's somewhat overcomplicated with intention to fit any possible designs.
-Dealing with it will require programming skills, or AI assistance, or hiring a professional developer.
