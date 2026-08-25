@@ -101,10 +101,10 @@ class LivePage(Page):
         try:
             responding = handle_payload(handler, player, payload)
             if inspect.isgenerator(responding):
-                for response in responding:
+                for response in responding:  # type: ignore
                     yield serialize_response(player, response)
             if inspect.isasyncgen(responding):
-                async for response in responding:
+                async for response in responding:  # type: ignore
                     yield serialize_response(player, response)
         except Exception as e:
             raise RuntimeError(f"Failure at {pagename}.{method}") from e
